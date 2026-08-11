@@ -48,10 +48,7 @@ export default function Footer() {
             <h3 className="text-lg font-semibold text-white mb-4">Bizi Takip Edin</h3>
             <div className="flex flex-col space-y-3 text-sm text-emerald-100/80">
               <a href="https://www.instagram.com/onbsaglik" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-2">
-                📸 Instagram
-              </a>
-              <a href="https://github.com/zkoc1" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-2">
-                🐙 GitHub
+                📸 Instagram (@onbsaglik)
               </a>
             </div>
             
@@ -69,9 +66,6 @@ export default function Footer() {
         {/* Alt Kısım */}
         <div className="border-t border-emerald-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-emerald-200/60">
           <p>© 2024 onbsaglik.com. Tüm hakları saklıdır.</p>
-          <p>
-            Developed by <a href="https://github.com/zkoc1" target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-white transition-colors">zkoc1</a>
-          </p>
         </div>
       </div>
     </footer>
