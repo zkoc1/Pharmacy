@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "name": "Vitamin ve Takviye",
+    "slug": "vitamin-ve-takviye",
+    "children": [
+      {"id": 11, "name": "Vitamin", "slug": "vitamin", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 12, "name": "Mineral", "slug": "mineral", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 13, "name": "Kolajen", "slug": "kolajen", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 14, "name": "Balık Yağı / Omega 3", "slug": "balik-yagi", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 15, "name": "Probiyotik ve Prebiyotik", "slug": "probiyotik", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 16, "name": "Bitkisel Ürünler", "slug": "bitkisel", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 17, "name": "Glukozamin", "slug": "glukozamin", "parentSlug": "vitamin-ve-takviye"},
+      {"id": 18, "name": "Pastil", "slug": "pastil", "parentSlug": "vitamin-ve-takviye"}
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Güneş Bakımı",
+    "slug": "gunes-bakimi",
+    "children": [
+      {"id": 21, "name": "Yüz Güneş Kremi", "slug": "yuz-gunes-kremi", "parentSlug": "gunes-bakimi"},
+      {"id": 22, "name": "Vücut Güneş Kremi", "slug": "vucut-gunes-kremi", "parentSlug": "gunes-bakimi"}
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Saç Bakımı",
+    "slug": "sac-bakimi",
+    "children": [
+      {"id": 31, "name": "Şampuan", "slug": "sampuan", "parentSlug": "sac-bakimi"},
+      {"id": 32, "name": "Saç Serum ve Yağı", "slug": "sac-serum", "parentSlug": "sac-bakimi"},
+      {"id": 33, "name": "Saç Bakım Seti", "slug": "sac-bakim-seti", "parentSlug": "sac-bakimi"},
+      {"id": 34, "name": "Saç Vitamini", "slug": "sac-vitamini", "parentSlug": "sac-bakimi"}
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Cilt Bakımı",
+    "slug": "cilt-bakimi",
+    "children": [
+      {"id": 41, "name": "Yüz Kremi", "slug": "yuz-kremi", "parentSlug": "cilt-bakimi"},
+      {"id": 42, "name": "Cilt Bakım Seti", "slug": "cilt-bakim-seti", "parentSlug": "cilt-bakimi"},
+      {"id": 43, "name": "Yüz Temizleyici", "slug": "yuz-temizleyici", "parentSlug": "cilt-bakimi"},
+      {"id": 44, "name": "Göz Kremi", "slug": "goz-kremi", "parentSlug": "cilt-bakimi"},
+      {"id": 45, "name": "Cilt Serumu", "slug": "cilt-serumu", "parentSlug": "cilt-bakimi"},
+      {"id": 46, "name": "Vücut Kremi", "slug": "vucut-kremi", "parentSlug": "cilt-bakimi"},
+      {"id": 47, "name": "Yüz Maskesi", "slug": "yuz-maskesi", "parentSlug": "cilt-bakimi"}
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Makyaj",
+    "slug": "makyaj",
+    "children": [
+      {"id": 51, "name": "Fondöten", "slug": "fondoten", "parentSlug": "makyaj"}
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Kişisel Bakım",
+    "slug": "kisisel-bakim",
+    "children": [
+      {"id": 61, "name": "Tüy Dökücü", "slug": "tuy-dokucu", "parentSlug": "kisisel-bakim"},
+      {"id": 62, "name": "Deodorant", "slug": "deodorant", "parentSlug": "kisisel-bakim"}
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Anne & Bebek",
+    "slug": "anne-bebek",
+    "children": [
+      {"id": 71, "name": "Bebek Şampuanı", "slug": "bebek-sampuani", "parentSlug": "anne-bebek"},
+      {"id": 72, "name": "Bebek Kremi ve Yağı", "slug": "bebek-kremi", "parentSlug": "anne-bebek"}
+    ]
+  }
+]
