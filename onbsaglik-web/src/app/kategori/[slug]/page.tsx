@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllCategories, getCategoryBySlug, filterProducts } from "@/lib/products";
 import ProductGrid from "@/components/product/ProductGrid";
+import SortSelect from "@/components/product/SortSelect";
 import type { ProductFilter } from "@/types";
 
 interface Props {
@@ -79,31 +80,8 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
           </p>
         </div>
 
-        {/* Sıralama seçici */}
-        <form>
-          <select
-            name="siralama"
-            defaultValue={sp.siralama || ""}
-            onChange={(e) => {
-              const url = new URL(window.location.href);
-              url.searchParams.set("siralama", e.target.value);
-              window.location.href = url.toString();
-            }}
-            style={{
-              padding: "8px 12px",
-              border: "2px solid var(--color-border)",
-              borderRadius: "var(--radius-md)",
-              fontSize: "14px",
-              background: "white",
-              cursor: "pointer",
-            }}
-          >
-            <option value="">Önerilen Sıralama</option>
-            <option value="price_asc">Fiyat: Artan</option>
-            <option value="price_desc">Fiyat: Azalan</option>
-            <option value="name_asc">A-Z</option>
-          </select>
-        </form>
+        {/* Sıralama seçici istemci bileşeni */}
+        <SortSelect defaultValue={sp.siralama} />
       </div>
 
       {/* Ürün grid'i */}
