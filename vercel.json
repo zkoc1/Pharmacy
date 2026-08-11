@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd onbsaglik-web && npm run build",
+  "outputDirectory": "onbsaglik-web/.next",
+  "installCommand": "cd onbsaglik-web && npm install",
+  "framework": "nextjs",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/onbsaglik-web/$1" }
+  ]
+}

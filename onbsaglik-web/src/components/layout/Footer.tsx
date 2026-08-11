@@ -21,11 +21,12 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">Kategoriler</h3>
             <ul className="space-y-2 text-sm text-emerald-100/80">
-              <li><Link href="/kategori/vitamin-takviye" className="hover:text-white transition-colors">Vitamin & Takviye</Link></li>
+              <li><Link href="/kategori/vitamin-ve-takviye" className="hover:text-white transition-colors">Vitamin & Takviye</Link></li>
               <li><Link href="/kategori/gunes-bakimi" className="hover:text-white transition-colors">Güneş Bakımı</Link></li>
               <li><Link href="/kategori/sac-bakimi" className="hover:text-white transition-colors">Saç Bakımı</Link></li>
               <li><Link href="/kategori/cilt-bakimi" className="hover:text-white transition-colors">Cilt Bakımı</Link></li>
               <li><Link href="/kategori/anne-bebek" className="hover:text-white transition-colors">Anne & Bebek</Link></li>
+              <li><Link href="/urunler" className="hover:text-white transition-colors">Tüm Ürünler</Link></li>
             </ul>
           </div>
 
@@ -33,8 +34,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">Müşteri Hizmetleri</h3>
             <ul className="space-y-2 text-sm text-emerald-100/80">
+              <li><Link href="/hakkimizda" className="hover:text-white transition-colors">Hakkımızda</Link></li>
               <li><Link href="/iletisim" className="hover:text-white transition-colors">İletişim</Link></li>
-              <li><Link href="/sss" className="hover:text-white transition-colors">Sıkça Sorulan Sorular</Link></li>
+              <li><Link href="/sepet" className="hover:text-white transition-colors">Alışveriş Sepeti</Link></li>
               <li><Link href="/kargo-ve-teslimat" className="hover:text-white transition-colors">Kargo ve Teslimat</Link></li>
               <li><Link href="/iade-kosullari" className="hover:text-white transition-colors">İade Koşulları</Link></li>
               <li><Link href="/gizlilik-politikasi" className="hover:text-white transition-colors">Gizlilik Politikası</Link></li>
