@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   ShoppingCart,
@@ -15,7 +16,6 @@ import {
   Search,
   Menu,
   X,
-  Leaf,
 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import CartDrawer from "@/components/ui/CartDrawer";
@@ -171,28 +171,18 @@ export default function Header() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
               textDecoration: "none",
               flexShrink: 0,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "var(--gradient-primary)",
-                color: "white",
-                padding: "8px 14px",
-                borderRadius: "var(--radius-md)",
-                fontWeight: 800,
-                fontSize: "17px",
-                letterSpacing: "-0.3px",
-              }}
-            >
-              <Leaf size={18} />
-              OnbSağlık
-            </div>
+            <Image
+              src="/logo.jpg"
+              alt="OnbSağlık"
+              width={150}
+              height={50}
+              style={{ objectFit: "contain", height: "44px", width: "auto" }}
+              priority
+            />
           </Link>
 
           {/* Arama çubuğu — masaüstü */}

@@ -24,13 +24,13 @@ export default function HeroBanner() {
           
           <div className="flex flex-wrap gap-4">
             <Link 
-              href="/alisveris" 
+              href="/urunler" 
               className="bg-white text-emerald-800 hover:bg-emerald-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
             >
               Alışverişe Başla
             </Link>
             <Link 
-              href="/kategoriler" 
+              href="/urunler" 
               className="border-2 border-emerald-400/50 hover:border-emerald-300 text-white px-8 py-4 rounded-xl font-bold text-lg backdrop-blur-sm bg-black/10 hover:bg-black/20 transition-all duration-300"
             >
               Ürünleri Keşfet
@@ -38,26 +38,23 @@ export default function HeroBanner() {
           </div>
         </div>
 
-        {/* Sağ Kolaj/Animasyon Alanı (CSS ile) */}
+        {/* Sağ: Güven rozetleri ve istatistikler */}
         <div className="w-full md:w-1/2 flex justify-center md:justify-end">
-          <div className="relative w-72 h-72 md:w-96 md:h-96">
-            {/* Merkez Daire */}
-            <div className="absolute inset-0 bg-emerald-500/20 rounded-full border border-emerald-400/30 backdrop-blur-md shadow-2xl animate-pulse"></div>
-            
-            {/* CSS İkonları (Haplar, Yapraklar, Yıldızlar) */}
-            <div className="absolute top-10 left-10 text-4xl animate-bounce" style={{ animationDuration: '3s' }}>💊</div>
-            <div className="absolute top-20 right-16 text-5xl animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}>🌿</div>
-            <div className="absolute bottom-20 left-16 text-6xl animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}>🧴</div>
-            <div className="absolute bottom-10 right-20 text-4xl animate-bounce" style={{ animationDuration: '4.5s', animationDelay: '1.5s' }}>✨</div>
-            
-            {/* Dekoratif Yüzen Kart */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-2xl shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-              <div className="w-32 h-32 bg-emerald-50 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-6xl">✨</span>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: '184+', sub: 'Ürün Çeşidi' },
+              { label: '63', sub: 'Güvenilir Marka' },
+              { label: '%100', sub: 'Orijinal Ürün' },
+              { label: '500₺', sub: 'Ücretsiz Kargo' },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-center text-white"
+              >
+                <p className="text-3xl font-extrabold text-amber-400">{stat.label}</p>
+                <p className="text-sm text-emerald-100 mt-1">{stat.sub}</p>
               </div>
-              <div className="h-2 w-24 bg-gray-200 rounded-full mb-2"></div>
-              <div className="h-2 w-16 bg-emerald-400 rounded-full"></div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
