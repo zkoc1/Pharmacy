@@ -1,6 +1,6 @@
 /**
  * Kampanyalar ve Özel Fırsatlar Sayfası — /kampanyalar rotası.
- * Dermoeczanem.com tarzı canlı combo teklifler, flash fırsatlar ve indirimli paketler.
+ * OnbSağlık canlı combo teklifler, flash fırsatlar ve indirimli paketler.
  */
 "use client";
 
@@ -50,7 +50,7 @@ export default function KampanyalarSayfasi() {
         <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 rounded-3xl p-8 md:p-12 text-white shadow-xl mb-10 relative overflow-hidden">
           <div className="relative z-10 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-bold mb-4">
-              <Zap size={14} className="text-amber-400 fill-amber-400" /> Dermoeczanem Fırsat Kulübü
+              <Zap size={14} className="text-amber-400 fill-amber-400" /> OnbSağlık Fırsat Kulübü
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
               Özel Kampanyalar & <br />

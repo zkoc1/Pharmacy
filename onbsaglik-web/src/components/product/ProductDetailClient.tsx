@@ -1,6 +1,6 @@
 /**
  * Ürün detay istemci bileşeni.
- * Galeri, sepete ekle, miktar seçimi ve Dermoeczanem tarzı Combo Teklif kutusunu yönetir.
+ * Galeri, sepete ekle, miktar seçimi ve OnbSağlık Combo Teklif kutusunu yönetir.
  */
 
 "use client";

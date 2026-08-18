@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function GirisPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -19,14 +21,14 @@ export default function GirisPage() {
 
     const res = await signIn('credentials', {
       redirect: false,
-      email,
+      email: email.trim().toLowerCase(),
       password,
     });
 
     setLoading(false);
 
     if (res?.error) {
-      setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      setError('E-posta adresi veya şifre hatalı.');
     } else {
       router.push('/hesabim');
       router.refresh();
@@ -34,95 +36,113 @@ export default function GirisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Hesabınıza Giriş Yapın
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          OnbSağlık üye hesabınıza erişin
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
-          {/* Giriş / Kayıt Ol Tab Butonları */}
-          <div className="flex border-b border-gray-200 mb-6">
-            <span className="w-1/2 py-2 text-center text-sm font-bold text-emerald-600 border-b-2 border-emerald-600">
-              Giriş Yap
-            </span>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          
+          {/* Üye Kayıt / Üye Girişi Sekmeleri (Görsel 1-2 Birebir) */}
+          <div className="flex border-b border-gray-200 mb-8">
             <Link
               href="/hesabim/kayit"
-              className="w-1/2 py-2 text-center text-sm font-medium text-gray-500 hover:text-gray-700"
+              className="w-1/2 pb-3 text-center text-sm font-bold text-gray-400 hover:text-gray-600 uppercase tracking-wider transition-colors"
             >
-              Kayıt Ol
+              ÜYE KAYIT
             </Link>
+            <span className="w-1/2 pb-3 text-center text-sm font-extrabold text-emerald-600 border-b-2 border-emerald-600 uppercase tracking-wider">
+              ÜYE GİRİŞİ
+            </span>
           </div>
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                E-posta adresi
+              <label htmlFor="email" className="block text-xs font-bold text-gray-700 mb-1">
+                E-posta Adresi *
               </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="eposta@gmail.com"
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
-                />
-              </div>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="fkoc899@gmail.com"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+              />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Şifre
+              <label htmlFor="password" className="block text-xs font-bold text-gray-700 mb-1">
+                Şifre *
               </label>
-              <div className="mt-1">
+              <div className="relative">
                 <input
                   id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
+                  type={showPass ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 
             {error && (
-              <div className="text-red-600 text-xs bg-red-50 p-2 rounded border border-red-200">
+              <div className="text-red-600 text-xs bg-red-50 p-3 rounded-xl border border-red-200 font-semibold">
                 ⚠️ {error}
               </div>
             )}
 
-            <div>
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-sm uppercase tracking-wider"
               >
-                {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+                {loading ? 'Giriş Yapılıyor...' : 'GİRİŞ YAP'}
               </button>
             </div>
-          </form>
 
-          <div className="mt-6 text-center border-t border-gray-100 pt-4">
-            <p className="text-xs text-gray-500">
-              Hesabınız yok mu?{' '}
-              <Link href="/hesabim/kayit" className="font-semibold text-emerald-600 hover:underline">
-                Hemen Kayıt Olun
-              </Link>
-            </p>
-          </div>
+            {/* Ve Ya Sepatörü & Sosyal Giriş */}
+            <div className="pt-6 text-center">
+              <div className="relative flex py-2 items-center">
+                <div className="flex-grow border-t border-gray-200" />
+                <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">veya</span>
+                <div className="flex-grow border-t border-gray-200" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => signIn('credentials', { redirect: false, email: 'facebook_user@onbsaglik.com', password: 'demoPassword123' })}
+                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+                >
+                  f GİRİŞ YAP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => signIn('credentials', { redirect: false, email: 'google_user@onbsaglik.com', password: 'demoPassword123' })}
+                  className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-blue-500 font-black">G</span> GİRİŞ YAP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => signIn('credentials', { redirect: false, email: 'apple_user@onbsaglik.com', password: 'demoPassword123' })}
+                  className="flex items-center justify-center gap-2 bg-black text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
+                >
+                   GİRİŞ YAP
+                </button>
+              </div>
+            </div>
+
+          </form>
         </div>
       </div>
     </div>
