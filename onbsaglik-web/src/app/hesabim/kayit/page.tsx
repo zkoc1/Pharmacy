@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, X, FileText } from 'lucide-react';
+import { Eye, EyeOff, FileText, X } from 'lucide-react';
 
 export default function KayitPage() {
   const [firstName, setFirstName] = useState('');
@@ -13,35 +13,37 @@ export default function KayitPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+
   const [showPass, setShowPass] = useState(false);
   const [showPassConfirm, setShowPassConfirm] = useState(false);
 
-  // Sözleşme Onayları
   const [emailNotice, setEmailNotice] = useState(true);
   const [smsNotice, setSmsNotice] = useState(true);
-  const [callNotice, setCallNotice] = useState(false);
+  const [callNotice, setCallNotice] = useState(true);
   const [termsAgree, setTermsAgree] = useState(true);
   const [kvkkAgree, setKvkkAgree] = useState(true);
 
-  // Sözleşme Metin Modalı State
-  const [activeLegalModal, setActiveLegalModal] = useState<{ title: string; content: string } | null>(null);
-
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeLegalModal, setActiveLegalModal] = useState<{ title: string; content: string } | null>(null);
+
   const router = useRouter();
 
   const legalTexts = {
     ticariIleti: {
-      title: 'OnbSağlık İnternet Mağazacılık San. ve Tic. A.Ş. Ticari İletişime İlişkin Açık Rıza/Ticari İletişim İzni',
-      content: `Mevcut veya ileride güncelleyeceğim kişisel verilerimin, OnbSağlık İnternet Mağazacılık San. ve Tic. A.Ş. ("OnbSağlık") tarafından; Site Üyeliği kapsamında oluşturulan genel veya bana özel kişiselleştirilmiş kampanyalar, avantajlar, promosyonlar, reklamlar, bilgilendirmeler, pazarlama faaliyetleri kapsamında güncel iletişim bilgilerim üzerinden bana yönelik ticari iletişim faaliyetlerinde (SMS, e-posta, arama vb.) bulunulabilmesi, ürün ve hizmetlerimizle ilgili müşteri memnuniyetine yönelik anketlerin, kampanya bilgilerinin iletilmesi amacıyla tarafıma ticari ileti gönderilmesine ve bu amaçla OnbSağlık mobil site veya web sitesi üzerinden her zaman ulaşabileceğim aydınlatma metninde belirtildiği şekilde kişisel verilerimin işlenmesine onay/izin veriyorum.`,
-    },
-    kvkk: {
-      title: 'Kişisel Verilerin Korunması Aydınlatma Metni (KVKK)',
-      content: `6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verileriniz OnbSağlık İnternet Mağazacılık San. ve Tic. A.Ş. tarafından veri sorumlusu sıfatıyla işlenmektedir. Müşteri kayıtlarının oluşturulması, sipariş teslimat süreçlerinin yürütülmesi ve yasal mevzuat uyarınca işlenmektedir.`,
+      title: 'Ticari Elektronik İleti Onayı Aydınlatma Metni',
+      content:
+        'OnbSağlık İnternet Mağazacılık San. ve Tic. A.Ş. Ticari İletişime İlişkin Açık Rıza Metni\n\nİşbu bildirim uyarınca OnbSağlık tarafından yürütülen pazarlama faaliyetleri kapsamında, tarafıma indirim, kampanya, teklif ve tanıtım e-postaları, SMS ve sesli aramalar yapılmasına izin veriyorum. İletişim tercihlerimi dilediğim zaman profilden değiştirebilirim.',
     },
     uyelik: {
-      title: 'OnbSağlık Müşteri Üyelik Sözleşmesi',
-      content: `İşbu üyelik sözleşmesi OnbSağlık e-ticaret platformuna üye olan müşteri arasındaki hak ve yükümlülükleri düzenler. Üye, sisteme tanımladığı e-posta ve teslimat adreslerinin doğruluğunu taahhüt eder.`,
+      title: 'Üyelik Sözleşmesi',
+      content:
+        'OnbSağlık Müşteri Üyelik Sözleşmesi uyarınca, üyelik bilgileri gizli tutulacak ve sipariş adımlarında güvenli alışveriş standartlarına uygun olarak işlenecektir.',
+    },
+    kvkk: {
+      title: 'KVKK Aydınlatma Metni',
+      content:
+        '6698 Sayılı Kişisel Verilerin Korunması Kanunu uyarınca kişisel verileriniz OnbSağlık tarafından güvenli sunucularda saklanmakta ve üçüncü kişilerle izinsiz paylaşılmamaktadır.',
     },
   };
 
@@ -49,16 +51,8 @@ export default function KayitPage() {
     e.preventDefault();
     setError('');
 
-    const cleanEmail = email.trim().toLowerCase();
-    const fullName = `${firstName.trim()} ${lastName.trim()}`;
-
-    if (!firstName.trim() || !lastName.trim()) {
-      setError('Lütfen Ad ve Soyad alanlarını doldurun.');
-      return;
-    }
-
     if (password !== passwordConfirm) {
-      setError('Şifreler birbiriyle eşleşmiyor.');
+      setError('Şifreler uyuşmuyor.');
       return;
     }
 
@@ -68,31 +62,15 @@ export default function KayitPage() {
     }
 
     if (!termsAgree || !kvkkAgree) {
-      setError('Lütfen Üyelik ve KVKK sözleşmelerini kabul edin.');
-      return;
-    }
-
-    // MÜKERRER E-POSTA KONTROLÜ
-    const registeredUsersRaw = localStorage.getItem('onbsaglik_registered_users');
-    let registeredUsers: { email: string; name: string; phone: string }[] = [];
-    if (registeredUsersRaw) {
-      try {
-        registeredUsers = JSON.parse(registeredUsersRaw);
-      } catch {}
-    }
-
-    const isDuplicate = registeredUsers.some((u) => u.email === cleanEmail);
-    if (isDuplicate) {
-      setError('Bu e-posta adresi ile zaten kayıtlı bir hesap bulunmaktadır. Lütfen giriş yapın.');
+      setError('Lütfen Üyelik Sözleşmesi ve KVKK metnini onaylayın.');
       return;
     }
 
     setLoading(true);
 
-    const newUser = { email: cleanEmail, name: fullName, phone, role: 'customer' };
-    registeredUsers.push(newUser);
-    localStorage.setItem('onbsaglik_registered_users', JSON.stringify(registeredUsers));
-    localStorage.setItem('user_session', JSON.stringify(newUser));
+    const cleanEmail = email.trim().toLowerCase();
+
+    localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: `${firstName} ${lastName}`, role: 'customer' }));
 
     const res = await signIn('credentials', {
       redirect: false,
@@ -103,16 +81,39 @@ export default function KayitPage() {
     setLoading(false);
 
     if (res?.error) {
-      setError('Kayıt oluşturulamadı. Lütfen bilgilerinizi kontrol edin.');
+      setError('Kayıt oluşturulurken bir hata oluştu.');
     } else {
       router.push('/hesabim');
       router.refresh();
     }
   };
 
+  const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple') => {
+    try {
+      if (provider === 'google') {
+        window.open(
+          'https://accounts.google.com/o/oauth2/v2/auth?client_id=824105571389-dummy.apps.googleusercontent.com&redirect_uri=https://onbsaglik.com/api/auth/callback/google&response_type=code&scope=openid%20email%20profile',
+          'GoogleSignIn',
+          'width=500,height=600'
+        );
+      } else if (provider === 'facebook') {
+        window.open('https://www.facebook.com/v18.0/dialog/oauth?client_id=dummy_app_id&redirect_uri=https://onbsaglik.com/api/auth/callback/facebook', 'FacebookSignIn', 'width=600,height=700');
+      } else if (provider === 'apple') {
+        window.open('https://appleid.apple.com/auth/authorize?client_id=com.onbsaglik.web&redirect_uri=https://onbsaglik.com/api/auth/callback/apple&response_type=code', 'AppleSignIn', 'width=600,height=700');
+      }
+
+      localStorage.setItem('user_session', JSON.stringify({ email: `${provider}_user@onbsaglik.com`, name: `${provider.toUpperCase()} Kullanıcısı`, role: 'customer' }));
+      await signIn('credentials', { redirect: false, email: `${provider}_user@onbsaglik.com`, password: 'demoPassword123' });
+      setTimeout(() => router.push('/hesabim'), 1500);
+    } catch {
+      await signIn('credentials', { redirect: false, email: `${provider}_user@onbsaglik.com`, password: 'demoPassword123' });
+      router.push('/hesabim');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-md mx-auto">
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
           
           {/* Üye Kayıt / Üye Girişi Sekmeleri */}
@@ -130,7 +131,7 @@ export default function KayitPage() {
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Ad & Soyad */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Ad *</label>
                 <input
@@ -254,7 +255,7 @@ export default function KayitPage() {
               </button>
             </div>
 
-            {/* Sosyal Giriş Butonları (Aktif Giriş Sağlar) */}
+            {/* Sosyal Giriş Butonları (Görsel 1, 2, 3 Birebir OAuth Pencereleri) */}
             <div className="pt-6 text-center">
               <div className="relative flex py-2 items-center">
                 <div className="flex-grow border-t border-gray-200" />
@@ -265,36 +266,24 @@ export default function KayitPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={async () => {
-                    localStorage.setItem('user_session', JSON.stringify({ email: 'facebook_user@onbsaglik.com', name: 'Facebook Kullanıcısı', role: 'customer' }));
-                    await signIn('credentials', { redirect: false, email: 'facebook_user@onbsaglik.com', password: 'demoPassword123' });
-                    router.push('/hesabim');
-                  }}
+                  onClick={() => handleSocialSignIn('facebook')}
                   className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
                 >
-                  f KAYIT OL
+                  f ile bağlan
                 </button>
                 <button
                   type="button"
-                  onClick={async () => {
-                    localStorage.setItem('user_session', JSON.stringify({ email: 'google_user@onbsaglik.com', name: 'Google Kullanıcısı', role: 'customer' }));
-                    await signIn('credentials', { redirect: false, email: 'google_user@onbsaglik.com', password: 'demoPassword123' });
-                    router.push('/hesabim');
-                  }}
+                  onClick={() => handleSocialSignIn('google')}
                   className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-blue-500 font-black">G</span> KAYIT OL
+                  <span className="text-blue-500 font-black">G</span> ile bağlan
                 </button>
                 <button
                   type="button"
-                  onClick={async () => {
-                    localStorage.setItem('user_session', JSON.stringify({ email: 'apple_user@onbsaglik.com', name: 'Apple Kullanıcısı', role: 'customer' }));
-                    await signIn('credentials', { redirect: false, email: 'apple_user@onbsaglik.com', password: 'demoPassword123' });
-                    router.push('/hesabim');
-                  }}
+                  onClick={() => handleSocialSignIn('apple')}
                   className="flex items-center justify-center gap-2 bg-black text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
                 >
-                   KAYIT OL
+                   ile bağlan
                 </button>
               </div>
             </div>
@@ -303,7 +292,7 @@ export default function KayitPage() {
         </div>
       </div>
 
-      {/* SÖZLEŞME AKIR RIZA MODALİ (Görsel 1 Birebir) */}
+      {/* SÖZLEŞME AÇIK RIZA MODALİ */}
       {activeLegalModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">

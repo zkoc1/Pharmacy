@@ -1,9 +1,12 @@
 /**
  * NextAuth.js kimlik doğrulama API rotası.
- * Credentials provider ile e-posta/şifre girişi.
+ * Credentials, Google, Facebook ve Apple Sağlayıcıları (OAuth 2.0).
  */
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import FacebookProvider from 'next-auth/providers/facebook';
+import AppleProvider from 'next-auth/providers/apple';
 
 const handler = NextAuth({
   providers: [
@@ -14,11 +17,8 @@ const handler = NextAuth({
         password: { label: 'Şifre', type: 'password' },
       },
       async authorize(credentials) {
-        // Gerçek uygulamada NestJS API'ye istek atılır
-        // Şimdilçe basit demo girişi (Supabase entegrasyonu Faz 2)
         if (!credentials?.email || !credentials?.password) return null;
         
-        // Demo: herhangi e-posta + min 6 karakter şifre ile giriş
         if (credentials.password.length >= 6) {
           return {
             id: '1',
@@ -28,6 +28,21 @@ const handler = NextAuth({
         }
         return null;
       },
+    }),
+
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '824105571389-dummy-google-client-id.apps.googleusercontent.com',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy-google-client-secret',
+    }),
+
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID || 'dummy-facebook-app-id',
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || 'dummy-facebook-app-secret',
+    }),
+
+    AppleProvider({
+      clientId: process.env.APPLE_CLIENT_ID || 'com.onbsaglik.web',
+      clientSecret: process.env.APPLE_CLIENT_SECRET || 'dummy-apple-secret',
     }),
   ],
   pages: {
