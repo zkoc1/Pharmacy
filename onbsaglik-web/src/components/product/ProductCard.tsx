@@ -4,9 +4,11 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Heart } from 'lucide-react';
 import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
+import { useFavoritesStore } from '@/stores/favoritesStore';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +16,8 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const addItem = useCartStore((state) => state.addItem);
+  const isFavorite = useFavoritesStore((state) => state.items.some((i) => i.id === product.id));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   
   // İndirim oranı hesaplama
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
@@ -26,6 +30,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     addItem(product, 1);
   };
 
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault(); // Linke gitmeyi engelle
+    e.stopPropagation();
+    toggleFavorite(product);
+  };
+
   return (
     <Link href={`/urun/${product.slug}`} className="group flex flex-col bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative">
       {/* İndirim Rozeti */}
@@ -34,6 +44,19 @@ export default function ProductCard({ product }: ProductCardProps) {
           %{discountRate}
         </div>
       )}
+
+      {/* Favori Butonu */}
+      <button
+        onClick={handleToggleFavorite}
+        className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all duration-200 flex items-center justify-center cursor-pointer"
+        aria-label={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+      >
+        <Heart
+          size={18}
+          className={isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}
+          fill={isFavorite ? "#ef4444" : "none"}
+        />
+      </button>
       
       {/* Görsel Alanı */}
       <div className="relative aspect-square w-full mb-4 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center">

@@ -163,6 +163,14 @@ export default function AdminPaneli() {
               </div>
             </div>
           ))}
+          {/* Kampanya Yönetim Butonu */}
+          <a href="/admin/kampanyalar" className="card" style={{ padding: "24px", textDecoration: "none", color: "inherit", background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", border: "2px solid #f59e0b", cursor: "pointer", display: "block" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", color: "#f59e0b" }}>
+              <span style={{ fontSize: "20px" }}>⚡</span>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#92400e" }}>Kampanyalar</span>
+            </div>
+            <div style={{ fontSize: "15px", fontWeight: 800, color: "#92400e" }}>Yönet →</div>
+          </a>
         </div>
 
         {/* Ürün yönetim tablosu */}

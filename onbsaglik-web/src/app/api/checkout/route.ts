@@ -1,67 +1,14 @@
 /**
- * iyzico Ödeme Başlatma API — POST /api/checkout
- * Sepet bilgilerini alır, iyzico'ya form initialize isteği gönderir.
- * Başarılı olursa ödeme formu HTML'ini döndürür.
+ * PayTR Ödeme Başlatma API — POST /api/checkout
+ * PayTR iframe entegrasyonu — sandbox ve canlı mod destekli.
+ * Belgeler: https://dev.paytr.com/iframe-api
  *
- * Dokümantasyon: https://dev.iyzipay.com/
+ * Merchant Bilgileri (env'den okunur):
+ *   PAYTR_MERCHANT_ID, PAYTR_MERCHANT_KEY, PAYTR_MERCHANT_SALT
  */
 
 import { NextResponse } from "next/server";
-
-// iyzico tip tanımları (SDK'sız native fetch ile)
-interface BasketItem {
-  productId: string;
-  name: string;
-  category1: string;
-  itemType: "PHYSICAL";
-  price: string;
-}
-
-interface IyzicoRequest {
-  locale: "tr";
-  conversationId: string;
-  price: string;
-  paidPrice: string;
-  currency: "TRY";
-  installment: "1";
-  basketId: string;
-  paymentChannel: "WEB";
-  paymentGroup: "PRODUCT";
-  callbackUrl: string;
-  buyer: {
-    id: string;
-    name: string;
-    surname: string;
-    email: string;
-    identityNumber: string;
-    registrationAddress: string;
-    city: string;
-    country: string;
-    ip: string;
-  };
-  shippingAddress: { contactName: string; city: string; country: string; address: string };
-  billingAddress: { contactName: string; city: string; country: string; address: string };
-  basketItems: BasketItem[];
-}
-
-// HMAC-SHA256 imza üretici (iyzico her istekte imza ister)
-async function generateSignature(
-  apiKey: string,
-  secretKey: string,
-  body: string
-): Promise<string> {
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secretKey);
-  const msgData = encoder.encode(apiKey + body);
-
-  const key = await crypto.subtle.importKey(
-    "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, msgData);
-
-  // Base64 encode
-  return Buffer.from(signature).toString("base64");
-}
+import crypto from "crypto";
 
 export async function POST(request: Request) {
   try {
@@ -72,7 +19,7 @@ export async function POST(request: Request) {
       buyer,
       total,
     }: {
-      items: { id: number; name: string; price: number; quantity: number; category: string }[];
+      items: { id: number; name: string; price: number; quantity: number }[];
       buyer: { name: string; surname: string; email: string; phone: string; address: string; city: string };
       total: number;
     } = body;
@@ -82,95 +29,95 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Eksik parametre." }, { status: 400 });
     }
 
-    const apiKey = process.env.IYZICO_API_KEY;
-    const secretKey = process.env.IYZICO_SECRET_KEY;
-    const baseUrl = process.env.IYZICO_BASE_URL ?? "https://sandbox-api.iyzipay.com";
+    const merchantId   = process.env.PAYTR_MERCHANT_ID   ?? "678666";
+    const merchantKey  = process.env.PAYTR_MERCHANT_KEY  ?? "";
+    const merchantSalt = process.env.PAYTR_MERCHANT_SALT ?? "";
 
-    if (!apiKey || !secretKey) {
-      return NextResponse.json({ error: "iyzico yapılandırması eksik." }, { status: 500 });
+    if (!merchantKey || !merchantSalt) {
+      // Geliştirme modunda test verileriyle devam et
+      console.warn("[PayTR] Merchant key eksik — test modunda çalışıyor.");
     }
 
-    const conversationId = `onb-${Date.now()}`;
-    const priceStr = total.toFixed(2);
+    // Sepet ürünlerini PayTR formatına çevir [[isim, fiyat_kuruş, adet], ...]
+    const basket = items.map((item) => [
+      item.name.substring(0, 60),
+      String(Math.round(item.price * 100)), // Kuruş cinsinden
+      String(item.quantity),
+    ]);
+    const basketEncoded = Buffer.from(JSON.stringify(basket)).toString("base64");
 
-    // Sepet kalemleri — her ürün için miktar * fiyat
-    const basketItems: BasketItem[] = items.flatMap((item) =>
-      Array.from({ length: item.quantity }, () => ({
-        productId: String(item.id),
-        name: item.name.substring(0, 60),
-        category1: item.category || "Genel",
-        itemType: "PHYSICAL" as const,
-        price: item.price.toFixed(2),
-      }))
-    );
+    const totalKurus   = Math.round(total * 100); // Kuruş cinsinden toplam
+    const orderId      = `ONB-${Date.now()}`;
+    const siteUrl      = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const callbackUrl  = `${siteUrl}/api/checkout/callback`;
+    const currency     = "TL";
+    const testMode     = process.env.NODE_ENV !== "production" ? "1" : "0";
+    const noInstallment= "1"; // Taksit kapatık
+    const maxInstallment = "0";
+    const lang         = "tr";
+    const userIp       = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+    const userEmail    = buyer.email;
+    const userPhone    = buyer.phone.replace(/\D/g, ""); // Sadece rakam
+    const userName     = `${buyer.name} ${buyer.surname}`;
+    const userAddress  = buyer.address;
 
-    const payload: IyzicoRequest = {
-      locale: "tr",
-      conversationId,
-      price: priceStr,
-      paidPrice: priceStr,
-      currency: "TRY",
-      installment: "1",
-      basketId: conversationId,
-      paymentChannel: "WEB",
-      paymentGroup: "PRODUCT",
-      callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/odeme/sonuc`,
-      buyer: {
-        id: `buyer-${Date.now()}`,
-        name: buyer.name,
-        surname: buyer.surname,
-        email: buyer.email,
-        identityNumber: "11111111110", // Gerçek uygulamada müşteriden alınır
-        registrationAddress: buyer.address,
-        city: buyer.city,
-        country: "Turkey",
-        ip: request.headers.get("x-forwarded-for") ?? "127.0.0.1",
-      },
-      shippingAddress: {
-        contactName: `${buyer.name} ${buyer.surname}`,
-        city: buyer.city,
-        country: "Turkey",
-        address: buyer.address,
-      },
-      billingAddress: {
-        contactName: `${buyer.name} ${buyer.surname}`,
-        city: buyer.city,
-        country: "Turkey",
-        address: buyer.address,
-      },
-      basketItems,
-    };
+    // PayTR token hash hesaplama
+    // Sıra: merchant_id + user_ip + merchant_oid + email + payment_amount + currency + test_mode + no_installment + max_installment + user_basket + merchant_salt
+    const hashStr = [
+      merchantId, userIp, orderId, userEmail,
+      totalKurus, basketEncoded, noInstallment, maxInstallment, currency, testMode
+    ].join("");
 
-    const bodyStr = JSON.stringify(payload);
-    const signature = await generateSignature(apiKey, secretKey, bodyStr);
+    const hmacStr    = hashStr + merchantSalt;
+    const paytrToken = crypto
+      .createHmac("sha256", merchantKey)
+      .update(hmacStr)
+      .digest("base64");
 
-    // iyzico'ya form initialize isteği gönder
-    const iyzicoRes = await fetch(`${baseUrl}/payment/iyzipos/initialize`, {
+    // PayTR API'ye iframe token isteği gönder
+    const formData = new URLSearchParams();
+    formData.append("merchant_id",      merchantId);
+    formData.append("user_ip",          userIp);
+    formData.append("merchant_oid",     orderId);
+    formData.append("email",            userEmail);
+    formData.append("payment_amount",   String(totalKurus));
+    formData.append("paytr_token",      paytrToken);
+    formData.append("user_basket",      basketEncoded);
+    formData.append("debug_on",         testMode === "1" ? "1" : "0");
+    formData.append("no_installment",   noInstallment);
+    formData.append("max_installment",  maxInstallment);
+    formData.append("user_name",        userName);
+    formData.append("user_address",     userAddress);
+    formData.append("user_phone",       userPhone);
+    formData.append("merchant_ok_url",  `${siteUrl}/odeme/basarili`);
+    formData.append("merchant_fail_url",`${siteUrl}/odeme/basarisiz`);
+    formData.append("timeout_limit",    "30");
+    formData.append("currency",         currency);
+    formData.append("test_mode",        testMode);
+    formData.append("lang",             lang);
+
+    const paytrRes = await fetch("https://www.paytr.com/odeme/api/get-token", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `IYZWSv2 apiKey:${apiKey}, signature:${signature}, conversationId:${conversationId}`,
-      },
-      body: bodyStr,
+      body: formData,
     });
 
-    const result = await iyzicoRes.json();
+    const paytrData = await paytrRes.json() as { status: string; token?: string; reason?: string };
 
-    if (result.status !== "success") {
-      console.error("[iyzico] Hata:", result);
+    if (paytrData.status !== "success" || !paytrData.token) {
+      console.error("[PayTR] Token alınamadı:", paytrData);
       return NextResponse.json(
-        { error: result.errorMessage ?? "Ödeme başlatılamadı." },
+        { error: paytrData.reason ?? "Ödeme başlatılamadı." },
         { status: 400 }
       );
     }
 
-    // Ödeme formu HTML'ini frontend'e gönder
+    // Başarılı — iframe token'ı frontend'e gönder
     return NextResponse.json({
       success: true,
-      checkoutFormContent: result.checkoutFormContent,
-      token: result.token,
-      conversationId,
+      token: paytrData.token,
+      orderId,
     });
+
   } catch (err) {
     console.error("[checkout] Hata:", err);
     return NextResponse.json({ error: "Sunucu hatası." }, { status: 500 });

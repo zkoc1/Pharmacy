@@ -1,317 +1,324 @@
 [
-  {
-    "id": 1,
-    "name": "AND",
-    "slug": "and"
-  },
-  {
-    "id": 2,
-    "name": "ARTİMED",
-    "slug": "artimed"
-  },
-  {
-    "id": 3,
-    "name": "Abfen Farma",
-    "slug": "abfen-farma"
-  },
-  {
-    "id": 4,
-    "name": "Argivit",
-    "slug": "argivit"
-  },
-  {
-    "id": 5,
-    "name": "Avene",
-    "slug": "avene"
-  },
-  {
-    "id": 6,
-    "name": "BOMEL",
-    "slug": "bomel"
-  },
-  {
-    "id": 7,
-    "name": "Bepanthol",
-    "slug": "bepanthol"
-  },
-  {
-    "id": 8,
-    "name": "Bestiron",
-    "slug": "bestiron"
-  },
-  {
-    "id": 9,
-    "name": "Biobaby",
-    "slug": "biobaby"
-  },
-  {
-    "id": 10,
-    "name": "Bioder",
-    "slug": "bioder"
-  },
-  {
-    "id": 11,
-    "name": "Bioliq",
-    "slug": "bioliq"
-  },
-  {
-    "id": 12,
-    "name": "Bioxcin",
-    "slug": "bioxcin"
-  },
-  {
-    "id": 13,
-    "name": "Bioxin",
-    "slug": "bioxin"
-  },
-  {
-    "id": 14,
-    "name": "Bioxinin",
-    "slug": "bioxinin"
-  },
-  {
-    "id": 15,
-    "name": "Bisolnatur",
-    "slug": "bisolnatur"
-  },
-  {
-    "id": 16,
-    "name": "Capicade",
-    "slug": "capicade"
-  },
-  {
-    "id": 17,
-    "name": "Cosakondrin",
-    "slug": "cosakondrin"
-  },
-  {
-    "id": 18,
-    "name": "DAY2DAY",
-    "slug": "day2day"
-  },
-  {
-    "id": 19,
-    "name": "DERMO",
-    "slug": "dermo"
-  },
-  {
-    "id": 20,
-    "name": "Demy",
-    "slug": "demy"
-  },
-  {
-    "id": 21,
-    "name": "Dermoskin",
-    "slug": "dermoskin"
-  },
-  {
-    "id": 22,
-    "name": "Detox",
-    "slug": "detox"
-  },
-  {
-    "id": 23,
-    "name": "Dr over",
-    "slug": "dr-over"
-  },
-  {
-    "id": 24,
-    "name": "EDALKILIÇ",
-    "slug": "edalkilic"
-  },
-  {
-    "id": 25,
-    "name": "Ec Mayra",
-    "slug": "ec-mayra"
-  },
-  {
-    "id": 26,
-    "name": "Eczacıbaşı",
-    "slug": "eczacibasi"
-  },
-  {
-    "id": 27,
-    "name": "Efervit",
-    "slug": "efervit"
-  },
-  {
-    "id": 28,
-    "name": "Farmaturk",
-    "slug": "farmaturk"
-  },
-  {
-    "id": 29,
-    "name": "LEDCOSS",
-    "slug": "ledcoss"
-  },
-  {
-    "id": 30,
-    "name": "MMinora",
-    "slug": "mminora"
-  },
-  {
-    "id": 31,
-    "name": "Magnimore",
-    "slug": "magnimore"
-  },
-  {
-    "id": 32,
-    "name": "NBT",
-    "slug": "nbt"
-  },
-  {
-    "id": 33,
-    "name": "NEEDWORD",
-    "slug": "needword"
-  },
-  {
-    "id": 34,
-    "name": "NOVAFACE",
-    "slug": "novaface"
-  },
-  {
-    "id": 35,
-    "name": "Natrol",
-    "slug": "natrol"
-  },
-  {
-    "id": 36,
-    "name": "Neu Pharma",
-    "slug": "neu-pharma"
-  },
-  {
-    "id": 37,
-    "name": "Newpek",
-    "slug": "newpek"
-  },
-  {
-    "id": 38,
-    "name": "Nutraxin",
-    "slug": "nutraxin"
-  },
-  {
-    "id": 39,
-    "name": "Ocean",
-    "slug": "ocean"
-  },
-  {
-    "id": 40,
-    "name": "Ocean Orzax",
-    "slug": "ocean-orzax"
-  },
-  {
-    "id": 41,
-    "name": "Orzax",
-    "slug": "orzax"
-  },
-  {
-    "id": 42,
-    "name": "Otacı",
-    "slug": "otaci"
-  },
-  {
-    "id": 43,
-    "name": "Phantome",
-    "slug": "phantome"
-  },
-  {
-    "id": 44,
-    "name": "Pharmaceris",
-    "slug": "pharmaceris"
-  },
-  {
-    "id": 45,
-    "name": "Pharmaton",
-    "slug": "pharmaton"
-  },
-  {
-    "id": 46,
-    "name": "Prp İlaç",
-    "slug": "prp-ilac"
-  },
-  {
-    "id": 47,
-    "name": "Redoxon",
-    "slug": "redoxon"
-  },
-  {
-    "id": 48,
-    "name": "Regenesis",
-    "slug": "regenesis"
-  },
-  {
-    "id": 49,
-    "name": "Roll",
-    "slug": "roll"
-  },
-  {
-    "id": 50,
-    "name": "STREPSİLS",
-    "slug": "strepsils"
-  },
-  {
-    "id": 51,
-    "name": "SanalAMCA Store",
-    "slug": "sanalamca-store"
-  },
-  {
-    "id": 52,
-    "name": "Sawprost",
-    "slug": "sawprost"
-  },
-  {
-    "id": 53,
-    "name": "Solante",
-    "slug": "solante"
-  },
-  {
-    "id": 54,
-    "name": "St Morritz",
-    "slug": "st-morritz"
-  },
-  {
-    "id": 55,
-    "name": "Talya",
-    "slug": "talya"
-  },
-  {
-    "id": 56,
-    "name": "VIVACHEK",
-    "slug": "vivachek"
-  },
-  {
-    "id": 57,
-    "name": "Vichy",
-    "slug": "vichy"
-  },
-  {
-    "id": 58,
-    "name": "ade physto",
-    "slug": "ade-physto"
-  },
-  {
-    "id": 59,
-    "name": "atesin online",
-    "slug": "atesin-online"
-  },
-  {
-    "id": 60,
-    "name": "pharmare",
-    "slug": "pharmare"
-  },
-  {
-    "id": 61,
-    "name": "shop",
-    "slug": "shop"
-  },
-  {
-    "id": 62,
-    "name": "sommeow",
-    "slug": "sommeow"
-  },
-  {
-    "id": 63,
-    "name": "valens design",
-    "slug": "valens-design"
-  }
+    {
+        "id":  1,
+        "name":  "AND",
+        "slug":  "and"
+    },
+    {
+        "id":  2,
+        "name":  "ARTÄ°MED",
+        "slug":  "artimed"
+    },
+    {
+        "id":  3,
+        "name":  "Abfen Farma",
+        "slug":  "abfen-farma"
+    },
+    {
+        "id":  4,
+        "name":  "Argivit",
+        "slug":  "argivit"
+    },
+    {
+        "id":  5,
+        "name":  "Avene",
+        "slug":  "avene"
+    },
+    {
+        "id":  6,
+        "name":  "BOMEL",
+        "slug":  "bomel"
+    },
+    {
+        "id":  7,
+        "name":  "Bepanthol",
+        "slug":  "bepanthol"
+    },
+    {
+        "id":  8,
+        "name":  "Bestiron",
+        "slug":  "bestiron"
+    },
+    {
+        "id":  9,
+        "name":  "Biobaby",
+        "slug":  "biobaby"
+    },
+    {
+        "id":  10,
+        "name":  "Bioder",
+        "slug":  "bioder"
+    },
+    {
+        "id":  11,
+        "name":  "Bioliq",
+        "slug":  "bioliq"
+    },
+    {
+        "id":  12,
+        "name":  "Bioxcin",
+        "slug":  "bioxcin"
+    },
+    {
+        "id":  13,
+        "name":  "Bioxin",
+        "slug":  "bioxin"
+    },
+    {
+        "id":  14,
+        "name":  "Bioxinin",
+        "slug":  "bioxinin"
+    },
+    {
+        "id":  15,
+        "name":  "Bisolnatur",
+        "slug":  "bisolnatur"
+    },
+    {
+        "id":  16,
+        "name":  "Capicade",
+        "slug":  "capicade"
+    },
+    {
+        "id":  17,
+        "name":  "Cosakondrin",
+        "slug":  "cosakondrin"
+    },
+    {
+        "id":  18,
+        "name":  "DAY2DAY",
+        "slug":  "day2day"
+    },
+    {
+        "id":  19,
+        "name":  "DERMO",
+        "slug":  "dermo"
+    },
+    {
+        "id":  20,
+        "name":  "Demy",
+        "slug":  "demy"
+    },
+    {
+        "id":  21,
+        "name":  "Dermoskin",
+        "slug":  "dermoskin"
+    },
+    {
+        "id":  22,
+        "name":  "Detox",
+        "slug":  "detox"
+    },
+    {
+        "id":  23,
+        "name":  "Dr over",
+        "slug":  "dr-over"
+    },
+    {
+        "id":  24,
+        "name":  "EDALKILIÃ‡",
+        "slug":  "edalkilic"
+    },
+    {
+        "id":  25,
+        "name":  "Ec Mayra",
+        "slug":  "ec-mayra"
+    },
+    {
+        "id":  26,
+        "name":  "EczacÄ±baÅŸÄ±",
+        "slug":  "eczacibasi"
+    },
+    {
+        "id":  27,
+        "name":  "Efervit",
+        "slug":  "efervit"
+    },
+    {
+        "id":  28,
+        "name":  "Farmaturk",
+        "slug":  "farmaturk"
+    },
+    {
+        "id":  29,
+        "name":  "LEDCOSS",
+        "slug":  "ledcoss"
+    },
+    {
+        "id":  30,
+        "name":  "MMinora",
+        "slug":  "mminora"
+    },
+    {
+        "id":  31,
+        "name":  "Magnimore",
+        "slug":  "magnimore"
+    },
+    {
+        "id":  32,
+        "name":  "NBT",
+        "slug":  "nbt"
+    },
+    {
+        "id":  33,
+        "name":  "NEEDWORD",
+        "slug":  "needword"
+    },
+    {
+        "id":  34,
+        "name":  "NOVAFACE",
+        "slug":  "novaface"
+    },
+    {
+        "id":  35,
+        "name":  "Natrol",
+        "slug":  "natrol"
+    },
+    {
+        "id":  36,
+        "name":  "Neu Pharma",
+        "slug":  "neu-pharma"
+    },
+    {
+        "id":  37,
+        "name":  "Newpek",
+        "slug":  "newpek"
+    },
+    {
+        "id":  38,
+        "name":  "Nutraxin",
+        "slug":  "nutraxin"
+    },
+    {
+        "id":  39,
+        "name":  "Ocean",
+        "slug":  "ocean"
+    },
+    {
+        "id":  40,
+        "name":  "Ocean Orzax",
+        "slug":  "ocean-orzax"
+    },
+    {
+        "id":  41,
+        "name":  "Orzax",
+        "slug":  "orzax"
+    },
+    {
+        "id":  42,
+        "name":  "OtacÄ±",
+        "slug":  "otaci"
+    },
+    {
+        "id":  43,
+        "name":  "Phantome",
+        "slug":  "phantome"
+    },
+    {
+        "id":  44,
+        "name":  "Pharmaceris",
+        "slug":  "pharmaceris"
+    },
+    {
+        "id":  45,
+        "name":  "Pharmaton",
+        "slug":  "pharmaton"
+    },
+    {
+        "id":  46,
+        "name":  "Prp Ä°laÃ§",
+        "slug":  "prp-ilac"
+    },
+    {
+        "id":  47,
+        "name":  "Redoxon",
+        "slug":  "redoxon"
+    },
+    {
+        "id":  48,
+        "name":  "Regenesis",
+        "slug":  "regenesis"
+    },
+    {
+        "id":  49,
+        "name":  "Roll",
+        "slug":  "roll"
+    },
+    {
+        "id":  50,
+        "name":  "STREPSÄ°LS",
+        "slug":  "strepsils"
+    },
+    {
+        "id":  51,
+        "name":  "SanalAMCA Store",
+        "slug":  "sanalamca-store"
+    },
+    {
+        "id":  52,
+        "name":  "Sawprost",
+        "slug":  "sawprost"
+    },
+    {
+        "id":  53,
+        "name":  "Solante",
+        "slug":  "solante"
+    },
+    {
+        "id":  54,
+        "name":  "St Morritz",
+        "slug":  "st-morritz"
+    },
+    {
+        "id":  55,
+        "name":  "Talya",
+        "slug":  "talya"
+    },
+    {
+        "id":  56,
+        "name":  "VIVACHEK",
+        "slug":  "vivachek"
+    },
+    {
+        "id":  57,
+        "name":  "Vichy",
+        "slug":  "vichy"
+    },
+    {
+        "id":  58,
+        "name":  "ade physto",
+        "slug":  "ade-physto"
+    },
+    {
+        "id":  59,
+        "name":  "atesin online",
+        "slug":  "atesin-online"
+    },
+    {
+        "id":  60,
+        "name":  "pharmare",
+        "slug":  "pharmare"
+    },
+    {
+        "id":  61,
+        "name":  "shop",
+        "slug":  "shop"
+    },
+    {
+        "id":  62,
+        "name":  "sommeow",
+        "slug":  "sommeow"
+    },
+    {
+        "id":  63,
+        "name":  "valens design",
+        "slug":  "valens-design"
+    },
+    {
+        "featured":  true,
+        "productCount":  11,
+        "name":  "La Roche Posay",
+        "id":  64,
+        "slug":  "la-roche-posay"
+    }
 ]
