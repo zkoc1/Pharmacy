@@ -26,13 +26,34 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             typeorm_1.TypeOrmModule.forRootAsync({
                 inject: [config_1.ConfigService],
-                useFactory: (cfg) => ({
-                    type: 'postgres',
-                    url: cfg.get('DATABASE_URL'),
-                    entities: [product_entity_1.Product, order_entity_1.Order, user_entity_1.User],
-                    synchronize: cfg.get('NODE_ENV') !== 'production',
-                    ssl: cfg.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
-                }),
+                useFactory: (cfg) => {
+                    const dbUrl = cfg.get('DATABASE_URL');
+                    const hasDb = dbUrl && !dbUrl.includes('[SUPABASE') && !dbUrl.includes('YOUR-');
+                    if (!hasDb) {
+                        console.warn('\n⚠️  DATABASE_URL tanımlı değil veya placeholder — DB bağlantısı atlandı.\n' +
+                            '   Supabase şifrenizi .env dosyasına ekleyin:\n' +
+                            '   DATABASE_URL=postgresql://postgres.ickjbiywqzvrxtcccmrw:ŞİFRENİZ@aws-0-eu-central-1.pooler.supabase.com:6543/postgres\n');
+                        return {
+                            type: 'postgres',
+                            url: 'postgresql://localhost:5432/dummy',
+                            entities: [product_entity_1.Product, order_entity_1.Order, user_entity_1.User],
+                            synchronize: false,
+                            retryAttempts: 0,
+                            retryDelay: 0,
+                            connectTimeoutMS: 100,
+                        };
+                    }
+                    return {
+                        type: 'postgres',
+                        url: dbUrl,
+                        entities: [product_entity_1.Product, order_entity_1.Order, user_entity_1.User],
+                        synchronize: cfg.get('NODE_ENV') !== 'production',
+                        ssl: { rejectUnauthorized: false },
+                        retryAttempts: 3,
+                        retryDelay: 3000,
+                        connectTimeoutMS: 10000,
+                    };
+                },
             }),
             products_module_1.ProductsModule,
             auth_module_1.AuthModule,
