@@ -19,6 +19,8 @@ export default function KayitPage() {
     e.preventDefault();
     setError('');
 
+    const cleanEmail = email.trim().toLowerCase();
+
     if (password !== passwordConfirm) {
       setError('Şifreler eşleşmiyor.');
       return;
@@ -34,14 +36,32 @@ export default function KayitPage() {
       return;
     }
 
+    // MÜKERRER E-POSTA KONTROLÜ
+    const registeredUsersRaw = localStorage.getItem('onbsaglik_registered_users');
+    let registeredUsers: { email: string; name: string }[] = [];
+    if (registeredUsersRaw) {
+      try {
+        registeredUsers = JSON.parse(registeredUsersRaw);
+      } catch {}
+    }
+
+    const isDuplicate = registeredUsers.some((u) => u.email === cleanEmail);
+    if (isDuplicate) {
+      setError('Bu e-posta adresi ile zaten kayıtlı bir hesap var. Lütfen Giriş Yapın.');
+      return;
+    }
+
     setLoading(true);
 
-    // Oturum aç ve rolünü Müşteri (customer) olarak kaydet
+    // Oturum aç ve e-postayı kayıtlı listeye ekle
+    registeredUsers.push({ email: cleanEmail, name: name.trim() });
+    localStorage.setItem('onbsaglik_registered_users', JSON.stringify(registeredUsers));
+    localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name, role: 'customer' }));
+
     const res = await signIn('credentials', {
       redirect: false,
-      email,
+      email: cleanEmail,
       password,
-      name,
     });
 
     setLoading(false);
@@ -49,8 +69,6 @@ export default function KayitPage() {
     if (res?.error) {
       setError('Kayıt oluşturulamadı. Lütfen tekrar deneyin.');
     } else {
-      // Müşteri oturumunu kaydet
-      localStorage.setItem('user_session', JSON.stringify({ email, name, role: 'customer' }));
       router.push('/hesabim');
       router.refresh();
     }
@@ -157,7 +175,7 @@ export default function KayitPage() {
             </div>
 
             {error && (
-              <div className="text-red-600 text-xs bg-red-50 p-2 rounded border border-red-200">
+              <div className="text-red-600 text-xs bg-red-50 p-2.5 rounded border border-red-200 font-semibold">
                 ⚠️ {error}
               </div>
             )}

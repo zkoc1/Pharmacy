@@ -231,29 +231,27 @@ export default function KampanyalarSayfasi() {
                 </>
               )}
 
-              {/* Bitiş tarihi (flash) */}
+              {/* Kampanyalı Özel Fiyat — Tüm Kampanya Tipleri İçin Zorunlu */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 700, display: "block", marginBottom: "5px", color: "var(--color-text-muted)" }}>
+                  Kampanyalı / İndirimli Fiyat (TL) * {selectedProduct && <span style={{ color: "#10b981" }}>(Normal: {formatPrice(selectedProduct.price)})</span>}
+                </label>
+                <input
+                  type="number" step="0.01" required value={form.discountedPrice}
+                  onChange={(e) => setForm((f) => ({ ...f, discountedPrice: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", border: "2px solid #10b981", borderRadius: "var(--radius-md)", fontSize: "14px", fontWeight: 700 }}
+                  placeholder="Örn: 299.90"
+                />
+              </div>
+
+              {/* Bitiş tarihi (Flash Kampanya için) */}
               {form.type === "flash" && (
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, display: "block", marginBottom: "5px", color: "var(--color-text-muted)" }}>Bitiş Tarihi</label>
+                  <label style={{ fontSize: "12px", fontWeight: 700, display: "block", marginBottom: "5px", color: "var(--color-text-muted)" }}>Flash Bitiş Tarihi *</label>
                   <input
-                    type="datetime-local" value={form.endsAt}
+                    type="datetime-local" required value={form.endsAt}
                     onChange={(e) => setForm((f) => ({ ...f, endsAt: e.target.value }))}
-                    style={{ width: "100%", padding: "10px 14px", border: "2px solid var(--color-border)", borderRadius: "var(--radius-md)", fontSize: "14px" }}
-                  />
-                </div>
-              )}
-
-              {/* İndirimli fiyat */}
-              {form.type === "discount" && (
-                <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, display: "block", marginBottom: "5px", color: "var(--color-text-muted)" }}>
-                    İndirimli Fiyat (TL) {selectedProduct && <span style={{ color: "#10b981" }}>Mevcut: {formatPrice(selectedProduct.price)}</span>}
-                  </label>
-                  <input
-                    type="number" step="0.01" value={form.discountedPrice}
-                    onChange={(e) => setForm((f) => ({ ...f, discountedPrice: e.target.value }))}
-                    style={{ width: "100%", padding: "10px 14px", border: "2px solid var(--color-border)", borderRadius: "var(--radius-md)", fontSize: "14px" }}
-                    placeholder="299.99"
+                    style={{ width: "100%", padding: "10px 14px", border: "2px solid #ef4444", borderRadius: "var(--radius-md)", fontSize: "14px" }}
                   />
                 </div>
               )}

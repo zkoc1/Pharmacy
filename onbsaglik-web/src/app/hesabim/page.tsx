@@ -1,33 +1,27 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, Package, Heart, ShoppingBag, LogOut, ShieldCheck, MapPin } from 'lucide-react';
+import { User, Package, Heart, ShoppingBag, LogOut, MapPin, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { useAddressStore, Address } from '@/stores/addressStore';
 
 export default function HesabimPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  useEffect(() => {
-    // Giriş yapılmamışsa giriş sayfasına yönlendir
-    if (status === 'unauthenticated') {
-      router.push('/hesabim/giris');
-    }
-
-    // Admin oturum kontrolü
-    const adminSession = localStorage.getItem('admin_session');
-    if (adminSession) {
-      try {
-        const parsed = JSON.parse(adminSession);
-        if (parsed.role === 'super_admin' || parsed.role === 'admin') {
-          setIsAdminLoggedIn(true);
-        }
-      } catch {}
-    }
-  }, [status, router]);
+  // Adres Yönetimi Store
+  const { addresses, addAddress, removeAddress } = useAddressStore();
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [newAddr, setNewAddr] = useState({
+    title: '',
+    fullName: '',
+    phone: '',
+    city: '',
+    district: '',
+    fullAddress: '',
+  });
 
   if (status === 'loading') {
     return (
@@ -38,8 +32,27 @@ export default function HesabimPage() {
   }
 
   if (!session) {
+    if (typeof window !== 'undefined') router.push('/hesabim/giris');
     return null;
   }
+
+  const handleAddAddressSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAddr.title || !newAddr.fullName || !newAddr.fullAddress) return;
+
+    addAddress({
+      title: newAddr.title,
+      fullName: newAddr.fullName,
+      phone: newAddr.phone,
+      city: newAddr.city,
+      district: newAddr.district,
+      fullAddress: newAddr.fullAddress,
+      isDefault: addresses.length === 0,
+    });
+
+    setNewAddr({ title: '', fullName: '', phone: '', city: '', district: '', fullAddress: '' });
+    setShowAddressForm(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -102,17 +115,126 @@ export default function HesabimPage() {
             </div>
           </Link>
 
-          <div
-            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 opacity-75"
+          <a
+            href="#adresler"
+            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4 group"
           >
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <MapPin size={24} />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800">Adres Bilgileri</h3>
-              <p className="text-xs text-gray-500">Sipariş teslimat adresleri</p>
+              <h3 className="font-semibold text-gray-800">Adres Bilgilerim</h3>
+              <p className="text-xs text-gray-500">Kayıtlı teslimat adresleriniz</p>
             </div>
+          </a>
+        </div>
+
+        {/* AKTİF ADRES BİLGİLERİ BÖLÜMÜ */}
+        <div id="adresler" className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <MapPin size={20} className="text-blue-600" />
+              <h2 className="text-lg font-bold text-gray-900">Kayıtlı Teslimat Adreslerim ({addresses.length})</h2>
+            </div>
+            <button
+              onClick={() => setShowAddressForm(!showAddressForm)}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={16} /> Yeni Adres Ekle
+            </button>
           </div>
+
+          {/* Adres Ekleme Formu */}
+          {showAddressForm && (
+            <form onSubmit={handleAddAddressSubmit} className="bg-blue-50/50 border border-blue-200 p-5 rounded-xl mb-6">
+              <h3 className="font-bold text-sm text-blue-900 mb-4">Yeni Teslimat Adresi Tanımla</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Adres Başlığı *</label>
+                  <input
+                    type="text" required value={newAddr.title} onChange={(e) => setNewAddr({ ...newAddr, title: e.target.value })}
+                    placeholder="Evim, İş Yeri, Yazlık vb."
+                    className="w-full p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Teslim Alacak Ad Soyad *</label>
+                  <input
+                    type="text" required value={newAddr.fullName} onChange={(e) => setNewAddr({ ...newAddr, fullName: e.target.value })}
+                    placeholder="Ahmet Yılmaz"
+                    className="w-full p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Telefon *</label>
+                  <input
+                    type="text" required value={newAddr.phone} onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
+                    placeholder="05XXXXXXXXX"
+                    className="w-full p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Şehir / İlçe *</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text" required value={newAddr.city} onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
+                      placeholder="İstanbul"
+                      className="w-1/2 p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                    />
+                    <input
+                      type="text" required value={newAddr.district} onChange={(e) => setNewAddr({ ...newAddr, district: e.target.value })}
+                      placeholder="Kadıköy"
+                      className="w-1/2 p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Açık Adres (Mahalle, Cadde, Bina/Daire No) *</label>
+                  <textarea
+                    required rows={2} value={newAddr.fullAddress} onChange={(e) => setNewAddr({ ...newAddr, fullAddress: e.target.value })}
+                    placeholder="Caferağa Mah. Moda Cad. No:12 D:4"
+                    className="w-full p-2.5 border rounded-lg text-xs bg-white focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold">Kaydet</button>
+                <button type="button" onClick={() => setShowAddressForm(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold">İptal</button>
+              </div>
+            </form>
+          )}
+
+          {/* Adres Listesi */}
+          {addresses.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-xs">Kayıtlı adresiniz bulunmuyor.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {addresses.map((addr) => (
+                <div key={addr.id} className="p-4 rounded-xl border border-gray-200 bg-gray-50 flex justify-between items-start relative">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-sm text-gray-900">{addr.title}</span>
+                      {addr.isDefault && (
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold flex items-center gap-1">
+                          <CheckCircle2 size={10} /> Varsayılan
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-gray-700">{addr.fullName} · {addr.phone}</p>
+                    <p className="text-xs text-gray-500 mt-1">{addr.fullAddress}</p>
+                    <p className="text-xs text-gray-400 font-medium">{addr.district} / {addr.city}</p>
+                  </div>
+                  <button
+                    onClick={() => removeAddress(addr.id)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Adresi Sil"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Sipariş Geçmişi */}
@@ -130,22 +252,6 @@ export default function HesabimPage() {
             </Link>
           </div>
         </div>
-
-        {/* Sadece Admin Yetkisine Sahip Kullanıcılar İçin Geçiş Alanı */}
-        {isAdminLoggedIn && (
-          <div className="p-4 bg-emerald-900 text-white rounded-2xl flex justify-between items-center shadow-lg">
-            <div className="flex items-center gap-3">
-              <ShieldCheck size={24} className="text-amber-400" />
-              <div>
-                <p className="font-bold text-sm">Yönetici Oturumu Açık</p>
-                <p className="text-xs text-emerald-200">Super Admin yetkileriyle sisteme bağlısınız.</p>
-              </div>
-            </div>
-            <Link href="/admin" className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold rounded-xl text-xs transition-colors">
-              Admin Paneline Geç &rarr;
-            </Link>
-          </div>
-        )}
 
       </div>
     </div>
