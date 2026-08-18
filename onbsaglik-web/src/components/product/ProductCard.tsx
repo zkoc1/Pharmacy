@@ -3,18 +3,21 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Package, ShoppingCart, Check, Sparkles } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Heart, ShoppingCart, Check, Sparkles } from 'lucide-react';
 import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
 import { useFavoritesStore } from '@/stores/favoritesStore';
 import AddToCartModal from '@/components/ui/AddToCartModal';
+import LoginModal from '@/components/ui/LoginModal';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { data: session } = useSession();
   const addItem = useCartStore((state) => state.addItem);
   const isFavorite = useFavoritesStore((state) => state.items.some((i) => i.id === product.id));
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
@@ -22,15 +25,27 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [imgError, setImgError] = useState(false);
   const [added, setAdded] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const isOutOfStock = product.stock === 0;
 
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
   const imageUrl = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : '/placeholder.png';
 
+  const checkIsLoggedIn = () => {
+    return !!session || !!localStorage.getItem("user_session");
+  };
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Kullanıcı giriş yapmadıysa Görsel 1 birebir Üye Girişi Modalı açılır
+    if (!checkIsLoggedIn()) {
+      setShowLoginModal(true);
+      return;
+    }
+
     if (isOutOfStock) return;
     addItem(product, 1);
     setAdded(true);
@@ -41,6 +56,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Kullanıcı giriş yapmadıysa Görsel 1 birebir Üye Girişi Modalı açılır
+    if (!checkIsLoggedIn()) {
+      setShowLoginModal(true);
+      return;
+    }
+
     toggleFavorite(product);
   };
 
@@ -144,6 +166,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         product={product}
         isOpen={showModal}
         onClose={() => setShowModal(false)}
+      />
+
+      {/* Giriş Yapılmamışsa Açılan Üye Girişi Modalı (Görsel 1 Birebir) */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </>
   );
