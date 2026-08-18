@@ -7,11 +7,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw, Shield } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 
 export default function AdminPaneli() {
+
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +22,9 @@ export default function AdminPaneli() {
   const [saveMsg, setSaveMsg] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "draft">("all");
 
-  // Oturum ve Rol kontrolü — yetkisiz yetkileri yönlendir
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // Oturum ve Rol kontrolü — yetkisiz kullanıcıları tamamen engelle
   useEffect(() => {
     const rawSession = localStorage.getItem("admin_session");
     if (!rawSession) {
@@ -30,7 +33,9 @@ export default function AdminPaneli() {
     }
     try {
       const parsed = JSON.parse(rawSession);
-      if (parsed.role !== "super_admin" && parsed.role !== "admin") {
+      if (parsed.role === "super_admin" || parsed.role === "admin") {
+        setIsAuthorized(true);
+      } else {
         localStorage.removeItem("admin_session");
         router.replace("/admin/giris");
         return;
@@ -94,6 +99,23 @@ export default function AdminPaneli() {
 
   const activeCount = products.filter((p) => p.status === "active").length;
   const draftCount = products.filter((p) => p.status === "draft").length;
+
+  if (!isAuthorized) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0f172a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px", color: "white", textAlign: "center" }}>
+        <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(239, 68, 68, 0.2)", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
+          <Shield size={36} />
+        </div>
+        <h1 style={{ fontSize: "24px", fontWeight: 800, marginBottom: "8px" }}>Erişim Kilitli (Yetkisiz Erişim)</h1>
+        <p style={{ fontSize: "14px", color: "#94a3b8", maxWidth: "420px", marginBottom: "24px" }}>
+          Yönetici paneline erişebilmek için geçerli bir Admin/SuperAdmin hesabıyla oturum açmalısınız.
+        </p>
+        <a href="/admin/giris" className="btn-primary" style={{ padding: "12px 24px", textDecoration: "none" }}>
+          Yönetici Girişi Yap
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -22,6 +22,7 @@ import CartDrawer from "@/components/ui/CartDrawer";
 
 // Kategori navigasyonu — URL slug'ları kategoriler JSON ile eşleşiyor
 const NAV_CATEGORIES = [
+  { name: "⚡ KAMPANYALAR", href: "/kampanyalar", highlight: true },
   { name: "Vitamin & Takviye", href: "/kategori/vitamin-ve-takviye" },
   { name: "Güneş Bakımı", href: "/kategori/gunes-bakimi" },
   { name: "Saç Bakımı", href: "/kategori/sac-bakimi" },
@@ -474,22 +475,28 @@ export default function Header() {
                 key={cat.href}
                 href={cat.href}
                 style={{
-                  padding: "10px 14px",
+                  padding: cat.highlight ? "6px 14px" : "10px 14px",
                   fontSize: "13px",
-                  fontWeight: 600,
-                  color: "var(--color-text-muted)",
+                  fontWeight: cat.highlight ? 800 : 600,
+                  color: cat.highlight ? "#dc2626" : "var(--color-text-muted)",
+                  background: cat.highlight ? "#fef2f2" : "transparent",
+                  borderRadius: cat.highlight ? "999px" : "0",
                   textDecoration: "none",
-                  borderBottom: "2px solid transparent",
+                  borderBottom: cat.highlight ? "none" : "2px solid transparent",
                   whiteSpace: "nowrap",
                   transition: "var(--transition)",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-primary)";
-                  (e.currentTarget as HTMLElement).style.borderBottomColor = "var(--color-primary)";
+                  if (!cat.highlight) {
+                    (e.currentTarget as HTMLElement).style.color = "var(--color-primary)";
+                    (e.currentTarget as HTMLElement).style.borderBottomColor = "var(--color-primary)";
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = "var(--color-text-muted)";
-                  (e.currentTarget as HTMLElement).style.borderBottomColor = "transparent";
+                  if (!cat.highlight) {
+                    (e.currentTarget as HTMLElement).style.color = "var(--color-text-muted)";
+                    (e.currentTarget as HTMLElement).style.borderBottomColor = "transparent";
+                  }
                 }}
               >
                 {cat.name}

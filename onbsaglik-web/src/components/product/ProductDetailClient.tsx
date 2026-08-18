@@ -1,16 +1,17 @@
 /**
  * Ürün detay istemci bileşeni.
- * Galeri, sepete ekle ve miktar seçimi gibi etkileşimli işlemleri yönetir.
+ * Galeri, sepete ekle, miktar seçimi ve Dermoeczanem tarzı Combo Teklif kutusunu yönetir.
  */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package } from "lucide-react";
+import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package, Gift, Zap, Check } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 import { useCartStore } from "@/stores/cartStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 
 interface Props {
   product: Product;
@@ -26,10 +27,19 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const [isFavorite, setIsFavorite] = useState(false);
   // Sepete ekleme geri bildirimi
   const [addedToCart, setAddedToCart] = useState(false);
+  const [comboAdded, setComboAdded] = useState(false);
   // Görsel yüklenme hataları için state
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
   const { addItem } = useCartStore();
+  const { getProductCampaign } = useCampaignStore();
+
+  const activeCampaign = getProductCampaign(product.id);
+
+  useEffect(() => {
+    import("@/data/products.json").then((m) => setAllProducts(m.default as Product[]));
+  }, []);
 
   // Miktarı artır (stok sınırını aşma)
   const increaseQty = () => setQuantity((q) => Math.min(q + 1, product.stock || 99));
@@ -41,11 +51,28 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const handleAddToCart = () => {
     addItem(product, quantity);
     setAddedToCart(true);
-    // 2 saniye sonra butonu normale döndür
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  // Combo teklifi birlikte sepete ekle
+  const handleAddComboToCart = () => {
+    if (!activeCampaign) return;
+    addItem(product, 1);
+
+    const comboProd = allProducts.find((p) => p.id === activeCampaign.comboProductId);
+    if (comboProd) {
+      const discountedCombo = {
+        ...comboProd,
+        price: activeCampaign.comboPrice ? activeCampaign.comboPrice : comboProd.price,
+      };
+      addItem(discountedCombo, 1);
+    }
+    setComboAdded(true);
+    setTimeout(() => setComboAdded(false), 2000);
+  };
+
   const images = product.images && product.images.length > 0 ? product.images : ["/placeholder.png"];
+  const comboProduct = activeCampaign?.comboProductId ? allProducts.find((p) => p.id === activeCampaign.comboProductId) : null;
 
   return (
     <div className="grid gap-8" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -61,8 +88,15 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
             justifyContent: "center",
             minHeight: "400px",
             marginBottom: "12px",
+            position: "relative",
           }}
         >
+          {activeCampaign && (
+            <div style={{ position: "absolute", top: "12px", left: "12px", zIndex: 10, background: "#f59e0b", color: "white", padding: "4px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px" }}>
+              <Zap size={14} fill="white" /> {activeCampaign.bannerTitle || "Fırsat Kampanyası"}
+            </div>
+          )}
+
           {imgErrors[selectedImage] ? (
             <div className="flex flex-col items-center justify-center text-emerald-600/40 p-8 text-center">
               <Package size={80} className="mb-2" />
@@ -180,6 +214,46 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
         <p style={{ fontSize: "12px", color: "var(--color-text-muted)", marginTop: "-12px" }}>
           KDV dahil fiyattır (%{product.vatRate})
         </p>
+
+        {/* DERMOECZANEM TARZI CANLI COMBO KAMPANYA KUTUSU */}
+        {activeCampaign && activeCampaign.type === "combo" && comboProduct && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-2 text-amber-900 font-extrabold text-sm">
+              <Gift className="text-amber-600" size={18} />
+              {activeCampaign.comboDescription || "Birlikte Al / Combo Fırsatı!"}
+            </div>
+
+            <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-amber-200 mt-2">
+              <div className="relative w-16 h-16 flex-shrink-0 bg-gray-50 rounded-lg p-1 border">
+                <Image
+                  src={comboProduct.images?.[0] || "/placeholder.png"}
+                  alt={comboProduct.name}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
+              <div className="flex-grow min-w-0">
+                <span className="text-[10px] font-bold text-amber-700 uppercase">2. Ürün Fırsatı</span>
+                <p className="text-xs font-bold text-gray-800 truncate">{comboProduct.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-gray-400 line-through">{formatPrice(comboProduct.price)}</span>
+                  <span className="text-sm font-extrabold text-red-600">
+                    {activeCampaign.comboPrice ? formatPrice(activeCampaign.comboPrice) : formatPrice(comboProduct.price)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleAddComboToCart}
+              className="w-full mt-3 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors"
+            >
+              {comboAdded ? <Check size={16} /> : <ShoppingCart size={16} />}
+              {comboAdded ? "İki Ürün Sepete Eklendi! ✓" : "İki Ürünü Birlikte Sepete Ekle & Fırsatı Yakala"}
+            </button>
+          </div>
+        )}
 
         {/* Stok durumu */}
         <div
