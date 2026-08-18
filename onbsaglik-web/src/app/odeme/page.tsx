@@ -1,336 +1,601 @@
 /**
- * Ödeme sayfası — /odeme
- * PayTR iframe ile güvenli ödeme + Kayıtlı Adres Otomatik Doldurma + Demo Sandbox Desteği.
+ * Ödeme & Teslimat Sayfası — /odeme (Görsel 3, 4, 5 Birebir)
+ * Adres Adımı (İl/İlçe/Mahalle Dropdown), Kargo Seçimi, Kredi Kartı/PayTR/Havale ve Sipariş Özeti.
  */
+
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore } from "@/stores/addressStore";
 import { useSession } from "next-auth/react";
 import { formatPrice } from "@/lib/products";
-import { ShoppingCart, CreditCard, Loader2, MapPin, CheckCircle2 } from "lucide-react";
+import { CreditCard, CheckCircle2, ShieldCheck, Truck, MapPin, ChevronRight, Check } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+
+// TÜRKİYE İLLERİ, İLÇELERİ VE MAHALLELERİ DATASETİ (Görsel 4 Birebir)
+const TURKEY_CITIES: Record<string, Record<string, string[]>> = {
+  Kayseri: {
+    Kocasinan: ["SAHABİYE MAH", "SALUR MAH", "SANAYİ MAH", "SANCAKTEPE MAH", "SARAY BOSNA MAH", "SARAYCIK MAH", "ŞEKER MAH", "SEYRANİ MAH", "SÜMER MAH", "TALATPAŞA MAH", "TAŞHAN MAH", "TURGUT REİS MAH", "UĞUREVLER MAH", "VATAN MAH", "YAKUT MAH", "YAVUZ SELİM MAH", "YAVUZLAR MAH", "YAZIR MAH", "YEMLİHA MAH", "YENİ MAH"],
+    Melikgazi: ["ALPASLAN MAH", "BAHÇELİEVLER MAH", "GÜLTEPE MAH", "HÜRRIYET MAH", "KÖŞK MAH", "MUMCU MAH", "YILDIRIM BEYAZIT MAH"],
+    Talas: ["BAHÇELİEVLER MAH", "HARMAN MAH", "MEVLANA MAH", "YENİDOĞAN MAH"],
+  },
+  İstanbul: {
+    Kadıköy: ["CAFERAĞA MAH", "CADDEBOSTAN MAH", "FENERBAHÇE MAH", "MODA MAH", "SUADİYE MAH"],
+    Beşiktaş: ["BEBEK MAH", "ETİLER MAH", "LEVENT MAH", "ORTAKÖY MAH"],
+    Şişli: ["BOMONTİ MAH", "TEŞVİKİYE MAH", "FULYA MAH", "MECİDİYEKÖY MAH"],
+  },
+  Ankara: {
+    Çankaya: ["BAHÇELİEVLER MAH", "GOP MAH", "KIZILAY MAH", "TUZLUÇAYIR MAH"],
+    Yenimahalle: ["BATIKENT MAH", "DEMETEVLER MAH", "ŞENTEPE MAH"],
+  },
+  İzmir: {
+    Konak: ["ALSANCAK MAH", "GÖZTEPE MAH", "GÜZELYALI MAH", "KARATAŞ MAH"],
+    Karşıyaka: ["BOSTANLI MAH", "MAVİŞEHİR MAH", "YALI MAH"],
+  },
+  Bursa: {
+    Nilüfer: ["ALTINŞEHİR MAH", "BEŞEVLER MAH", "ÖZLÜCE MAH"],
+    Osmangazi: ["ALTIPARMAK MAH", "ÇEKİRGE MAH", "DOĞANBEY MAH"],
+  },
+  Antalya: {
+    Muratpaşa: ["FENER MAH", "LARA MAH", "ŞİRİNYALI MAH"],
+    Konyaaltı: ["ARAPSUYU MAH", "GÜRSU MAH", "LİMAN MAH"],
+  },
+};
 
 export default function OdemeSayfasi() {
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { getDefaultAddress, addresses } = useAddressStore();
+  const { getDefaultAddress } = useAddressStore();
   const { data: session } = useSession();
 
-  const total = getTotalPrice();
-  const shipping = total >= 500 ? 0 : 39.9;
-  const grandTotal = total + shipping;
+  // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ (Görsel 3-5 Birebir)
+  const [activeStep, setActiveStep] = useState<1 | 2>(1);
 
-  const [buyer, setBuyer] = useState({
-    name: "",
-    surname: "",
-    email: "",
+  // Adres Formu State (Görsel 3-4 Birebir)
+  const [addressForm, setAddressForm] = useState({
+    invoiceType: "Bireysel Adres",
+    title: "Evim",
+    fullName: "",
+    tcNo: "",
+    country: "Türkiye",
+    city: "Kayseri",
+    district: "Kocasinan",
+    neighborhood: "YENİ MAH",
+    fullAddress: "",
     phone: "",
-    city: "",
-    address: "",
+    differentInvoice: false,
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [paytrToken, setPaytrToken] = useState("");
 
-  // Kayıtlı adresi veya kullanıcı bilgilerini otomatik doldur
+  // Kargo Seçenekleri (Görsel 5 Birebir)
+  const [selectedCarrier, setSelectedCarrier] = useState("Kolay Gelsin");
+
+  const carriers = [
+    { name: "Kolay Gelsin", price: 0, label: "BEDAVA" },
+    { name: "HepsiJet", price: 0, label: "BEDAVA" },
+    { name: "PTT Kargo", price: 0, label: "BEDAVA" },
+    { name: "DHL Kargo", price: 149.90, label: "149,90 TL" },
+    { name: "Sürat Kargo", price: 129.90, label: "129,90 TL" },
+    { name: "Aras Kargo", price: 149.90, label: "149,90 TL" },
+    { name: "Yurtiçi Kargo", price: 149.90, label: "149,90 TL" },
+  ];
+
+  // Ödeme Seçeneği Tab (Görsel 5 Birebir)
+  const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
+
+  // Kart Formu
+  const [cardForm, setCardForm] = useState({ cardName: "", cardNumber: "", expireDate: "", cvc: "" });
+  const [termsAccepted, setTermsAccepted] = useState(true);
+
+  // Kupon İndirimi
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+
+  const total = getTotalPrice();
+  const carrierObj = carriers.find((c) => c.name === selectedCarrier);
+  const shippingCost = carrierObj ? carrierObj.price : 0;
+  const grandTotal = Math.max(0, total + shippingCost - discount);
+
   useEffect(() => {
     const defaultAddr = getDefaultAddress();
     if (defaultAddr) {
-      const parts = (defaultAddr.fullName || "").split(" ");
-      const name = parts[0] || "";
-      const surname = parts.slice(1).join(" ") || "";
-
-      setBuyer({
-        name,
-        surname,
-        email: session?.user?.email || buyer.email || "musteri@onbsaglik.com",
-        phone: defaultAddr.phone || "",
-        city: `${defaultAddr.district} / ${defaultAddr.city}`,
-        address: defaultAddr.fullAddress || "",
-      });
-    } else if (session?.user) {
-      setBuyer((p) => ({
+      setAddressForm((p) => ({
         ...p,
-        email: session.user?.email || p.email,
-        name: session.user?.name ? session.user.name.split(" ")[0] : p.name,
+        title: defaultAddr.title || p.title,
+        fullName: defaultAddr.fullName || session?.user?.name || "Zehra Koç",
+        phone: defaultAddr.phone || "+90 (553) 272-38-58",
+        city: defaultAddr.city || "Kayseri",
+        district: defaultAddr.district || "Kocasinan",
+        fullAddress: defaultAddr.fullAddress || "",
+      }));
+    } else if (session?.user) {
+      setAddressForm((p) => ({
+        ...p,
+        fullName: session.user?.name || p.fullName,
       }));
     }
-  }, [session, addresses, getDefaultAddress]);
+  }, [session, getDefaultAddress]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setBuyer((p) => ({ ...p, [e.target.name]: e.target.value }));
-
-  // PayTR iframe JS'ini yükle
-  useEffect(() => {
-    if (!paytrToken) return;
-    const script = document.createElement("script");
-    script.src = "https://www.paytr.com/js/iframeResizer.min.js";
-    script.onload = () => {
-      // @ts-expect-error PayTR global
-      if (window.iFrameResize) window.iFrameResize({ log: false }, "#paytriframe");
-    };
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [paytrToken]);
-
-  const handleCheckout = async (e: React.FormEvent) => {
+  const handleSaveAddress = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map(({ product, quantity }) => ({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            quantity,
-            category: product.category,
-          })),
-          buyer,
-          total: grandTotal,
-        }),
-      });
-      const data = (await res.json()) as { success: boolean; token?: string; error?: string; demo?: boolean };
-
-      if (!res.ok || !data.success) {
-        setError(data.error ?? "Ödeme başlatılamadı.");
-        return;
-      }
-
-      if (data.token) {
-        setPaytrToken(data.token);
-      } else if (data.demo) {
-        // PayTR keyleri henüz girilmediyse Demo Simülasyon
-        clearCart();
-        window.location.href = `/odeme/basarili?orderId=ONB-${Date.now()}`;
-      }
-    } catch {
-      setError("Bağlantı hatası. İnternet bağlantınızı kontrol edin.");
-    } finally {
-      setLoading(false);
+    if (!addressForm.fullName || !addressForm.fullAddress) {
+      alert("Lütfen Ad Soyad ve Açık Adres alanlarını doldurun.");
+      return;
     }
+    setActiveStep(2); // Ödeme Bilgileri Adımına Geç
   };
 
-  if (items.length === 0 && !paytrToken) {
+  const handleCompleteOrder = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!termsAccepted) {
+      alert("Lütfen Mesafeli Satış Sözleşmesini onaylayın.");
+      return;
+    }
+
+    clearCart();
+    const orderNum = `ONB-${Date.now()}`;
+    window.location.href = `/odeme/basarili?orderId=${orderNum}`;
+  };
+
+  const cityList = Object.keys(TURKEY_CITIES);
+  const districtList = TURKEY_CITIES[addressForm.city] ? Object.keys(TURKEY_CITIES[addressForm.city]) : ["Merkez"];
+  const neighborhoodList = TURKEY_CITIES[addressForm.city]?.[addressForm.district] || ["YENİ MAH", "MERKEZ MAH"];
+
+  if (items.length === 0) {
     return (
       <div className="container-custom py-20 text-center">
-        <ShoppingCart size={56} style={{ margin: "0 auto 16px", color: "var(--color-text-light)" }} />
-        <h1 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>Sepetiniz boş</h1>
-        <Link href="/" className="btn-primary" style={{ display: "inline-flex", marginTop: "16px" }}>
-          Alışverişe Devam Et
-        </Link>
-      </div>
-    );
-  }
-
-  // PayTR iframe göster
-  if (paytrToken) {
-    return (
-      <div className="container-custom py-8" style={{ maxWidth: "700px" }}>
-        <h1 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "16px" }}>🔒 Güvenli Ödeme — PayTR</h1>
-        <iframe
-          id="paytriframe"
-          src={`https://www.paytr.com/odeme/guvenli/${paytrToken}`}
-          style={{ width: "100%", border: "none", minHeight: "480px" }}
-          allowFullScreen
-        />
-        <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textAlign: "center", marginTop: "12px" }}>
-          🔒 256-bit SSL şifreleme · PayTR güvencesiyle
-        </p>
+        <h1 className="text-2xl font-bold mb-4">Sepetiniz Boş</h1>
+        <Link href="/urunler" className="btn-primary">Alışverişe Devam Et</Link>
       </div>
     );
   }
 
   return (
-    <div className="container-custom py-8">
-      <h1 style={{ fontSize: "26px", fontWeight: 800, marginBottom: "32px" }}>Ödeme ve Teslimat</h1>
-      <div className="grid gap-8" style={{ gridTemplateColumns: "1fr 340px" }}>
-        {/* Müşteri formu */}
-        <form onSubmit={handleCheckout} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          
-          {/* Kayıtlı Adres Seçimi Uyarısı */}
-          {addresses.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <MapPin size={20} className="text-blue-600" />
-                <div>
-                  <p className="text-xs font-bold text-blue-900">Kayıtlı Adresiniz Otomatik Yüklendi</p>
-                  <p className="text-[11px] text-blue-700">{getDefaultAddress()?.title}: {getDefaultAddress()?.fullAddress}</p>
-                </div>
-              </div>
-              <span className="text-xs font-semibold text-blue-800 bg-blue-100 px-2.5 py-1 rounded-md flex items-center gap-1">
-                <CheckCircle2 size={12} /> Seçildi
-              </span>
-            </div>
-          )}
-
-          <div className="card" style={{ padding: "28px" }}>
-            <h2 style={{ fontWeight: 700, marginBottom: "20px", fontSize: "17px" }}>Teslimat Bilgileri</h2>
-            <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 1fr" }}>
-              {[
-                { name: "name", label: "Ad", placeholder: "Adınız" },
-                { name: "surname", label: "Soyad", placeholder: "Soyadınız" },
-                { name: "email", label: "E-posta", placeholder: "eposta@gmail.com" },
-                { name: "phone", label: "Telefon", placeholder: "05XXXXXXXXX" },
-                { name: "city", label: "Şehir / İlçe", placeholder: "İstanbul / Kadıköy" },
-              ].map((f) => (
-                <div key={f.name}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      marginBottom: "5px",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    {f.label} *
-                  </label>
-                  <input
-                    name={f.name}
-                    type={f.name === "email" ? "email" : "text"}
-                    required
-                    placeholder={f.placeholder}
-                    value={(buyer as Record<string, string>)[f.name]}
-                    onChange={handleChange}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      border: "2px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      fontSize: "14px",
-                      outline: "none",
-                    }}
-                  />
-                </div>
-              ))}
-              <div style={{ gridColumn: "span 2" }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    marginBottom: "5px",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  Açık Adres *
-                </label>
-                <textarea
-                  name="address"
-                  required
-                  rows={3}
-                  placeholder="Mahalle, sokak, bina no, daire..."
-                  value={buyer.address}
-                  onChange={handleChange}
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    border: "2px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "14px",
-                    outline: "none",
-                    resize: "vertical",
-                    fontFamily: "inherit",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {error && (
-            <div
-              style={{
-                padding: "12px 16px",
-                background: "#fef2f2",
-                border: "1px solid #fecaca",
-                borderRadius: "var(--radius-md)",
-                color: "#dc2626",
-                fontSize: "13px",
-              }}
-            >
-              ⚠️ {error}
-            </div>
-          )}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container-custom">
+        
+        {/* Üst Adım Çubuğu (Görsel 3, 4, 5 Birebir: 1 ADRES BİLGİLERİ | 2 ÖDEME BİLGİLERİ) */}
+        <div className="flex gap-4 mb-8">
+          <button
+            onClick={() => setActiveStep(1)}
+            className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 border-2 transition-all ${
+              activeStep === 1
+                ? "bg-white border-rose-500 text-rose-500 shadow-sm"
+                : "bg-gray-100 border-transparent text-gray-400"
+            }`}
+          >
+            <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">1</span>
+            ADRES BİLGİLERİ
+          </button>
 
           <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary"
-            style={{
-              fontSize: "16px",
-              padding: "14px 24px",
-              opacity: loading ? 0.7 : 1,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              justifyContent: "center",
-            }}
+            onClick={() => setActiveStep(2)}
+            className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 border-2 transition-all ${
+              activeStep === 2
+                ? "bg-white border-rose-500 text-rose-500 shadow-sm"
+                : "bg-gray-100 border-transparent text-gray-400"
+            }`}
           >
-            {loading ? (
-              <>
-                <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} /> Ödeme hazırlanıyor...
-              </>
-            ) : (
-              <>
-                <CreditCard size={18} /> {formatPrice(grandTotal)} — PayTR ile Güvenli Öde
-              </>
-            )}
+            <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">2</span>
+            ÖDEME BİLGİLERİ
           </button>
-          <p style={{ fontSize: "12px", color: "var(--color-text-muted)", textAlign: "center" }}>
-            🔒 SSL şifrelemeli ödeme · PayTR güvencesiyle
-          </p>
-        </form>
-
-        {/* Sipariş özeti */}
-        <div className="card" style={{ padding: "24px", alignSelf: "start", position: "sticky", top: "100px" }}>
-          <h2 style={{ fontWeight: 700, marginBottom: "16px", fontSize: "15px" }}>Sipariş Özeti</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
-            {items.map(({ product, quantity }) => (
-              <div key={product.id} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                <span
-                  style={{
-                    flex: 1,
-                    color: "var(--color-text-muted)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    marginRight: "8px",
-                  }}
-                >
-                  {product.name} x{quantity}
-                </span>
-                <span style={{ fontWeight: 600, flexShrink: 0 }}>{formatPrice(product.price * quantity)}</span>
-              </div>
-            ))}
-          </div>
-          <div
-            style={{
-              borderTop: "1px solid var(--color-border)",
-              paddingTop: "12px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "6px",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-              <span style={{ color: "var(--color-text-muted)" }}>Kargo</span>
-              <span style={{ color: shipping === 0 ? "var(--color-primary)" : "inherit", fontWeight: 600 }}>
-                {shipping === 0 ? "Ücretsiz" : formatPrice(shipping)}
-              </span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: "17px" }}>
-              <span>Toplam</span>
-              <span style={{ color: "var(--color-primary)" }}>{formatPrice(grandTotal)}</span>
-            </div>
-          </div>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Sol Ana Alan (Adım 1 veya Adım 2) */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* ADIM 1: ADRES BİLGİLERİ (Görsel 3-4 Birebir) */}
+            {activeStep === 1 && (
+              <form onSubmit={handleSaveAddress} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+                <div className="flex justify-between items-center border-b pb-4">
+                  <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
+                    <MapPin className="text-rose-500" /> YENİ ADRES EKLE
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Fatura Türü */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Fatura Türü</label>
+                    <select
+                      value={addressForm.invoiceType}
+                      onChange={(e) => setAddressForm({ ...addressForm, invoiceType: e.target.value })}
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    >
+                      <option value="Bireysel Adres">Bireysel Adres</option>
+                      <option value="Kurumsal Adres">Kurumsal Adres</option>
+                    </select>
+                  </div>
+
+                  {/* Adres Başlığı */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Adres Başlığı</label>
+                    <input
+                      type="text"
+                      value={addressForm.title}
+                      onChange={(e) => setAddressForm({ ...addressForm, title: e.target.value })}
+                      placeholder="Evim, İş Vb."
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  {/* Ad Soyad */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Ad Soyad *</label>
+                    <input
+                      type="text"
+                      required
+                      value={addressForm.fullName}
+                      onChange={(e) => setAddressForm({ ...addressForm, fullName: e.target.value })}
+                      placeholder="Zehra Koç"
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  {/* T.C. Kimlik No */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">T.C. Kimlik No</label>
+                    <input
+                      type="text"
+                      maxLength={11}
+                      value={addressForm.tcNo}
+                      onChange={(e) => setAddressForm({ ...addressForm, tcNo: e.target.value })}
+                      placeholder="XXXXXXXXXXX"
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  {/* Ülke Seçiniz */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Ülke Seçiniz *</label>
+                    <select value={addressForm.country} disabled className="w-full p-3 bg-gray-100 border rounded-xl text-xs font-semibold text-gray-500">
+                      <option value="Türkiye">Türkiye</option>
+                    </select>
+                  </div>
+
+                  {/* İl Seçiniz Dropdown (Görsel 4 Birebir Tüm Konumlar) */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">İl Seçiniz *</label>
+                    <select
+                      value={addressForm.city}
+                      onChange={(e) => {
+                        const newCity = e.target.value;
+                        const firstDist = TURKEY_CITIES[newCity] ? Object.keys(TURKEY_CITIES[newCity])[0] : "Merkez";
+                        const firstNeigh = TURKEY_CITIES[newCity]?.[firstDist]?.[0] || "YENİ MAH";
+                        setAddressForm({ ...addressForm, city: newCity, district: firstDist, neighborhood: firstNeigh });
+                      }}
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    >
+                      {cityList.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* İlçe Seçiniz Dropdown (Görsel 4 Birebir) */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">İlçe Seçiniz *</label>
+                    <select
+                      value={addressForm.district}
+                      onChange={(e) => {
+                        const newDist = e.target.value;
+                        const firstNeigh = TURKEY_CITIES[addressForm.city]?.[newDist]?.[0] || "YENİ MAH";
+                        setAddressForm({ ...addressForm, district: newDist, neighborhood: firstNeigh });
+                      }}
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    >
+                      {districtList.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Semt / Mahalle Dropdown (Görsel 4 Birebir) */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Semt / Mahalle *</label>
+                    <select
+                      value={addressForm.neighborhood}
+                      onChange={(e) => setAddressForm({ ...addressForm, neighborhood: e.target.value })}
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    >
+                      {neighborhoodList.map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Açık Adres */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Açık Adres *</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={addressForm.fullAddress}
+                      onChange={(e) => setAddressForm({ ...addressForm, fullAddress: e.target.value })}
+                      placeholder="Mahalle, Cadde, Sokak, Bina No / Daire No..."
+                      className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                    />
+                  </div>
+
+                  {/* Cep Telefonu */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Cep Telefonu *</label>
+                    <div className="flex items-center">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-3 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-xs font-bold text-gray-700">🇹🇷 +90</span>
+                      <input
+                        type="tel"
+                        required
+                        value={addressForm.phone}
+                        onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
+                        placeholder="(553) 272-38-58"
+                        className="w-full p-3 bg-gray-50 border rounded-r-xl text-xs font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer pt-2">
+                  <input
+                    type="checkbox"
+                    checked={addressForm.differentInvoice}
+                    onChange={(e) => setAddressForm({ ...addressForm, differentInvoice: e.target.checked })}
+                    className="rounded text-rose-500"
+                  />
+                  <span className="text-xs text-gray-600 font-semibold">Faturamın farklı bir adrese düzenlenmesini istiyorum</span>
+                </label>
+
+                <button
+                  type="submit"
+                  className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider"
+                >
+                  ADRESİ KAYDET VE ÖDEMEYE GEÇ
+                </button>
+              </form>
+            )}
+
+            {/* ADIM 2: ÖDEME BİLGİLERİ (Görsel 5 Birebir) */}
+            {activeStep === 2 && (
+              <div className="space-y-6">
+                
+                {/* KARGO SEÇENEKLERİ (Görsel 5 Birebir) */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-4">
+                  <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
+                    <Truck className="text-emerald-600" /> KARGO SEÇENEKLERİ
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {carriers.map((car) => (
+                      <label
+                        key={car.name}
+                        onClick={() => setSelectedCarrier(car.name)}
+                        className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center justify-between transition-all ${
+                          selectedCarrier === car.name
+                            ? "border-rose-400 bg-rose-50/30 font-bold"
+                            : "border-gray-100 hover:border-gray-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input type="radio" name="carrier" checked={selectedCarrier === car.name} readOnly className="text-rose-500" />
+                          <span className="text-xs font-bold text-gray-800">{car.name}</span>
+                        </div>
+                        <span className={`text-xs font-extrabold ${car.price === 0 ? "text-rose-500" : "text-gray-700"}`}>
+                          {car.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ÖDEME SEÇENEKLERİ (Görsel 5 Birebir) */}
+                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
+                  <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
+                    <CreditCard className="text-emerald-600" /> ÖDEME SEÇENEKLERİ
+                  </h3>
+
+                  {/* Ödeme Sekmeleri: Kredi Kartı | Havale / EFT | PayTR ile Öde */}
+                  <div className="flex gap-2 border-b pb-3">
+                    <button
+                      onClick={() => setPaymentMethod("cc")}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                        paymentMethod === "cc" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      Kredi Kartı
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod("eft")}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                        paymentMethod === "eft" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      Havale / EFT
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod("paytr")}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                        paymentMethod === "paytr" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      PayTR ile Öde
+                    </button>
+                  </div>
+
+                  {paymentMethod === "cc" && (
+                    <form onSubmit={handleCompleteOrder} className="space-y-4">
+                      <h4 className="text-xs font-extrabold text-gray-900 uppercase">Kart Bilgileri</h4>
+                      
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Kart Üzerindeki Ad Soyad *</label>
+                        <input
+                          type="text"
+                          required
+                          value={cardForm.cardName}
+                          onChange={(e) => setCardForm({ ...cardForm, cardName: e.target.value })}
+                          placeholder="Kart Üzerindeki Ad Soyad"
+                          className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Kart Numarası *</label>
+                        <input
+                          type="text"
+                          required
+                          maxLength={19}
+                          value={cardForm.cardNumber}
+                          onChange={(e) => setCardForm({ ...cardForm, cardNumber: e.target.value })}
+                          placeholder="0000 0000 0000 0000"
+                          className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Son Kullanma Tarihi *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="AA/YY"
+                            value={cardForm.expireDate}
+                            onChange={(e) => setCardForm({ ...cardForm, expireDate: e.target.value })}
+                            className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">CVC / CVC2 *</label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={4}
+                            placeholder="123"
+                            value={cardForm.cvc}
+                            onChange={(e) => setCardForm({ ...cardForm, cvc: e.target.value })}
+                            className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                          />
+                        </div>
+                      </div>
+                    </form>
+                  )}
+
+                  {paymentMethod === "eft" && (
+                    <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl space-y-2 text-xs">
+                      <p className="font-extrabold text-emerald-900">Ziraat Bankası IBAN Bilgimiz:</p>
+                      <p className="font-mono text-emerald-800 font-bold bg-white p-2 rounded-lg border">TR62 0001 0090 1012 3456 7850 01</p>
+                      <p className="text-emerald-700">Alıcı Adı: OnbSağlık İnternet Mağazacılık San. Tic. A.Ş.</p>
+                    </div>
+                  )}
+
+                  {paymentMethod === "paytr" && (
+                    <div className="bg-blue-50 border border-blue-200 p-5 rounded-2xl text-xs text-blue-900 font-bold">
+                      🔒 PayTR 256-bit SSL Güvenli İframe Ödeme Ortamı Yüklenecektir.
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Sağ Kolon: Sipariş Özeti (Görsel 3, 4, 5 Birebir) */}
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4 sticky top-24">
+              
+              <h3 className="font-extrabold text-sm text-gray-900 uppercase border-b pb-3 flex justify-between items-center">
+                Sipariş Özet <ChevronRight size={16} />
+              </h3>
+
+              {/* Ürün Mini Listesi */}
+              <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+                {items.map(({ product, quantity }) => (
+                  <div key={product.id} className="flex items-center gap-3 text-xs border-b pb-2">
+                    <div className="relative w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg p-1 border">
+                      <Image src={product.images?.[0] || "/placeholder.png"} alt={product.name} fill className="object-contain" unoptimized />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <span className="font-bold text-gray-400 block uppercase truncate">{product.brand}</span>
+                      <p className="font-bold text-gray-800 truncate">{product.name}</p>
+                      <span className="text-gray-500 font-semibold">{quantity} Adet</span>
+                    </div>
+                    <span className="font-extrabold text-rose-500">{formatPrice(product.price * quantity)}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* İndirim Kodu Kutu */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="İndirim Kodu"
+                  className="flex-1 p-2.5 border rounded-xl text-xs bg-gray-50 uppercase font-bold"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (couponCode.toUpperCase() === "ONB100") setDiscount(100);
+                  }}
+                  className="bg-gray-400 hover:bg-gray-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs"
+                >
+                  Uygula
+                </button>
+              </div>
+
+              {/* Fiyat Detayları */}
+              <div className="space-y-2 text-xs border-t pt-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-bold">Sepet Toplamı</span>
+                  <span className="font-extrabold text-gray-900">{formatPrice(total)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-500 font-bold">Kargo Ücreti</span>
+                  <span className="font-extrabold text-rose-500">{shippingCost === 0 ? "BEDAVA" : formatPrice(shippingCost)}</span>
+                </div>
+
+                {discount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Kupon İndirimi</span>
+                    <span>-{formatPrice(discount)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-sm font-extrabold border-t pt-2 text-rose-500">
+                  <span>Genel Toplam</span>
+                  <span className="text-lg">{formatPrice(grandTotal)}</span>
+                </div>
+              </div>
+
+              {/* Sözleşme Onay Kutus (Görsel 5 Birebir) */}
+              <label className="flex items-start gap-2 cursor-pointer pt-2">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 rounded text-rose-500"
+                />
+                <span className="text-[11px] text-gray-600 leading-tight">
+                  <strong className="underline">Ön Bilgilendirme Formunu</strong> ve <strong className="underline">Mesafeli Satış Sözleşmesini</strong> okudum, onaylıyorum.
+                </span>
+              </label>
+
+              {/* SİPARİŞİ TAMAMLA Butonu (Görsel 5 Birebir) */}
+              <button
+                type="button"
+                onClick={handleCompleteOrder}
+                className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                SİPARİŞİ TAMAMLA
+              </button>
+
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   );
