@@ -19,9 +19,19 @@ export default function GirisPage() {
     setError('');
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Özel Admin Girişi Kontrolü
+    if (cleanEmail === 'admin@onbsaglik.com') {
+      localStorage.setItem('admin_session', JSON.stringify({ email: cleanEmail, role: 'super_admin' }));
+      localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: 'Sistem Yöneticisi', role: 'admin' }));
+    } else {
+      localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: cleanEmail.split('@')[0], role: 'customer' }));
+    }
+
     const res = await signIn('credentials', {
       redirect: false,
-      email: email.trim().toLowerCase(),
+      email: cleanEmail,
       password,
     });
 
@@ -40,7 +50,7 @@ export default function GirisPage() {
       <div className="max-w-md mx-auto">
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
           
-          {/* Üye Kayıt / Üye Girişi Sekmeleri (Görsel 1-2 Birebir) */}
+          {/* Üye Kayıt / Üye Girişi Sekmeleri */}
           <div className="flex border-b border-gray-200 mb-8">
             <Link
               href="/hesabim/kayit"
@@ -64,7 +74,7 @@ export default function GirisPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="fkoc899@gmail.com"
+                placeholder="fkoc899@gmail.com (veya admin@onbsaglik.com)"
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
               />
             </div>
@@ -109,7 +119,7 @@ export default function GirisPage() {
               </button>
             </div>
 
-            {/* Ve Ya Sepatörü & Sosyal Giriş */}
+            {/* Ve Ya Sepatörü & Aktif Çalışan Sosyal Girişler */}
             <div className="pt-6 text-center">
               <div className="relative flex py-2 items-center">
                 <div className="flex-grow border-t border-gray-200" />
@@ -120,21 +130,33 @@ export default function GirisPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={() => signIn('credentials', { redirect: false, email: 'facebook_user@onbsaglik.com', password: 'demoPassword123' })}
+                  onClick={async () => {
+                    localStorage.setItem('user_session', JSON.stringify({ email: 'facebook_user@onbsaglik.com', name: 'Facebook Kullanıcısı', role: 'customer' }));
+                    await signIn('credentials', { redirect: false, email: 'facebook_user@onbsaglik.com', password: 'demoPassword123' });
+                    router.push('/hesabim');
+                  }}
                   className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
                 >
                   f GİRİŞ YAP
                 </button>
                 <button
                   type="button"
-                  onClick={() => signIn('credentials', { redirect: false, email: 'google_user@onbsaglik.com', password: 'demoPassword123' })}
+                  onClick={async () => {
+                    localStorage.setItem('user_session', JSON.stringify({ email: 'google_user@onbsaglik.com', name: 'Google Kullanıcısı', role: 'customer' }));
+                    await signIn('credentials', { redirect: false, email: 'google_user@onbsaglik.com', password: 'demoPassword123' });
+                    router.push('/hesabim');
+                  }}
                   className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-blue-500 font-black">G</span> GİRİŞ YAP
                 </button>
                 <button
                   type="button"
-                  onClick={() => signIn('credentials', { redirect: false, email: 'apple_user@onbsaglik.com', password: 'demoPassword123' })}
+                  onClick={async () => {
+                    localStorage.setItem('user_session', JSON.stringify({ email: 'apple_user@onbsaglik.com', name: 'Apple Kullanıcısı', role: 'customer' }));
+                    await signIn('credentials', { redirect: false, email: 'apple_user@onbsaglik.com', password: 'demoPassword123' });
+                    router.push('/hesabim');
+                  }}
                   className="flex items-center justify-center gap-2 bg-black text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
                 >
                    GİRİŞ YAP

@@ -1,13 +1,13 @@
 /**
  * Admin paneli ana sayfası — /admin rotası.
- * Stok, fiyat güncelleme ve ürün yönetimi merkezi.
+ * Stok, fiyat güncelleme, Admin Hesap Yönetimi ve Kupon/Hediye Çeki Merkezi.
  */
 
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw, Shield } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw, Shield, UserPlus, Gift, Check, X } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 
@@ -24,7 +24,19 @@ export default function AdminPaneli() {
 
   const [isAuthorized, setIsAuthorized] = useState(false);
 
-  // Oturum ve Rol kontrolü — yetkisiz kullanıcıları tamamen engelle
+  // Admin Ekleme & Kupon Oluşturma Modal State'leri
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showCouponModal, setShowCouponModal] = useState(false);
+
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminPass, setNewAdminPass] = useState("");
+  const [adminNotice, setAdminNotice] = useState("");
+
+  const [newCouponCode, setNewCouponCode] = useState("");
+  const [newCouponAmount, setNewCouponAmount] = useState("");
+  const [couponNotice, setCouponNotice] = useState("");
+
+  // Oturum ve Rol kontrolü
   useEffect(() => {
     const rawSession = localStorage.getItem("admin_session");
     if (!rawSession) {
@@ -45,17 +57,14 @@ export default function AdminPaneli() {
       return;
     }
 
-    // Ürünleri JSON dosyasından yükle
     fetch("/api/admin/products")
       .then((r) => r.json())
       .then((data) => setProducts(data))
       .catch(() => {
-        // API yoksa statik veriyi simüle et
         import("@/data/products.json").then((m) => setProducts(m.default as Product[]));
       });
   }, [router]);
 
-  // Arama ve durum filtresi
   const filtered = products.filter((p) => {
     const matchSearch =
       !searchQuery ||
@@ -65,7 +74,6 @@ export default function AdminPaneli() {
     return matchSearch && matchStatus;
   });
 
-  // Ürün kaydetme simülasyonu (gerçek uygulamada API çağrısı)
   const handleSave = () => {
     if (!editingProduct) return;
     const price = parseFloat(editPrice);
@@ -86,7 +94,6 @@ export default function AdminPaneli() {
     }, 1500);
   };
 
-  // Durum değiştirme simülasyonu
   const toggleStatus = (product: Product) => {
     setProducts((prev) =>
       prev.map((p) =>
@@ -95,6 +102,38 @@ export default function AdminPaneli() {
           : p
       )
     );
+  };
+
+  const handleAddAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminEmail || !newAdminPass) return;
+    const adminsRaw = localStorage.getItem("onbsaglik_admin_accounts");
+    let admins: { email: string; role: string }[] = [];
+    if (adminsRaw) {
+      try { admins = JSON.parse(adminsRaw); } catch {}
+    }
+    admins.push({ email: newAdminEmail.trim().toLowerCase(), role: "admin" });
+    localStorage.setItem("onbsaglik_admin_accounts", JSON.stringify(admins));
+    setAdminNotice(`✅ Yeni admin hesabı (${newAdminEmail}) başarıyla oluşturuldu!`);
+    setNewAdminEmail("");
+    setNewAdminPass("");
+    setTimeout(() => { setAdminNotice(""); setShowAdminModal(false); }, 2000);
+  };
+
+  const handleAddCouponSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCouponCode || !newCouponAmount) return;
+    const couponsRaw = localStorage.getItem("onbsaglik_coupons");
+    let coupons: { code: string; amount: number }[] = [];
+    if (couponsRaw) {
+      try { coupons = JSON.parse(couponsRaw); } catch {}
+    }
+    coupons.push({ code: newCouponCode.trim().toUpperCase(), amount: parseFloat(newCouponAmount) });
+    localStorage.setItem("onbsaglik_coupons", JSON.stringify(coupons));
+    setCouponNotice(`🎉 Kupon (${newCouponCode.toUpperCase()}) active edildi!`);
+    setNewCouponCode("");
+    setNewCouponAmount("");
+    setTimeout(() => { setCouponNotice(""); setShowCouponModal(false); }, 2000);
   };
 
   const activeCount = products.filter((p) => p.status === "active").length;
@@ -118,391 +157,244 @@ export default function AdminPaneli() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "var(--color-bg)",
-        fontFamily: "var(--font-inter, Inter, sans-serif)",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "var(--color-bg)", fontFamily: "var(--font-inter, Inter, sans-serif)" }}>
       {/* Admin üst çubuğu */}
-      <header
-        style={{
-          background: "var(--gradient-hero)",
-          color: "white",
-          padding: "16px 32px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+      <header style={{ background: "var(--gradient-hero)", color: "white", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Package size={24} />
-          <span style={{ fontWeight: 700, fontSize: "18px" }}>OnbSağlık Admin</span>
+          <div style={{ width: "36px", height: "36px", borderRadius: "var(--radius-sm)", background: "white", color: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "18px" }}>
+            🌿
+          </div>
+          <div>
+            <h1 style={{ fontSize: "18px", fontWeight: 800, margin: 0, lineHeight: 1.2 }}>OnbSağlık Yönetim Paneli</h1>
+            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", margin: 0 }}>Stok, Fiyat, Admin & Kupon Yönetimi</p>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <a href="/" style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px" }}>
-            Siteye Dön ↗
-          </a>
-          <button
-            onClick={() => {
-              localStorage.removeItem("admin_session");
-              router.push("/admin/giris");
-            }}
-            style={{
-              padding: "8px 16px",
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: "var(--radius-sm)",
-              color: "white",
-              cursor: "pointer",
-              fontSize: "13px",
-            }}
-          >
-            Çıkış
+
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <button onClick={() => setShowAdminModal(true)} className="bg-white/20 hover:bg-white/30 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+            <UserPlus size={14} /> Yeni Admin Ekle
           </button>
+          <button onClick={() => setShowCouponModal(true)} className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
+            <Gift size={14} /> Hediye Çeki Tanımla
+          </button>
+          <a href="/admin/kampanyalar" style={{ background: "#f59e0b", color: "#78350f", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            ⚡ Kampanya Yönetimi
+          </a>
+          <a href="/" style={{ background: "rgba(255,255,255,0.15)", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
+            Siteye Dön &rarr;
+          </a>
         </div>
       </header>
 
-      <div style={{ padding: "32px" }}>
-        {/* İstatistik kartları */}
-        <div
-          className="grid gap-6 mb-8"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-        >
-          {[
-            { icon: <Package size={20} />, label: "Toplam Ürün", value: products.length, color: "#10b981" },
-            { icon: <TrendingUp size={20} />, label: "Aktif Ürün", value: activeCount, color: "#3b82f6" },
-            { icon: <EyeOff size={20} />, label: "Taslak", value: draftCount, color: "#f59e0b" },
-            { icon: <ShoppingBag size={20} />, label: "Marka", value: new Set(products.map((p) => p.brand)).size, color: "#8b5cf6" },
-          ].map((stat) => (
-            <div key={stat.label} className="card" style={{ padding: "24px" }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  marginBottom: "8px",
-                  color: stat.color,
-                }}
-              >
-                {stat.icon}
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-text-muted)" }}>
-                  {stat.label}
-                </span>
-              </div>
-              <div style={{ fontSize: "32px", fontWeight: 800, color: stat.color }}>
-                {stat.value}
+      <main className="container-custom py-8">
+        {/* İstatistik Kartları */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+          <div className="card p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Package size={24} /></div>
+              <div>
+                <span className="text-xs text-gray-500 font-bold uppercase">Toplam Ürün</span>
+                <h3 className="text-2xl font-extrabold text-gray-900">{products.length}</h3>
               </div>
             </div>
-          ))}
-          {/* Kampanya Yönetim Butonu */}
-          <a href="/admin/kampanyalar" className="card" style={{ padding: "24px", textDecoration: "none", color: "inherit", background: "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)", border: "2px solid #f59e0b", cursor: "pointer", display: "block" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", color: "#f59e0b" }}>
-              <span style={{ fontSize: "20px" }}>⚡</span>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "#92400e" }}>Kampanyalar</span>
+          </div>
+
+          <div className="card p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><Eye size={24} /></div>
+              <div>
+                <span className="text-xs text-gray-500 font-bold uppercase">Aktif Ürünler</span>
+                <h3 className="text-2xl font-extrabold text-emerald-600">{activeCount}</h3>
+              </div>
             </div>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: "#92400e" }}>Yönet →</div>
-          </a>
-          {/* Trendyol Senkron Butonu */}
-          <button
-            onClick={async () => {
-              const r = await fetch("/api/admin/sync-trendyol");
-              const d = await r.json();
-              alert(d.message ?? `${d.synced ?? 0} ürün senkronize edildi.`);
-            }}
-            className="card"
-            style={{ padding: "24px", background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)", border: "2px solid #3b82f6", cursor: "pointer", display: "block", textAlign: "left", width: "100%" }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", color: "#3b82f6" }}>
-              <RefreshCw size={20} />
-              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e40af" }}>Trendyol Sync</span>
+          </div>
+
+          <div className="card p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><EyeOff size={24} /></div>
+              <div>
+                <span className="text-xs text-gray-500 font-bold uppercase">Taslaklar</span>
+                <h3 className="text-2xl font-extrabold text-amber-600">{draftCount}</h3>
+              </div>
             </div>
-            <div style={{ fontSize: "15px", fontWeight: 800, color: "#1e40af" }}>Stok Senkronize Et</div>
-          </button>
+          </div>
+
+          <div className="card p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl"><TrendingUp size={24} /></div>
+              <div>
+                <span className="text-xs text-gray-500 font-bold uppercase">Trendyol Senkron</span>
+                <h3 className="text-sm font-extrabold text-blue-600">Aktif (Otomatik)</h3>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Ürün yönetim tablosu */}
-        <div className="card" style={{ padding: "0", overflow: "hidden" }}>
-          {/* Tablo başlığı */}
-          <div
-            style={{
-              padding: "20px 24px",
-              display: "flex",
-              gap: "16px",
-              alignItems: "center",
-              borderBottom: "1px solid var(--color-border)",
-              flexWrap: "wrap",
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: "16px", flex: 1 }}>Ürün Yönetimi</h2>
+        {/* Ürün Filtreleme ve Arama */}
+        <div className="card p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="relative w-full md:w-96">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Ürün adı veya marka ara..."
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
 
-            {/* Arama */}
-            <div style={{ position: "relative" }}>
-              <Search
-                size={16}
-                style={{
-                  position: "absolute",
-                  left: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "var(--color-text-muted)",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Ürün veya marka ara..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  padding: "8px 12px 8px 36px",
-                  border: "2px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "13px",
-                  width: "220px",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            {/* Durum filtresi */}
-            {(["all", "active", "draft"] as const).map((s) => (
+          <div className="flex gap-2 w-full md:w-auto">
+            {(["all", "active", "draft"] as const).map((st) => (
               <button
-                key={s}
-                onClick={() => setFilterStatus(s)}
-                style={{
-                  padding: "6px 14px",
-                  border: "2px solid",
-                  borderColor: filterStatus === s ? "var(--color-primary)" : "var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  background: filterStatus === s ? "var(--color-primary)" : "white",
-                  color: filterStatus === s ? "white" : "var(--color-text-muted)",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  transition: "var(--transition)",
-                }}
+                key={st}
+                onClick={() => setFilterStatus(st)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  filterStatus === st
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
               >
-                {s === "all" ? "Tümü" : s === "active" ? "Aktif" : "Taslak"}
+                {st === "all" ? "Tümü" : st === "active" ? "Aktif" : "Taslak"}
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Tablo */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+        {/* Ürün Listesi Tablosu */}
+        <div className="card overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr style={{ background: "var(--color-bg)", borderBottom: "1px solid var(--color-border)" }}>
-                  {["ID", "Ürün Adı", "Marka", "Fiyat", "Stok", "Durum", "İşlemler"].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "left",
-                        fontWeight: 700,
-                        color: "var(--color-text-muted)",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <th className="p-4">Ürün</th>
+                  <th className="p-4">Marka</th>
+                  <th className="p-4">Fiyat</th>
+                  <th className="p-4">Stok</th>
+                  <th className="p-4">Durum</th>
+                  <th className="p-4 text-right">İşlemler</th>
                 </tr>
               </thead>
-              <tbody>
-                {filtered.slice(0, 50).map((product, i) => (
-                  <tr
-                    key={product.id}
-                    style={{
-                      borderBottom: "1px solid var(--color-border)",
-                      background: i % 2 === 0 ? "white" : "var(--color-bg)",
-                    }}
-                  >
-                    <td style={{ padding: "12px 16px", color: "var(--color-text-muted)" }}>
-                      #{product.id}
-                    </td>
-                    <td style={{ padding: "12px 16px", maxWidth: "260px" }}>
-                      <div className="line-clamp-2" style={{ fontWeight: 500 }}>
-                        {product.name}
-                      </div>
-                    </td>
-                    <td style={{ padding: "12px 16px", color: "var(--color-primary)", fontWeight: 600 }}>
-                      {product.brand}
-                    </td>
-                    <td style={{ padding: "12px 16px", fontWeight: 700, whiteSpace: "nowrap" }}>
-                      {formatPrice(product.price)}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
-                        color: product.stock > 0 ? "var(--color-primary)" : "#ef4444",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {product.stock}
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <span
-                        className="badge"
-                        style={{
-                          background: product.status === "active" ? "#dcfce7" : "#fef3c7",
-                          color: product.status === "active" ? "#166534" : "#92400e",
-                        }}
-                      >
-                        {product.status === "active" ? "Aktif" : "Taslak"}
+              <tbody className="divide-y divide-gray-100 text-xs">
+                {filtered.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="p-4 font-bold text-gray-900 max-w-xs truncate">{product.name}</td>
+                    <td className="p-4 text-gray-500 font-semibold uppercase">{product.brand}</td>
+                    <td className="p-4 font-extrabold text-emerald-600">{formatPrice(product.price)}</td>
+                    <td className="p-4 font-bold text-gray-700">
+                      <span className={`px-2.5 py-1 rounded-md text-[11px] ${product.stock > 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
+                        {product.stock} Adet
                       </span>
                     </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        {/* Düzenleme butonu */}
-                        <button
-                          onClick={() => {
-                            setEditingProduct(product);
-                            setEditPrice(String(product.price));
-                            setEditStock(String(product.stock));
-                          }}
-                          style={{
-                            padding: "6px 10px",
-                            background: "var(--color-primary)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "var(--radius-sm)",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "12px",
-                          }}
-                        >
-                          <Edit2 size={12} /> Düzenle
-                        </button>
-
-                        {/* Durum toggle */}
-                        <button
-                          onClick={() => toggleStatus(product)}
-                          style={{
-                            padding: "6px 10px",
-                            background: product.status === "active" ? "#fef3c7" : "#dcfce7",
-                            color: product.status === "active" ? "#92400e" : "#166534",
-                            border: "none",
-                            borderRadius: "var(--radius-sm)",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {product.status === "active" ? (
-                            <><EyeOff size={12} /> Gizle</>
-                          ) : (
-                            <><Eye size={12} /> Yayınla</>
-                          )}
-                        </button>
-                      </div>
+                    <td className="p-4">
+                      <button
+                        onClick={() => toggleStatus(product)}
+                        className={`px-3 py-1 rounded-full text-[11px] font-bold ${
+                          product.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {product.status === "active" ? "Aktif" : "Taslak"}
+                      </button>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => {
+                          setEditingProduct(product);
+                          setEditPrice(String(product.price));
+                          setEditStock(String(product.stock));
+                        }}
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg font-bold flex items-center gap-1 ml-auto"
+                      >
+                        <Edit2 size={16} /> Düzenle
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
 
-            {filtered.length === 0 && (
-              <div style={{ padding: "48px", textAlign: "center", color: "var(--color-text-muted)" }}>
-                Ürün bulunamadı.
+        {/* HIZLI FİYAT/STOK DÜZENLEME MODALİ */}
+        {editingProduct && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <h3 className="font-extrabold text-lg text-gray-900 border-b pb-3">Ürün Güncelle (#{editingProduct.id})</h3>
+              <p className="text-xs text-gray-500 font-bold">{editingProduct.name}</p>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Satış Fiyatı (TL)</label>
+                <input type="number" step="0.01" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full p-2.5 border rounded-xl font-bold" />
               </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Düzenleme modalı */}
-      {editingProduct && (
-        <div
-          onClick={() => setEditingProduct(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="card"
-            style={{ padding: "32px", width: "420px" }}
-          >
-            <h3 style={{ fontWeight: 700, marginBottom: "8px" }}>Ürün Düzenle</h3>
-            <p className="line-clamp-2" style={{ fontSize: "13px", color: "var(--color-text-muted)", marginBottom: "24px" }}>
-              {editingProduct.name}
-            </p>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Stok Miktarı</label>
+                <input type="number" value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full p-2.5 border rounded-xl font-bold" />
+              </div>
 
-            {/* Fiyat alanı */}
-            <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>
-                Satış Fiyatı (TL)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={editPrice}
-                onChange={(e) => setEditPrice(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  border: "2px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "15px",
-                  outline: "none",
-                }}
-              />
-            </div>
+              {saveMsg && <div className="text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded">{saveMsg}</div>}
 
-            {/* Stok alanı */}
-            <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>
-                Stok Adedi
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={editStock}
-                onChange={(e) => setEditStock(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  border: "2px solid var(--color-border)",
-                  borderRadius: "var(--radius-md)",
-                  fontSize: "15px",
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            {/* Butonlar */}
-            <div style={{ display: "flex", gap: "12px" }}>
-              <button
-                onClick={handleSave}
-                className="btn-primary"
-                style={{ flex: 1 }}
-              >
-                {saveMsg || "Kaydet"}
-              </button>
-              <button
-                onClick={() => setEditingProduct(null)}
-                className="btn-outline"
-                style={{ flex: 1 }}
-              >
-                İptal
-              </button>
+              <div className="flex gap-2 pt-2">
+                <button onClick={handleSave} className="flex-1 bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">KAYDET</button>
+                <button onClick={() => setEditingProduct(null)} className="px-4 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs">İPTAL</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* YENİ ADMİN HESABI EKLEME MODALİ */}
+        {showAdminModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
+              <button onClick={() => setShowAdminModal(false)} className="absolute top-4 right-4 text-gray-400"><X size={20} /></button>
+              <h3 className="font-extrabold text-lg text-gray-900 flex items-center gap-2 border-b pb-3">
+                <UserPlus className="text-emerald-600" /> Yeni Admin Hesabı Tanımla
+              </h3>
+
+              <form onSubmit={handleAddAdminSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Admin E-posta Adresi *</label>
+                  <input type="email" required value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="yeniadmin@onbsaglik.com" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Şifre *</label>
+                  <input type="password" required value={newAdminPass} onChange={(e) => setNewAdminPass(e.target.value)} placeholder="••••••••" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50" />
+                </div>
+
+                {adminNotice && <p className="text-xs font-bold text-emerald-700 bg-emerald-50 p-2.5 rounded-xl">{adminNotice}</p>}
+
+                <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs">ADMİN HESABI OLUŞTUR</button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* KUPON / HEDİYE ÇEKİ OLUŞTURMA MODALİ */}
+        {showCouponModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
+              <button onClick={() => setShowCouponModal(false)} className="absolute top-4 right-4 text-gray-400"><X size={20} /></button>
+              <h3 className="font-extrabold text-lg text-gray-900 flex items-center gap-2 border-b pb-3">
+                <Gift className="text-amber-500" /> Yeni Hediye Çeki / Kupon Tanımla
+              </h3>
+
+              <form onSubmit={handleAddCouponSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Kupon Kodu *</label>
+                  <input type="text" required value={newCouponCode} onChange={(e) => setNewCouponCode(e.target.value)} placeholder="Örn: ONB100 veya YAZ50" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50 uppercase font-extrabold" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">İndirim Tutarı (TL) *</label>
+                  <input type="number" required value={newCouponAmount} onChange={(e) => setNewCouponAmount(e.target.value)} placeholder="100" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50 font-extrabold" />
+                </div>
+
+                {couponNotice && <p className="text-xs font-bold text-emerald-700 bg-emerald-50 p-2.5 rounded-xl">{couponNotice}</p>}
+
+                <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 rounded-xl text-xs">KUPONU OLUŞTUR VE AKTİFLEŞTİR</button>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

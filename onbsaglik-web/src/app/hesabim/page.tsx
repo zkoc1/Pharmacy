@@ -15,14 +15,13 @@ import {
   CreditCard,
   Tag,
   UserX,
-  Search,
   LayoutDashboard,
   UserCheck,
   LogOut,
   X,
   Plus,
   Trash2,
-  Check,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAddressStore } from '@/stores/addressStore';
 
@@ -34,7 +33,9 @@ export default function HesabimPage() {
   const [orderQuery, setOrderQuery] = useState('');
   const [orderSearchResult, setOrderSearchResult] = useState<string | null>(null);
 
-  // Adres Yönetimi Store (Kullanıcı bazlı)
+  const [isAdminUser, setIsAdminUser] = useState(false);
+
+  // Adres Yönetimi Store
   const { addresses, addAddress, removeAddress } = useAddressStore();
   const [showAddrForm, setShowAddrForm] = useState(false);
   const [newAddr, setNewAddr] = useState({
@@ -46,18 +47,28 @@ export default function HesabimPage() {
     fullAddress: '',
   });
 
-  // Hediye Çeki Kodu State
   const [couponCode, setCouponCode] = useState('');
   const [couponMsg, setCouponMsg] = useState('');
 
-  // Havale Bildirimi Form State
   const [bankNotice, setBankNotice] = useState({ orderId: '', bank: 'Ziraat Bankası', senderName: '', amount: '' });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/hesabim/giris');
+      return;
     }
-  }, [status, router]);
+
+    // Admin Oturum Kontrolü
+    const adminSession = localStorage.getItem('admin_session');
+    const currentUserEmail = session?.user?.email;
+
+    if (currentUserEmail === 'admin@onbsaglik.com' || adminSession) {
+      setIsAdminUser(true);
+      if (!adminSession) {
+        localStorage.setItem('admin_session', JSON.stringify({ email: 'admin@onbsaglik.com', role: 'super_admin' }));
+      }
+    }
+  }, [status, session, router]);
 
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Hesap yükleniyor...</div>;
@@ -65,7 +76,7 @@ export default function HesabimPage() {
 
   if (!session) return null;
 
-  const userName = session.user?.name || 'Zehra Koç';
+  const userName = session.user?.name || (isAdminUser ? 'Sistem Yöneticisi' : 'Zehra Koç');
   const userEmail = session.user?.email || 'fkoc899@gmail.com';
 
   const handleOrderSearch = (e: React.FormEvent) => {
@@ -103,7 +114,7 @@ export default function HesabimPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
         
-        {/* SOL YAN MENÜ (Görsel 3 Birebir Sol Sidebar) */}
+        {/* SOL YAN MENÜ (Görsel 3-4 Birebir) */}
         <div className="lg:col-span-1 space-y-4">
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-center">
             <div className="w-20 h-20 mx-auto rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center text-gray-400 mb-3">
@@ -111,6 +122,16 @@ export default function HesabimPage() {
             </div>
             <h2 className="font-extrabold text-gray-900 text-lg">{userName}</h2>
             <p className="text-xs text-rose-500 font-semibold mt-0.5">{userEmail}</p>
+
+            {/* ADMİN HESABI İSE YÖNETİCİ PANELİ BUTONU */}
+            {isAdminUser && (
+              <Link
+                href="/admin"
+                className="mt-4 w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold py-2.5 px-3 rounded-2xl text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition-all"
+              >
+                <ShieldCheck size={16} /> YÖNETİCİ PANELİNE GEÇ &rarr;
+              </Link>
+            )}
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-2">
@@ -141,9 +162,25 @@ export default function HesabimPage() {
           </div>
         </div>
 
-        {/* SAĞ İÇERİK ALANI (Görsel 3 Birebir Grid Kartlar) */}
+        {/* SAĞ İÇERİK ALANI */}
         <div className="lg:col-span-3 space-y-6">
           
+          {/* YÖNETİCİ HESABI UYARI BANDI */}
+          {isAdminUser && (
+            <div className="bg-gradient-to-r from-emerald-900 to-teal-900 p-5 rounded-3xl text-white shadow-lg flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShieldCheck size={28} className="text-amber-400" />
+                <div>
+                  <h3 className="font-extrabold text-sm">Yönetici Yetkisi Tanımlı</h3>
+                  <p className="text-xs text-emerald-200">Sistem yöneticisi olarak oturum açtınız. Yönetim panelinden ürün, stok ve kampanya yönetebilirsiniz.</p>
+                </div>
+              </div>
+              <Link href="/admin" className="bg-amber-400 text-emerald-950 px-4 py-2 rounded-xl text-xs font-extrabold flex-shrink-0 hover:bg-amber-300 transition-colors">
+                Admin Paneli &rarr;
+              </Link>
+            </div>
+          )}
+
           {/* SİPARİŞ TAKİP KUTUSU */}
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
             <div className="flex items-center gap-2 mb-3 text-gray-900 font-extrabold text-sm">
@@ -170,123 +207,64 @@ export default function HesabimPage() {
 
           {/* 9 'LU DİNAMİK KART GRID (Görsel 3 Birebir) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            
-            {/* 1. SİPARİŞLERİM */}
-            <button
-              onClick={() => setActiveModal('siparislerim')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <ShoppingBag size={24} />
-              </div>
+            <button onClick={() => setActiveModal('siparislerim')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><ShoppingBag size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">SİPARİŞLERİM</span>
             </button>
 
-            {/* 2. FAVORİLERİM */}
-            <Link
-              href="/favoriler"
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Heart size={24} />
-              </div>
+            <Link href="/favoriler" className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Heart size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">FAVORİLERİM</span>
             </Link>
 
-            {/* 3. HEDİYE ÇEKLERİM */}
-            <button
-              onClick={() => setActiveModal('hediye_ceklerim')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Gift size={24} />
-              </div>
+            <button onClick={() => setActiveModal('hediye_ceklerim')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Gift size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">HEDİYE ÇEKLERİM</span>
             </button>
 
-            {/* 4. ADRESLERİM */}
-            <button
-              onClick={() => setActiveModal('adreslerim')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <MapPin size={24} />
-              </div>
+            <button onClick={() => setActiveModal('adreslerim')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><MapPin size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">ADRESLERİM</span>
             </button>
 
-            {/* 5. YORUMLARIM */}
-            <button
-              onClick={() => setActiveModal('yorumlarim')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <MessageSquare size={24} />
-              </div>
+            <button onClick={() => setActiveModal('yorumlarim')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><MessageSquare size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">YORUMLARIM</span>
             </button>
 
-            {/* 6. STOK ALARM LİSTEM */}
-            <button
-              onClick={() => setActiveModal('stok_alarm')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Bell size={24} />
-              </div>
+            <button onClick={() => setActiveModal('stok_alarm')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Bell size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">STOK ALARM LİSTEM</span>
             </button>
 
-            {/* 7. HAVALE BİLDİRİMİ */}
-            <button
-              onClick={() => setActiveModal('havale_bildirimi')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <CreditCard size={24} />
-              </div>
+            <button onClick={() => setActiveModal('havale_bildirimi')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><CreditCard size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">HAVALE BİLDİRİMİ</span>
             </button>
 
-            {/* 8. FİYAT ALARM LİSTEM */}
-            <button
-              onClick={() => setActiveModal('fiyat_alarm')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <Tag size={24} />
-              </div>
+            <button onClick={() => setActiveModal('fiyat_alarm')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><Tag size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">FİYAT ALARM LİSTEM</span>
             </button>
 
-            {/* 9. ÜYELİK İPTALİ */}
-            <button
-              onClick={() => setActiveModal('uyelik_iptali')}
-              className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                <UserX size={24} />
-              </div>
+            <button onClick={() => setActiveModal('uyelik_iptali')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-center flex flex-col items-center justify-center group">
+              <div className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"><UserX size={24} /></div>
               <span className="font-extrabold text-xs text-gray-800 tracking-wider">ÜYELİK İPTALİ</span>
             </button>
-
           </div>
+
         </div>
 
       </div>
 
-      {/* İNTERAKTİF MODALLAR / DETAY PENCERELERİ */}
+      {/* İNTERAKTİF MODALLAR */}
       {activeModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 relative shadow-2xl animate-in fade-in zoom-in duration-200">
-            <button
-              onClick={() => setActiveModal(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full bg-gray-100"
-            >
+            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full bg-gray-100">
               <X size={20} />
             </button>
 
-            {/* MODAL İÇERİKLERİ */}
             {activeModal === 'siparislerim' && (
               <div>
                 <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
@@ -304,16 +282,8 @@ export default function HesabimPage() {
                   <Gift className="text-amber-500" /> HEDİYE ÇEKLERİM & İNDİRİM KODLARI
                 </h3>
                 <form onSubmit={handleCouponSubmit} className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    placeholder="İndirim Kupon Kodu (Örn: ONB100)"
-                    className="flex-1 px-4 py-2 border rounded-xl text-xs bg-gray-50 uppercase font-bold"
-                  />
-                  <button type="submit" className="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">
-                    TANIMLA
-                  </button>
+                  <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="İndirim Kupon Kodu (Örn: ONB100)" className="flex-1 px-4 py-2 border rounded-xl text-xs bg-gray-50 uppercase font-bold" />
+                  <button type="submit" className="bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs">TANIMLA</button>
                 </form>
                 {couponMsg && <p className="text-xs font-bold text-emerald-700 bg-emerald-50 p-3 rounded-xl border">{couponMsg}</p>}
               </div>
@@ -360,27 +330,21 @@ export default function HesabimPage() {
 
             {activeModal === 'yorumlarim' && (
               <div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <MessageSquare className="text-purple-600" /> YORUMLARIM
-                </h3>
+                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2"><MessageSquare className="text-purple-600" /> YORUMLARIM</h3>
                 <p className="text-xs text-gray-500 bg-gray-50 p-4 rounded-xl text-center">Henüz bir ürün değerlendirmesi veya yorumunuz bulunmuyor.</p>
               </div>
             )}
 
             {activeModal === 'stok_alarm' && (
               <div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <Bell className="text-amber-600" /> STOK ALARM LİSTEM
-                </h3>
+                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2"><Bell className="text-amber-600" /> STOK ALARM LİSTEM</h3>
                 <p className="text-xs text-gray-500 bg-gray-50 p-4 rounded-xl text-center">Stok geldiğinde haber verilmeyi bekleyen bir ürün bulunmuyor.</p>
               </div>
             )}
 
             {activeModal === 'havale_bildirimi' && (
               <div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="text-emerald-600" /> HAVALE / EFT BİLDİRİMİ
-                </h3>
+                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2"><CreditCard className="text-emerald-600" /> HAVALE / EFT BİLDİRİMİ</h3>
                 <form onSubmit={(e) => { e.preventDefault(); alert('Havale bildiriminiz alındı. Teşekkürler!'); setActiveModal(null); }} className="space-y-3 text-xs">
                   <input type="text" required placeholder="Sipariş Numarası" value={bankNotice.orderId} onChange={(e) => setBankNotice({ ...bankNotice, orderId: e.target.value })} className="w-full p-2.5 border rounded-xl bg-gray-50" />
                   <input type="text" required placeholder="Ödemeyi Gönderen Ad Soyad" value={bankNotice.senderName} onChange={(e) => setBankNotice({ ...bankNotice, senderName: e.target.value })} className="w-full p-2.5 border rounded-xl bg-gray-50" />
@@ -392,26 +356,16 @@ export default function HesabimPage() {
 
             {activeModal === 'fiyat_alarm' && (
               <div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <Tag className="text-blue-600" /> FİYAT ALARM LİSTEM
-                </h3>
+                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2"><Tag className="text-blue-600" /> FİYAT ALARM LİSTEM</h3>
                 <p className="text-xs text-gray-500 bg-gray-50 p-4 rounded-xl text-center">Fiyatı düştüğünde haber beklediğiniz ürün bulunmuyor.</p>
               </div>
             )}
 
             {activeModal === 'uyelik_iptali' && (
               <div>
-                <h3 className="font-extrabold text-lg text-red-600 mb-4 flex items-center gap-2">
-                  <UserX /> ÜYELİK İPTALİ
-                </h3>
+                <h3 className="font-extrabold text-lg text-red-600 mb-4 flex items-center gap-2"><UserX /> ÜYELİK İPTALİ</h3>
                 <p className="text-xs text-gray-600 mb-4">Hesabınızı silmek üzeresiniz. Tüm kayıtlı adresleriniz ve favorileriniz silinecektir.</p>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem('user_session');
-                    signOut({ callbackUrl: '/hesabim/giris' });
-                  }}
-                  className="w-full bg-red-600 text-white font-bold py-3 rounded-xl text-xs"
-                >
+                <button onClick={() => { localStorage.removeItem('user_session'); signOut({ callbackUrl: '/hesabim/giris' }); }} className="w-full bg-red-600 text-white font-bold py-3 rounded-xl text-xs">
                   ÜYELİĞİMİ İPTAL ET VE ÇIKIŞ YAP
                 </button>
               </div>
@@ -419,13 +373,10 @@ export default function HesabimPage() {
 
             {activeModal === 'mesajlarim' && (
               <div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2">
-                  <MessageSquare className="text-emerald-600" /> MÜŞTERİ MESAJLARIM
-                </h3>
+                <h3 className="font-extrabold text-lg text-gray-900 mb-4 flex items-center gap-2"><MessageSquare className="text-emerald-600" /> MÜŞTERİ MESAJLARIM</h3>
                 <p className="text-xs text-gray-500 bg-gray-50 p-4 rounded-xl text-center">Müşteri hizmetlerimizle yapılmış aktif mesajlaşmanız bulunmuyor.</p>
               </div>
             )}
-
           </div>
         </div>
       )}

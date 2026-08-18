@@ -1,10 +1,9 @@
 'use client';
 
-// Ürün kartı bileşeni, etkileşimli öğeler barındırır.
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Package } from 'lucide-react';
+import { Heart, Package, ShoppingCart, Check } from 'lucide-react';
 import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
@@ -19,22 +18,24 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isFavorite = useFavoritesStore((state) => state.items.some((i) => i.id === product.id));
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   
-  // Görsel yüklenme hatasını yakala
   const [imgError, setImgError] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  // İndirim oranı hesaplama
+  const isOutOfStock = product.stock === 0;
+
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
-  
-  // İlk görseli veya placeholder'ı al
   const imageUrl = (product.images && product.images.length > 0) ? product.images[0] : '/placeholder.png';
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Linke tıklamayı engelle, sadece sepete ekle
+    e.preventDefault();
+    if (isOutOfStock) return;
     addItem(product, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault(); // Linke gitmeyi engelle
+    e.preventDefault();
     e.stopPropagation();
     toggleFavorite(product);
   };
@@ -82,36 +83,49 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* İçerik */}
       <div className="flex flex-col flex-grow">
-        {/* Marka */}
         <span className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wide">
           {product.brand}
         </span>
         
-        {/* Ürün Adı */}
         <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-2 leading-snug group-hover:text-emerald-600 transition-colors">
           {product.name}
         </h3>
         
         <div className="mt-auto pt-3">
           <div className="flex flex-col mb-3">
-            {/* Market Fiyatı (Üstü Çizili) */}
             {product.marketPrice && product.marketPrice > product.price && (
               <span className="text-xs text-gray-400 line-through">
                 {formatPrice(product.marketPrice)}
               </span>
             )}
-            {/* Güncel Fiyat */}
             <span className="text-lg font-bold text-emerald-600">
               {formatPrice(product.price)}
             </span>
           </div>
           
-          {/* Sepete Ekle Butonu */}
+          {/* Stok Kontrollü Sepete Ekle Butonu */}
           <button 
             onClick={handleAddToCart}
-            className="w-full bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white border border-emerald-200 hover:border-transparent transition-colors py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2"
+            disabled={isOutOfStock}
+            className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+              isOutOfStock
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                : added
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-transparent'
+            }`}
           >
-            Sepete Ekle
+            {isOutOfStock ? (
+              'Stokta Yok'
+            ) : added ? (
+              <>
+                <Check size={16} /> Sepete Eklendi!
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={16} /> Sepete Ekle
+              </>
+            )}
           </button>
         </div>
       </div>
