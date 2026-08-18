@@ -55,7 +55,7 @@ export default function Footer() {
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-white mb-2">Güvenli Alışveriş</h4>
               <div className="flex gap-2 text-xs font-mono text-emerald-200">
-                <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">iyzico</span>
+                <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">PayTR</span>
                 <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">SSL</span>
                 <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">3D Secure</span>
               </div>

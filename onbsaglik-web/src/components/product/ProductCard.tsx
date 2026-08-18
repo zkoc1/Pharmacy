@@ -1,10 +1,10 @@
 'use client';
 
 // Ürün kartı bileşeni, etkileşimli öğeler barındırır.
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart } from 'lucide-react';
+import { Heart, Package } from 'lucide-react';
 import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
@@ -19,6 +19,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isFavorite = useFavoritesStore((state) => state.items.some((i) => i.id === product.id));
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   
+  // Görsel yüklenme hatasını yakala
+  const [imgError, setImgError] = useState(false);
+
   // İndirim oranı hesaplama
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
   
@@ -60,13 +63,21 @@ export default function ProductCard({ product }: ProductCardProps) {
       
       {/* Görsel Alanı */}
       <div className="relative aspect-square w-full mb-4 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center">
-        <Image 
-          src={imageUrl} 
-          alt={product.name} 
-          fill
-          className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
-          unoptimized={true}
-        />
+        {imgError ? (
+          <div className="flex flex-col items-center justify-center text-emerald-600/40 p-4 text-center">
+            <Package size={48} className="mb-2" />
+            <span className="text-xs font-medium text-gray-400">{product.brand}</span>
+          </div>
+        ) : (
+          <Image 
+            src={imageUrl} 
+            alt={product.name} 
+            fill
+            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+            unoptimized={true}
+            onError={() => setImgError(true)}
+          />
+        )}
       </div>
 
       {/* İçerik */}

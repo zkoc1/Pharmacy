@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ShoppingCart, Heart, Minus, Plus, Shield, Truck } from "lucide-react";
+import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 import { useCartStore } from "@/stores/cartStore";
@@ -26,6 +26,8 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const [isFavorite, setIsFavorite] = useState(false);
   // Sepete ekleme geri bildirimi
   const [addedToCart, setAddedToCart] = useState(false);
+  // Görsel yüklenme hataları için state
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   const { addItem } = useCartStore();
 
@@ -43,7 +45,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
-  const images = product.images.length > 0 ? product.images : ["/placeholder.png"];
+  const images = product.images && product.images.length > 0 ? product.images : ["/placeholder.png"];
 
   return (
     <div className="grid gap-8" style={{ gridTemplateColumns: "1fr 1fr" }}>
@@ -61,15 +63,24 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
             marginBottom: "12px",
           }}
         >
-          <Image
-            src={images[selectedImage]}
-            alt={product.name}
-            width={400}
-            height={400}
-            style={{ objectFit: "contain", maxHeight: "360px" }}
-            unoptimized
-            priority
-          />
+          {imgErrors[selectedImage] ? (
+            <div className="flex flex-col items-center justify-center text-emerald-600/40 p-8 text-center">
+              <Package size={80} className="mb-2" />
+              <span className="text-sm font-semibold text-gray-500">{product.brand}</span>
+              <span className="text-xs text-gray-400 mt-1">Görsel Yüklenemedi</span>
+            </div>
+          ) : (
+            <Image
+              src={images[selectedImage]}
+              alt={product.name}
+              width={400}
+              height={400}
+              style={{ objectFit: "contain", maxHeight: "360px" }}
+              unoptimized
+              priority
+              onError={() => setImgErrors((prev) => ({ ...prev, [selectedImage]: true }))}
+            />
+          )}
         </div>
 
         {/* Küçük görsel listesi */}
@@ -93,14 +104,21 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                   transition: "var(--transition)",
                 }}
               >
-                <Image
-                  src={img}
-                  alt={`${product.name} ${i + 1}`}
-                  width={64}
-                  height={64}
-                  style={{ objectFit: "contain", width: "100%", height: "100%" }}
-                  unoptimized
-                />
+                {imgErrors[i] ? (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <Package size={24} />
+                  </div>
+                ) : (
+                  <Image
+                    src={img}
+                    alt={`${product.name} ${i + 1}`}
+                    width={64}
+                    height={64}
+                    style={{ objectFit: "contain", width: "100%", height: "100%" }}
+                    unoptimized
+                    onError={() => setImgErrors((prev) => ({ ...prev, [i]: true }))}
+                  />
+                )}
               </button>
             ))}
           </div>

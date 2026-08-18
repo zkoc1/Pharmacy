@@ -21,10 +21,21 @@ export default function AdminPaneli() {
   const [saveMsg, setSaveMsg] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "draft">("all");
 
-  // Oturum kontrolü — giriş yapılmamışsa yönlendir
+  // Oturum ve Rol kontrolü — yetkisiz yetkileri yönlendir
   useEffect(() => {
-    const session = localStorage.getItem("admin_session");
-    if (!session) {
+    const rawSession = localStorage.getItem("admin_session");
+    if (!rawSession) {
+      router.replace("/admin/giris");
+      return;
+    }
+    try {
+      const parsed = JSON.parse(rawSession);
+      if (parsed.role !== "super_admin" && parsed.role !== "admin") {
+        localStorage.removeItem("admin_session");
+        router.replace("/admin/giris");
+        return;
+      }
+    } catch {
       router.replace("/admin/giris");
       return;
     }
