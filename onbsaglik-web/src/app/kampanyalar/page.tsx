@@ -1,6 +1,6 @@
 /**
  * Kampanyalar ve Özel Fırsatlar Sayfası — /kampanyalar rotası.
- * OnbSağlık canlı combo teklifler, flash fırsatlar ve indirimli paketler.
+ * OnbSağlık canlı combo teklifler, flash fırsatlar ve stok kontrollü indirimli paketler.
  */
 "use client";
 
@@ -25,13 +25,13 @@ export default function KampanyalarSayfasi() {
     import("@/data/products.json").then((m) => setProducts(m.default as Product[]));
   }, []);
 
-  const handleAddComboToCart = (camp: Campaign) => {
+  const handleAddComboToCart = (camp: Campaign, isOutOfStock: boolean) => {
+    if (isOutOfStock) return;
     const mainProd = products.find((p) => p.id === camp.productId);
     const comboProd = products.find((p) => p.id === camp.comboProductId);
 
-    if (mainProd) addItem(mainProd, 1);
-    if (comboProd) {
-      // 2. ürünü kampanya fiyatıyla veya normal sepete ekle
+    if (mainProd && mainProd.stock > 0) addItem(mainProd, 1);
+    if (comboProd && comboProd.stock > 0) {
       const discountedComboProd = {
         ...comboProd,
         price: camp.comboPrice ? camp.comboPrice : comboProd.price,
@@ -60,7 +60,6 @@ export default function KampanyalarSayfasi() {
               1 alana 2. üründe özel indirimler, günün flash fırsatları ve orijinal ürün garantili dermokozmetik kampanyaları!
             </p>
           </div>
-          {/* Dekoratif Daireler */}
           <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         </div>
 
@@ -80,6 +79,10 @@ export default function KampanyalarSayfasi() {
             {activeCampaigns.map((camp) => {
               const mainProd = products.find((p) => p.id === camp.productId);
               const comboProd = products.find((p) => p.id === camp.comboProductId);
+
+              const isMainOutOfStock = mainProd ? mainProd.stock === 0 : false;
+              const isComboOutOfStock = comboProd ? comboProd.stock === 0 : false;
+              const isOutOfStock = isMainOutOfStock || isComboOutOfStock;
 
               return (
                 <div
@@ -115,6 +118,11 @@ export default function KampanyalarSayfasi() {
                           <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
                             1. Ürün
                           </span>
+                          {isMainOutOfStock && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
+                              Stokta Yok
+                            </span>
+                          )}
                           <div className="relative aspect-square w-full mb-2">
                             <Image
                               src={mainProd.images?.[0] || "/placeholder.png"}
@@ -135,11 +143,16 @@ export default function KampanyalarSayfasi() {
                           </p>
                         </div>
 
-                        {/* Artı İkonu İle İkinci Ürün Bağlantısı */}
+                        {/* 2. Ürün */}
                         <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60 text-center relative group">
                           <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
                             2. Ürün (Fırsat)
                           </span>
+                          {isComboOutOfStock && (
+                            <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md z-10">
+                              Stokta Yok
+                            </span>
+                          )}
                           <div className="relative aspect-square w-full mb-2">
                             <Image
                               src={comboProd.images?.[0] || "/placeholder.png"}
@@ -166,7 +179,6 @@ export default function KampanyalarSayfasi() {
                         </div>
                       </div>
                     ) : (
-                      /* FLASH / DİĞER KAMPANYA GÖSTERİMİ */
                       mainProd && (
                         <div className="flex gap-4 items-center mb-6 bg-gray-50 p-4 rounded-2xl">
                           <div className="relative w-24 h-24 flex-shrink-0 bg-white rounded-xl p-2 border border-gray-100">
@@ -194,12 +206,21 @@ export default function KampanyalarSayfasi() {
                       )
                     )}
 
-                    {/* Alt Buton: İki Ürünü Birlikte Sepete Ekle */}
+                    {/* Stok Kontrollü Alt Buton */}
                     <button
-                      onClick={() => handleAddComboToCart(camp)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
+                      onClick={() => handleAddComboToCart(camp, isOutOfStock)}
+                      disabled={isOutOfStock}
+                      className={`w-full font-bold py-3.5 px-6 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-sm ${
+                        isOutOfStock
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300"
+                          : addedItems[camp.id]
+                          ? "bg-emerald-700 text-white"
+                          : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      }`}
                     >
-                      {addedItems[camp.id] ? (
+                      {isOutOfStock ? (
+                        "Stokta Yok - Kampanya Tükendi"
+                      ) : addedItems[camp.id] ? (
                         <>
                           <Check size={18} /> İki Ürün Sepete Eklendi!
                         </>

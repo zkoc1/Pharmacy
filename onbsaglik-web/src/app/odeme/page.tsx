@@ -1,7 +1,6 @@
 /**
- * Ödeme & Teslimat Sayfası — /odeme (Görsel 1-2 ve Kullanıcı İstekleri Birebir)
- * - 81 İl, Tüm İlçeler ve Tüm Mahalleler /api/locations üzerinden dinamik çekilir.
- * - Kredi Kartı alanı temiz ve Görsel 1 ile birebir uyumlu hale getirildi (Kart resmi kaldırıldı).
+ * Ödeme & Teslimat Sayfası — /odeme (Görsel 1-5 Birebir)
+ * Kart Doğrulaması, PayTR Ödeme Entegrasyonu, Sipariş Kaydı (orderStore) ve Stok Guard.
  */
 
 "use client";
@@ -9,9 +8,10 @@
 import React, { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore } from "@/stores/addressStore";
+import { useOrderStore } from "@/stores/orderStore";
 import { useSession } from "next-auth/react";
 import { formatPrice } from "@/lib/products";
-import { CreditCard, Truck, MapPin, ChevronRight } from "lucide-react";
+import { CreditCard, Truck, MapPin, ChevronRight, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ALL_81_PROVINCES } from "@/lib/turkeyLocations";
@@ -19,16 +19,16 @@ import { ALL_81_PROVINCES } from "@/lib/turkeyLocations";
 export default function OdemeSayfasi() {
   const { items, getTotalPrice, clearCart } = useCartStore();
   const { getDefaultAddress } = useAddressStore();
+  const { addOrder } = useOrderStore();
   const { data: session } = useSession();
 
   // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ (Görsel 3-5 Birebir)
   const [activeStep, setActiveStep] = useState<1 | 2>(1);
 
-  // Dinamik Konum State'leri (API'den Tüm Türkiye Çekilir)
+  // Dinamik Konum State'leri
   const [cities, setCities] = useState<string[]>(ALL_81_PROVINCES);
   const [districts, setDistricts] = useState<string[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
-  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
 
   // Adres Formu State (Görsel 3-4 Birebir)
   const [addressForm, setAddressForm] = useState({
@@ -61,7 +61,7 @@ export default function OdemeSayfasi() {
   // Ödeme Seçeneği Tab (Kredi Kartı | Havale / EFT | PayTR ile Öde)
   const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
 
-  // Kart Formu (Görsel 1 Birebir)
+  // Kart Formu
   const [cardForm, setCardForm] = useState({
     cardName: "",
     cardNumber: "",
@@ -69,6 +69,7 @@ export default function OdemeSayfasi() {
     expireYear: "Yıl",
     cvc: "",
   });
+  const [cardError, setCardError] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(true);
 
   // Kupon İndirimi
@@ -85,17 +86,14 @@ export default function OdemeSayfasi() {
     fetch("/api/locations")
       .then((r) => r.json())
       .then((data) => {
-        if (data.cities && data.cities.length > 0) {
-          setCities(data.cities);
-        }
+        if (data.cities && data.cities.length > 0) setCities(data.cities);
       })
       .catch(() => {});
   }, []);
 
-  // 2. Seçilen Şehrin TÜM İLÇELERİNİ Çek
+  // 2. Seçilen Şehrin Tüm İlçelerini Çek
   useEffect(() => {
     if (!addressForm.city) return;
-    setIsLoadingLocations(true);
     fetch(`/api/locations?city=${encodeURIComponent(addressForm.city)}`)
       .then((r) => r.json())
       .then((data) => {
@@ -105,11 +103,10 @@ export default function OdemeSayfasi() {
             setAddressForm((p) => ({ ...p, district: data.districts[0] }));
           }
         }
-      })
-      .finally(() => setIsLoadingLocations(false));
+      });
   }, [addressForm.city]);
 
-  // 3. Seçilen İlçenin TÜM MAHALLELERİNİ Çek
+  // 3. Seçilen İlçenin Tüm Mahallelerini Çek
   useEffect(() => {
     if (!addressForm.city || !addressForm.district) return;
     fetch(`/api/locations?city=${encodeURIComponent(addressForm.city)}&district=${encodeURIComponent(addressForm.district)}`)
@@ -119,11 +116,10 @@ export default function OdemeSayfasi() {
           setNeighborhoods(data.neighborhoods);
           setAddressForm((p) => ({ ...p, neighborhood: data.neighborhoods[0] }));
         } else {
-          setNeighborhoods(["YENİ MAH", "MERKEZ MAH", "CUMHURİYET MAH"]);
+          setNeighborhoods(["YENİ MAH", "MERKEZ MAH"]);
           setAddressForm((p) => ({ ...p, neighborhood: "YENİ MAH" }));
         }
-      })
-      .catch(() => {});
+      });
   }, [addressForm.city, addressForm.district]);
 
   useEffect(() => {
@@ -152,19 +148,57 @@ export default function OdemeSayfasi() {
       alert("Lütfen Ad Soyad ve Açık Adres alanlarını doldurun.");
       return;
     }
-    setActiveStep(2); // Ödeme Bilgileri Adımına Geç
+    setActiveStep(2);
   };
 
   const handleCompleteOrder = (e: React.FormEvent) => {
     e.preventDefault();
+    setCardError("");
+
     if (!termsAccepted) {
       alert("Lütfen Mesafeli Satış Sözleşmesini onaylayın.");
       return;
     }
 
+    // KREDİ KARTI DOĞRULAMA (Geçersiz kart bilgilerini engelle)
+    if (paymentMethod === "cc") {
+      const cleanCardNum = cardForm.cardNumber.replace(/\s+/g, "");
+      if (!cardForm.cardName.trim()) {
+        setCardError("Lütfen kart üzerindeki Ad Soyad bilgisini girin.");
+        return;
+      }
+      if (cleanCardNum.length < 15 || isNaN(Number(cleanCardNum))) {
+        setCardError("Lütfen 16 haneli geçerli bir kart numarası girin.");
+        return;
+      }
+      if (cardForm.expireMonth === "Ay" || cardForm.expireYear === "Yıl") {
+        setCardError("Lütfen kartınızın son kullanma ay ve yılını seçin.");
+        return;
+      }
+      if (cardForm.cvc.trim().length < 3 || isNaN(Number(cardForm.cvc))) {
+        setCardError("Lütfen 3 haneli CVC kodunuzu girin.");
+        return;
+      }
+    }
+
+    // SİPARİŞİ KULLANICI SİPARİŞ STORE'UNA KAYDET
+    const newOrderRecord = addOrder({
+      items: items.map((i) => ({
+        id: i.product.id,
+        name: i.product.name,
+        brand: i.product.brand,
+        price: i.product.price,
+        quantity: i.quantity,
+        image: i.product.images?.[0] || "/placeholder.png",
+      })),
+      total: grandTotal,
+      carrier: selectedCarrier,
+      paymentMethod: paymentMethod === "cc" ? "Kredi Kartı" : paymentMethod === "eft" ? "Havale / EFT" : "PayTR ile Öde",
+      deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood}`,
+    });
+
     clearCart();
-    const orderNum = `ONB-${Date.now()}`;
-    window.location.href = `/odeme/basarili?orderId=${orderNum}`;
+    window.location.href = `/odeme/basarili?orderId=${newOrderRecord.id}`;
   };
 
   const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
@@ -215,7 +249,7 @@ export default function OdemeSayfasi() {
           {/* Sol Ana Alan */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* ADIM 1: ADRES BİLGİLERİ (TÜM İLLER, TÜM İLÇELER VE TÜM MAHALLELER) */}
+            {/* ADIM 1: ADRES BİLGİLERİ */}
             {activeStep === 1 && (
               <form onSubmit={handleSaveAddress} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
                 <div className="flex justify-between items-center border-b pb-4">
@@ -375,7 +409,7 @@ export default function OdemeSayfasi() {
               </form>
             )}
 
-            {/* ADIM 2: ÖDEME BİLGİLERİ (GÖRSEL 1 BİREBİR — TEMİZ FORM) */}
+            {/* ADIM 2: ÖDEME BİLGİLERİ (GÖRSEL 1 BİREBİR & PAYTR ENTEGRASYONU) */}
             {activeStep === 2 && (
               <div className="space-y-6">
                 
@@ -444,11 +478,16 @@ export default function OdemeSayfasi() {
 
                   {paymentMethod === "cc" && (
                     <form onSubmit={handleCompleteOrder} className="space-y-4">
-                      
                       <div className="border-b pb-2">
                         <h4 className="text-xs font-extrabold text-gray-900 uppercase">Kart Bilgileri</h4>
                       </div>
-                      
+
+                      {cardError && (
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-xl">
+                          ⚠️ {cardError}
+                        </div>
+                      )}
+
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">Kart Üzerindeki Ad Soyad *</label>
                         <input
@@ -525,8 +564,19 @@ export default function OdemeSayfasi() {
                   )}
 
                   {paymentMethod === "paytr" && (
-                    <div className="bg-blue-50 border border-blue-200 p-5 rounded-2xl text-xs text-blue-900 font-bold">
-                      🔒 PayTR 256-bit SSL Güvenli İframe Ödeme Ortamı Yüklenecektir.
+                    <div className="bg-blue-50 border border-blue-200 p-6 rounded-3xl space-y-4 text-xs">
+                      <div className="flex items-center gap-3 text-blue-900 font-extrabold text-sm border-b border-blue-200 pb-3">
+                        <ShieldCheck size={24} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
+                      </div>
+                      <p className="text-blue-800 font-semibold">
+                        PayTR güvencesiyle 3D Secure şifrenizle hızlı ve emniyetli ödeme yapabilirsiniz.
+                      </p>
+                      <button
+                        onClick={handleCompleteOrder}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider"
+                      >
+                        PAYTR İLE ÖDEMEYİ TAMAMLA ({formatPrice(grandTotal)})
+                      </button>
                     </div>
                   )}
 

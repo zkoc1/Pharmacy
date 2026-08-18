@@ -9,6 +9,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem, Product } from "@/types";
 
+export type { CartItem };
+
 interface CartStore {
   /** Aktif kullanıcının e-posta adresi (guest için 'guest') */
   userEmail: string;
