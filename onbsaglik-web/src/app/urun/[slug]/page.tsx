@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProducts, getProductBySlug, formatPrice, calcDiscount } from "@/lib/products";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
+import ProductReviews from "@/components/product/ProductReviews";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -115,6 +116,9 @@ export default async function UrunDetaySayfasi({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* Müşteri Yorumları */}
+      <ProductReviews productSlug={slug} productId={product.id} />
     </div>
   );
 }

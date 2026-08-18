@@ -57,6 +57,8 @@ export const metadata: Metadata = {
   },
 };
 
+import SessionWrapper from "@/components/providers/SessionWrapper";
+
 export default function RootLayout({
   children,
 }: {
@@ -65,14 +67,16 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.variable}>
       <body>
-        {/* Üst navigasyon çubuğu */}
-        <Header />
+        <SessionWrapper>
+          {/* Üst navigasyon çubuğu */}
+          <Header />
 
-        {/* Sayfa içeriği */}
-        <main>{children}</main>
+          {/* Sayfa içeriği */}
+          <main>{children}</main>
 
-        {/* Alt bilgi alanı */}
-        <Footer />
+          {/* Alt bilgi alanı */}
+          <Footer />
+        </SessionWrapper>
       </body>
     </html>
   );

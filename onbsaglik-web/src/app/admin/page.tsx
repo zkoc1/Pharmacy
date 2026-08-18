@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, TrendingUp, Users, ShoppingBag, Edit2, Eye, EyeOff, Search } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 
@@ -171,6 +171,22 @@ export default function AdminPaneli() {
             </div>
             <div style={{ fontSize: "15px", fontWeight: 800, color: "#92400e" }}>Yönet →</div>
           </a>
+          {/* Trendyol Senkron Butonu */}
+          <button
+            onClick={async () => {
+              const r = await fetch("/api/admin/sync-trendyol");
+              const d = await r.json();
+              alert(d.message ?? `${d.synced ?? 0} ürün senkronize edildi.`);
+            }}
+            className="card"
+            style={{ padding: "24px", background: "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)", border: "2px solid #3b82f6", cursor: "pointer", display: "block", textAlign: "left", width: "100%" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px", color: "#3b82f6" }}>
+              <RefreshCw size={20} />
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e40af" }}>Trendyol Sync</span>
+            </div>
+            <div style={{ fontSize: "15px", fontWeight: 800, color: "#1e40af" }}>Stok Senkronize Et</div>
+          </button>
         </div>
 
         {/* Ürün yönetim tablosu */}

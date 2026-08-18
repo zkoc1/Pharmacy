@@ -8,7 +8,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(cfg: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: cfg.get('JWT_SECRET'),
+      // JWT_SECRET env yoksa geliştirme için fallback kullan
+      secretOrKey: cfg.get<string>('JWT_SECRET') ?? 'onbsaglik_dev_jwt_secret_fallback',
     });
   }
   async validate(payload: { sub: number; email: string; role: string }) {
