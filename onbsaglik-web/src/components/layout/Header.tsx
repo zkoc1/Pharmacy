@@ -1,5 +1,5 @@
 /**
- * Header bileşeni — Sticky header, Arama, Sepet, Kullanıcı Menüsü ve Mega Kategori Açılır Menüsü.
+ * Header bileşeni — Sticky header, Arama, Sepet, Hesabım Pop-up Login Modalı ve Mega Kategori Açılır Menüsü.
  */
 
 "use client";
@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   ShoppingCart,
   Heart,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import CartDrawer from "@/components/ui/CartDrawer";
+import LoginModal from "@/components/ui/LoginModal";
 
 // Mega Kategori navigasyonu — Alt kategorilerle birlikte (Görsel 5 Birebir)
 const NAV_CATEGORIES = [
@@ -97,12 +99,15 @@ interface SearchResult {
 
 export default function Header() {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeMegaCategory, setActiveMegaCategory] = useState<typeof NAV_CATEGORIES[0] | null>(null);
 
@@ -138,7 +143,7 @@ export default function Header() {
           setShowSearchDropdown(true);
         }
       } catch {
-        // Hata durumunda boş bırak
+        // Hata
       } finally {
         setIsSearching(false);
       }
@@ -152,6 +157,15 @@ export default function Header() {
     if (searchQuery.trim()) {
       setShowSearchDropdown(false);
       router.push(`/ara?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleHesabimClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (status === "authenticated" || localStorage.getItem("user_session")) {
+      router.push("/hesabim");
+    } else {
+      setIsLoginModalOpen(true);
     }
   };
 
@@ -340,15 +354,17 @@ export default function Header() {
             )}
           </div>
 
-          {/* İkonlar: Hesabım, Favoriler, Sepet */}
+          {/* İkonlar: Hesabım (Pop-up Modal Trigger), Favoriler, Sepet */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <Link
-              href="/hesabim"
+            <button
+              onClick={handleHesabimClick}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                textDecoration: "none",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
                 color: "var(--color-text)",
                 fontSize: "13px",
                 fontWeight: 600,
@@ -356,7 +372,7 @@ export default function Header() {
             >
               <User size={20} />
               <span className="icon-label-desktop">Hesabım</span>
-            </Link>
+            </button>
 
             <Link
               href="/favoriler"
@@ -434,7 +450,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Kategori Navigasyon Çubuğu — Masaüstü (Görsel 5 Birebir Kategori Hover Menüsü) */}
+        {/* Kategori Navigasyon Çubuğu — Masaüstü */}
         <div
           style={{
             borderTop: "1px solid var(--color-border)",
@@ -502,7 +518,7 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* MEGA DROPDOWN KATEGORİ MENÜSÜ (Görsel 5 Birebir Çok Kolonlu Açılır Liste) */}
+          {/* MEGA DROPDOWN KATEGORİ MENÜSÜ */}
           {activeMegaCategory && activeMegaCategory.subcategories && (
             <div
               style={{
@@ -596,8 +612,9 @@ export default function Header() {
         )}
       </header>
 
-      {/* Sepet Drawer */}
+      {/* Sepet Drawer & Üye Girişi Pop-up Modalı (Görsel 1 Birebir) */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </>
   );
 }

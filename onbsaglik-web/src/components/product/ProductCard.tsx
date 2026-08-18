@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Package, ShoppingCart, Check } from 'lucide-react';
+import { Heart, Package, ShoppingCart, Check, Sparkles } from 'lucide-react';
 import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
@@ -26,7 +26,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stock === 0;
 
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
-  const imageUrl = (product.images && product.images.length > 0) ? product.images[0] : '/placeholder.png';
+  const imageUrl = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : '/placeholder.png';
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <Link href={`/urun/${product.slug}`} className="group flex flex-col bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative">
         {/* İndirim Rozeti */}
         {discountRate > 0 && (
-          <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md">
+          <div className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-extrabold px-2 py-0.5 rounded-md shadow-sm">
             %{discountRate}
           </div>
         )}
@@ -57,22 +57,25 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Favori Butonu */}
         <button
           onClick={handleToggleFavorite}
-          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 hover:bg-white shadow-sm transition-all duration-200 flex items-center justify-center cursor-pointer"
+          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all duration-200 flex items-center justify-center cursor-pointer"
           aria-label={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
         >
           <Heart
             size={18}
-            className={isFavorite ? "text-red-500" : "text-gray-400 hover:text-red-500"}
-            fill={isFavorite ? "#ef4444" : "none"}
+            className={isFavorite ? "text-rose-500" : "text-gray-400 hover:text-rose-500"}
+            fill={isFavorite ? "#f43f5e" : "none"}
           />
         </button>
         
         {/* Görsel Alanı */}
-        <div className="relative aspect-square w-full mb-4 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center">
+        <div className="relative aspect-square w-full mb-4 bg-gray-50/80 rounded-xl overflow-hidden flex items-center justify-center border border-gray-50">
           {imgError ? (
-            <div className="flex flex-col items-center justify-center text-emerald-600/40 p-4 text-center">
-              <Package size={48} className="mb-2" />
-              <span className="text-xs font-medium text-gray-400">{product.brand}</span>
+            <div className="flex flex-col items-center justify-center p-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2 shadow-inner">
+                <Sparkles size={28} />
+              </div>
+              <span className="text-xs font-bold text-gray-800 line-clamp-1 uppercase">{product.brand}</span>
+              <span className="text-[10px] text-gray-400 font-medium mt-0.5">Orijinal Eczane Ürünü</span>
             </div>
           ) : (
             <Image 
@@ -88,11 +91,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* İçerik */}
         <div className="flex flex-col flex-grow">
-          <span className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wide">
+          <span className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wide">
             {product.brand}
           </span>
           
-          <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-2 leading-snug group-hover:text-emerald-600 transition-colors">
+          <h3 className="text-xs font-bold text-gray-800 line-clamp-2 mb-2 leading-snug group-hover:text-emerald-600 transition-colors">
             {product.name}
           </h3>
           
@@ -103,7 +106,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   {formatPrice(product.marketPrice)}
                 </span>
               )}
-              <span className="text-lg font-bold text-emerald-600">
+              <span className="text-base font-extrabold text-emerald-600">
                 {formatPrice(product.price)}
               </span>
             </div>
@@ -112,7 +115,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button 
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
                 isOutOfStock
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                   : added
@@ -136,7 +139,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Görsel 1 Birebir Ürün Sepete Eklendi Modalı */}
+      {/* Ürün Sepete Eklendi Modalı */}
       <AddToCartModal
         product={product}
         isOpen={showModal}
