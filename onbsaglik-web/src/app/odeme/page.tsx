@@ -1,6 +1,6 @@
 /**
- * Ödeme & Teslimat Sayfası — /odeme (Görsel 3, 4, 5 Birebir)
- * Adres Adımı (İl/İlçe/Mahalle Dropdown), Kargo Seçimi, Kredi Kartı/PayTR/Havale ve Sipariş Özeti.
+ * Ödeme & Teslimat Sayfası — /odeme (Görsel 1-5 Birebir)
+ * Türkiye'nin Tüm 81 İli, İlçeleri ve Mahalleleri + Canlı Kredi Kartı Görseli + Ay/Yıl Seçicileri.
  */
 
 "use client";
@@ -10,39 +10,10 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore } from "@/stores/addressStore";
 import { useSession } from "next-auth/react";
 import { formatPrice } from "@/lib/products";
-import { CreditCard, CheckCircle2, ShieldCheck, Truck, MapPin, ChevronRight, Check } from "lucide-react";
+import { CreditCard, Truck, MapPin, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-// TÜRKİYE İLLERİ, İLÇELERİ VE MAHALLELERİ DATASETİ (Görsel 4 Birebir)
-const TURKEY_CITIES: Record<string, Record<string, string[]>> = {
-  Kayseri: {
-    Kocasinan: ["SAHABİYE MAH", "SALUR MAH", "SANAYİ MAH", "SANCAKTEPE MAH", "SARAY BOSNA MAH", "SARAYCIK MAH", "ŞEKER MAH", "SEYRANİ MAH", "SÜMER MAH", "TALATPAŞA MAH", "TAŞHAN MAH", "TURGUT REİS MAH", "UĞUREVLER MAH", "VATAN MAH", "YAKUT MAH", "YAVUZ SELİM MAH", "YAVUZLAR MAH", "YAZIR MAH", "YEMLİHA MAH", "YENİ MAH"],
-    Melikgazi: ["ALPASLAN MAH", "BAHÇELİEVLER MAH", "GÜLTEPE MAH", "HÜRRIYET MAH", "KÖŞK MAH", "MUMCU MAH", "YILDIRIM BEYAZIT MAH"],
-    Talas: ["BAHÇELİEVLER MAH", "HARMAN MAH", "MEVLANA MAH", "YENİDOĞAN MAH"],
-  },
-  İstanbul: {
-    Kadıköy: ["CAFERAĞA MAH", "CADDEBOSTAN MAH", "FENERBAHÇE MAH", "MODA MAH", "SUADİYE MAH"],
-    Beşiktaş: ["BEBEK MAH", "ETİLER MAH", "LEVENT MAH", "ORTAKÖY MAH"],
-    Şişli: ["BOMONTİ MAH", "TEŞVİKİYE MAH", "FULYA MAH", "MECİDİYEKÖY MAH"],
-  },
-  Ankara: {
-    Çankaya: ["BAHÇELİEVLER MAH", "GOP MAH", "KIZILAY MAH", "TUZLUÇAYIR MAH"],
-    Yenimahalle: ["BATIKENT MAH", "DEMETEVLER MAH", "ŞENTEPE MAH"],
-  },
-  İzmir: {
-    Konak: ["ALSANCAK MAH", "GÖZTEPE MAH", "GÜZELYALI MAH", "KARATAŞ MAH"],
-    Karşıyaka: ["BOSTANLI MAH", "MAVİŞEHİR MAH", "YALI MAH"],
-  },
-  Bursa: {
-    Nilüfer: ["ALTINŞEHİR MAH", "BEŞEVLER MAH", "ÖZLÜCE MAH"],
-    Osmangazi: ["ALTIPARMAK MAH", "ÇEKİRGE MAH", "DOĞANBEY MAH"],
-  },
-  Antalya: {
-    Muratpaşa: ["FENER MAH", "LARA MAH", "ŞİRİNYALI MAH"],
-    Konyaaltı: ["ARAPSUYU MAH", "GÜRSU MAH", "LİMAN MAH"],
-  },
-};
+import { ALL_81_PROVINCES, getDistricts, getNeighborhoods } from "@/lib/turkeyLocations";
 
 export default function OdemeSayfasi() {
   const { items, getTotalPrice, clearCart } = useCartStore();
@@ -80,11 +51,17 @@ export default function OdemeSayfasi() {
     { name: "Yurtiçi Kargo", price: 149.90, label: "149,90 TL" },
   ];
 
-  // Ödeme Seçeneği Tab (Görsel 5 Birebir)
+  // Ödeme Seçeneği Tab (Görsel 1-2 Birebir: Kredi Kartı | Havale / EFT | PayTR ile Öde)
   const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
 
-  // Kart Formu
-  const [cardForm, setCardForm] = useState({ cardName: "", cardNumber: "", expireDate: "", cvc: "" });
+  // Kart Formu (Görsel 1-2 Birebir: Ay / Yıl Dropdownları ve Canlı Kart Görseli)
+  const [cardForm, setCardForm] = useState({
+    cardName: "",
+    cardNumber: "",
+    expireMonth: "Ay",
+    expireYear: "Yıl",
+    cvc: "",
+  });
   const [termsAccepted, setTermsAccepted] = useState(true);
 
   // Kupon İndirimi
@@ -137,9 +114,11 @@ export default function OdemeSayfasi() {
     window.location.href = `/odeme/basarili?orderId=${orderNum}`;
   };
 
-  const cityList = Object.keys(TURKEY_CITIES);
-  const districtList = TURKEY_CITIES[addressForm.city] ? Object.keys(TURKEY_CITIES[addressForm.city]) : ["Merkez"];
-  const neighborhoodList = TURKEY_CITIES[addressForm.city]?.[addressForm.district] || ["YENİ MAH", "MERKEZ MAH"];
+  const districtList = getDistricts(addressForm.city);
+  const neighborhoodList = getNeighborhoods(addressForm.city, addressForm.district);
+
+  const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+  const years = ["2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035"];
 
   if (items.length === 0) {
     return (
@@ -183,7 +162,7 @@ export default function OdemeSayfasi() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Sol Ana Alan (Adım 1 veya Adım 2) */}
+          {/* Sol Ana Alan */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* ADIM 1: ADRES BİLGİLERİ (Görsel 3-4 Birebir) */}
@@ -255,34 +234,35 @@ export default function OdemeSayfasi() {
                     </select>
                   </div>
 
-                  {/* İl Seçiniz Dropdown (Görsel 4 Birebir Tüm Konumlar) */}
+                  {/* TÜRKİYE'NİN TÜM 81 İLİ DROPDOWN (Görsel 4 Birebir) */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">İl Seçiniz *</label>
                     <select
                       value={addressForm.city}
                       onChange={(e) => {
                         const newCity = e.target.value;
-                        const firstDist = TURKEY_CITIES[newCity] ? Object.keys(TURKEY_CITIES[newCity])[0] : "Merkez";
-                        const firstNeigh = TURKEY_CITIES[newCity]?.[firstDist]?.[0] || "YENİ MAH";
-                        setAddressForm({ ...addressForm, city: newCity, district: firstDist, neighborhood: firstNeigh });
+                        const dists = getDistricts(newCity);
+                        const firstDist = dists[0] || "Merkez";
+                        const neighs = getNeighborhoods(newCity, firstDist);
+                        setAddressForm({ ...addressForm, city: newCity, district: firstDist, neighborhood: neighs[0] || "YENİ MAH" });
                       }}
                       className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                     >
-                      {cityList.map((c) => (
+                      {ALL_81_PROVINCES.map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                   </div>
 
-                  {/* İlçe Seçiniz Dropdown (Görsel 4 Birebir) */}
+                  {/* DİNAMİK İLÇE DROPDOWN (Görsel 4 Birebir) */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">İlçe Seçiniz *</label>
                     <select
                       value={addressForm.district}
                       onChange={(e) => {
                         const newDist = e.target.value;
-                        const firstNeigh = TURKEY_CITIES[addressForm.city]?.[newDist]?.[0] || "YENİ MAH";
-                        setAddressForm({ ...addressForm, district: newDist, neighborhood: firstNeigh });
+                        const neighs = getNeighborhoods(addressForm.city, newDist);
+                        setAddressForm({ ...addressForm, district: newDist, neighborhood: neighs[0] || "YENİ MAH" });
                       }}
                       className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                     >
@@ -292,7 +272,7 @@ export default function OdemeSayfasi() {
                     </select>
                   </div>
 
-                  {/* Semt / Mahalle Dropdown (Görsel 4 Birebir) */}
+                  {/* DİNAMİK SEMT / MAHALLE DROPDOWN (Görsel 4 Birebir) */}
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">Semt / Mahalle *</label>
                     <select
@@ -355,11 +335,11 @@ export default function OdemeSayfasi() {
               </form>
             )}
 
-            {/* ADIM 2: ÖDEME BİLGİLERİ (Görsel 5 Birebir) */}
+            {/* ADIM 2: ÖDEME BİLGİLERİ (Görsel 1-2 & 5 Birebir) */}
             {activeStep === 2 && (
               <div className="space-y-6">
                 
-                {/* KARGO SEÇENEKLERİ (Görsel 5 Birebir) */}
+                {/* KARGO SEÇENEKLERİ */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-4">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
                     <Truck className="text-emerald-600" /> KARGO SEÇENEKLERİ
@@ -388,13 +368,13 @@ export default function OdemeSayfasi() {
                   </div>
                 </div>
 
-                {/* ÖDEME SEÇENEKLERİ (Görsel 5 Birebir) */}
+                {/* ÖDEME SEÇENEKLERİ (Görsel 1-2 Birebir: Kredi Kartı Görseli & Ay/Yıl Dropdownları) */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-6">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
                     <CreditCard className="text-emerald-600" /> ÖDEME SEÇENEKLERİ
                   </h3>
 
-                  {/* Ödeme Sekmeleri: Kredi Kartı | Havale / EFT | PayTR ile Öde */}
+                  {/* Ödeme Sekmeleri: Kredi Kartı | Havale / EFT | PayTR ile Öde (Görsel 1-2 Birebir) */}
                   <div className="flex gap-2 border-b pb-3">
                     <button
                       onClick={() => setPaymentMethod("cc")}
@@ -423,7 +403,33 @@ export default function OdemeSayfasi() {
                   </div>
 
                   {paymentMethod === "cc" && (
-                    <form onSubmit={handleCompleteOrder} className="space-y-4">
+                    <form onSubmit={handleCompleteOrder} className="space-y-6">
+                      
+                      {/* CANLI KREDİ KARTI SİMÜLASYON GÖRSELİ (Görsel 2 Birebir) */}
+                      <div className="bg-gradient-to-tr from-gray-900 via-gray-800 to-black text-white p-6 rounded-3xl shadow-xl max-w-sm relative overflow-hidden">
+                        <div className="flex justify-between items-center mb-6">
+                          <div className="w-12 h-9 bg-amber-400/80 rounded-md border border-amber-300 flex items-center justify-center font-bold text-[10px] text-gray-900">
+                            CHIP
+                          </div>
+                          <span className="font-extrabold italic text-sm text-blue-400 tracking-wider">VISA / MasterCard</span>
+                        </div>
+
+                        <div className="font-mono text-lg tracking-widest mb-6">
+                          {cardForm.cardNumber || "•••• •••• •••• ••••"}
+                        </div>
+
+                        <div className="flex justify-between items-end text-xs">
+                          <div>
+                            <span className="text-[10px] text-gray-400 block uppercase">AD SOYAD</span>
+                            <span className="font-bold uppercase tracking-wide">{cardForm.cardName || "ZEHRA KOÇ"}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-gray-400 block uppercase">GEÇERLİLİK</span>
+                            <span className="font-bold">{cardForm.expireMonth !== "Ay" ? cardForm.expireMonth : "MM"}/{cardForm.expireYear !== "Yıl" ? cardForm.expireYear.substring(2) : "YY"}</span>
+                          </div>
+                        </div>
+                      </div>
+
                       <h4 className="text-xs font-extrabold text-gray-900 uppercase">Kart Bilgileri</h4>
                       
                       <div>
@@ -446,36 +452,50 @@ export default function OdemeSayfasi() {
                           maxLength={19}
                           value={cardForm.cardNumber}
                           onChange={(e) => setCardForm({ ...cardForm, cardNumber: e.target.value })}
-                          placeholder="0000 0000 0000 0000"
+                          placeholder="Kart Numarası"
                           className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                      {/* Son Kullanma Tarihi Dropdownları (Ay & Yıl — Görsel 1-2 Birebir) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="sm:col-span-2">
                           <label className="block text-xs font-bold text-gray-700 mb-1">Son Kullanma Tarihi *</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="AA/YY"
-                            value={cardForm.expireDate}
-                            onChange={(e) => setCardForm({ ...cardForm, expireDate: e.target.value })}
-                            className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
-                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <select
+                              value={cardForm.expireMonth}
+                              onChange={(e) => setCardForm({ ...cardForm, expireMonth: e.target.value })}
+                              className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                            >
+                              <option value="Ay">Ay</option>
+                              {months.map((m) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+
+                            <select
+                              value={cardForm.expireYear}
+                              onChange={(e) => setCardForm({ ...cardForm, expireYear: e.target.value })}
+                              className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                            >
+                              <option value="Yıl">Yıl</option>
+                              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                          </div>
                         </div>
+
                         <div>
-                          <label className="block text-xs font-bold text-gray-700 mb-1">CVC / CVC2 *</label>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Cvc *</label>
                           <input
                             type="text"
                             required
                             maxLength={4}
-                            placeholder="123"
+                            placeholder="CVC"
                             value={cardForm.cvc}
                             onChange={(e) => setCardForm({ ...cardForm, cvc: e.target.value })}
                             className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                           />
                         </div>
                       </div>
+
                     </form>
                   )}
 
@@ -569,7 +589,7 @@ export default function OdemeSayfasi() {
                 </div>
               </div>
 
-              {/* Sözleşme Onay Kutus (Görsel 5 Birebir) */}
+              {/* Sözleşme Onay Kutus */}
               <label className="flex items-start gap-2 cursor-pointer pt-2">
                 <input
                   type="checkbox"
@@ -582,7 +602,7 @@ export default function OdemeSayfasi() {
                 </span>
               </label>
 
-              {/* SİPARİŞİ TAMAMLA Butonu (Görsel 5 Birebir) */}
+              {/* SİPARİŞİ TAMAMLA Butonu */}
               <button
                 type="button"
                 onClick={handleCompleteOrder}
