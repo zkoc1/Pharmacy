@@ -1,36 +1,50 @@
 /**
- * Zustand ile Kullanıcı Siparişleri Yönetim Store'u.
- * Siparişler localStorage'a kaydedilir ve Hesabım > Siparişlerim sayfasında gösterilir.
+ * Zustand ile Merkezi Sipariş Yönetim Store'u.
+ * Hem kullanıcı hem admin tarafından erişilir.
+ * Tüm siparişler localStorage'da merkezi olarak saklanır.
  */
 
 "use client";
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CartItem } from "./cartStore";
+
+export interface OrderItem {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+export type OrderStatus = "Ödeme Bekliyor" | "Hazırlanıyor" | "Kargoda" | "Teslim Edildi" | "İptal Edildi";
 
 export interface OrderRecord {
   id: string;
   date: string;
-  items: {
-    id: number;
-    name: string;
-    brand: string;
-    price: number;
-    quantity: number;
-    image: string;
-  }[];
+  customerEmail: string;
+  customerName: string;
+  customerPhone: string;
+  items: OrderItem[];
   total: number;
   carrier: string;
   paymentMethod: string;
-  status: "Hazırlanıyor" | "Kargoda" | "Teslim Edildi" | "Ödeme Bekliyor";
+  status: OrderStatus;
   deliveryAddress: string;
+  trackingNumber: string;
+  adminNote: string;
 }
 
 interface OrderStore {
   orders: OrderRecord[];
-  addOrder: (order: Omit<OrderRecord, "id" | "date" | "status">) => OrderRecord;
+  addOrder: (order: Omit<OrderRecord, "id" | "date" | "status" | "trackingNumber" | "adminNote">) => OrderRecord;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateTrackingNumber: (orderId: string, trackingNumber: string) => void;
+  updateAdminNote: (orderId: string, note: string) => void;
   getOrders: () => OrderRecord[];
+  getOrdersByEmail: (email: string) => OrderRecord[];
+  getOrderById: (id: string) => OrderRecord | undefined;
 }
 
 export const useOrderStore = create<OrderStore>()(
@@ -38,37 +52,70 @@ export const useOrderStore = create<OrderStore>()(
     (set, get) => ({
       orders: [
         {
-          id: "ONB-20260818-8472",
+          id: "ONB-847291",
           date: "18.08.2026",
+          customerEmail: "fkoc899@gmail.com",
+          customerName: "Zehra Koç",
+          customerPhone: "+90 553 272 38 58",
           items: [
-            {
-              id: 1,
-              name: "Ocean Balık Yağı Şurubu Karışık Meyve Aromalı 150 ml",
-              brand: "ORZAX",
-              price: 249.9,
-              quantity: 1,
-              image: "/placeholder.png",
-            },
+            { id: 1, name: "Ocean Balık Yağı Şurubu Karışık Meyve Aromalı 150 ml", brand: "ORZAX", price: 479, quantity: 1, image: "/placeholder.png" },
           ],
-          total: 249.9,
+          total: 479,
           carrier: "Kolay Gelsin",
           paymentMethod: "Kredi Kartı",
           status: "Kargoda",
-          deliveryAddress: "Kayseri / Kocasinan / YENİ MAH",
+          deliveryAddress: "Kayseri / Kocasinan / Yeni Mah.",
+          trackingNumber: "KG123456789",
+          adminNote: "",
+        },
+        {
+          id: "ONB-523018",
+          date: "20.08.2026",
+          customerEmail: "fatihselda58@gmail.com",
+          customerName: "Fatih Koç",
+          customerPhone: "+90 541 317 65 35",
+          items: [
+            { id: 5, name: "La Roche Posay Anthelios UV Air Serum SPF50+", brand: "LA ROCHE POSAY", price: 549.5, quantity: 1, image: "/placeholder.png" },
+            { id: 8, name: "La Roche Posay Effaclar Gel 400 ml", brand: "LA ROCHE POSAY", price: 666, quantity: 1, image: "/placeholder.png" },
+          ],
+          total: 1215.5,
+          carrier: "Aras Kargo",
+          paymentMethod: "Havale / EFT",
+          status: "Hazırlanıyor",
+          deliveryAddress: "Ankara / Haymana / Çalış Mh.",
+          trackingNumber: "",
+          adminNote: "",
         },
       ],
+
       addOrder: (newOrder) => {
-        const orderRecord: OrderRecord = {
+        const record: OrderRecord = {
           ...newOrder,
-          id: `ONB-${Date.now().toString().slice(-6)}`,
+          id: `ONB-${Math.floor(100000 + Math.random() * 900000)}`,
           date: new Date().toLocaleDateString("tr-TR"),
           status: "Hazırlanıyor",
+          trackingNumber: "",
+          adminNote: "",
         };
-        set((state) => ({ orders: [orderRecord, ...state.orders] }));
-        return orderRecord;
+        set((s) => ({ orders: [record, ...s.orders] }));
+        return record;
       },
+
+      updateOrderStatus: (orderId, status) =>
+        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })),
+
+      updateTrackingNumber: (orderId, trackingNumber) =>
+        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, trackingNumber } : o)) })),
+
+      updateAdminNote: (orderId, note) =>
+        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, adminNote: note } : o)) })),
+
       getOrders: () => get().orders,
+
+      getOrdersByEmail: (email) => get().orders.filter((o) => o.customerEmail === email),
+
+      getOrderById: (id) => get().orders.find((o) => o.id === id),
     }),
-    { name: "onbsaglik_user_orders" }
+    { name: "onbsaglik_all_orders" }
   )
 );

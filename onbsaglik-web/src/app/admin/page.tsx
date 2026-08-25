@@ -177,6 +177,9 @@ export default function AdminPaneli() {
           <button onClick={() => setShowCouponModal(true)} className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
             <Gift size={14} /> Hediye Çeki Tanımla
           </button>
+          <a href="/admin/siparisler" style={{ background: "#8b5cf6", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            📦 Sipariş Yönetimi
+          </a>
           <a href="/admin/kampanyalar" style={{ background: "#f59e0b", color: "#78350f", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             ⚡ Kampanya Yönetimi
           </a>

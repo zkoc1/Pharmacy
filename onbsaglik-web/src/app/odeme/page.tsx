@@ -181,7 +181,8 @@ export default function OdemeSayfasi() {
       }
     }
 
-    // SİPARİŞİ KULLANICI SİPARİŞ STORE'UNA KAYDET
+    // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET
+    const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
     const newOrderRecord = addOrder({
       items: items.map((i) => ({
         id: i.product.id,
@@ -193,6 +194,9 @@ export default function OdemeSayfasi() {
       })),
       total: grandTotal,
       carrier: selectedCarrier,
+      customerEmail: userSession.email || session?.user?.email || "misafir@onbsaglik.com",
+      customerName: addressForm.fullName || userSession.name || "Misafir",
+      customerPhone: addressForm.phone || "",
       paymentMethod: paymentMethod === "cc" ? "Kredi Kartı" : paymentMethod === "eft" ? "Havale / EFT" : "PayTR ile Öde",
       deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood}`,
     });
