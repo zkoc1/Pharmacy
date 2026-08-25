@@ -70,6 +70,18 @@ export default function KayitPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // Aynı e-posta ile tekrar kayıt engeli
+    const registeredRaw = localStorage.getItem('onbsaglik_registered_emails');
+    let registered: string[] = [];
+    try { registered = registeredRaw ? JSON.parse(registeredRaw) : []; } catch {}
+    if (registered.includes(cleanEmail)) {
+      setError('Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın.');
+      setLoading(false);
+      return;
+    }
+    registered.push(cleanEmail);
+    localStorage.setItem('onbsaglik_registered_emails', JSON.stringify(registered));
+
     localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: `${firstName} ${lastName}`, role: 'customer' }));
 
     const res = await signIn('credentials', {

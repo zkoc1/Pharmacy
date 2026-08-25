@@ -297,29 +297,48 @@ export default function HesabimPage() {
               <p className="text-xs text-gray-500 py-8 text-center">Henüz bir siparişiniz bulunmamaktadır.</p>
             ) : (
               <div className="space-y-4">
-                {orders.map((ord) => (
-                  <div key={ord.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
-                    <div className="flex justify-between items-center border-b border-gray-200 pb-2 text-xs">
-                      <span className="font-extrabold text-gray-900">{ord.id}</span>
-                      <span className="text-gray-500 font-semibold">{ord.date}</span>
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-md">{ord.status}</span>
-                    </div>
+                {orders.map((ord) => {
+                  const statusColors: Record<string, string> = {
+                    "Hazırlanıyor": "bg-blue-100 text-blue-800",
+                    "Kargoda": "bg-purple-100 text-purple-800",
+                    "Teslim Edildi": "bg-emerald-100 text-emerald-800",
+                    "Ödeme Bekliyor": "bg-amber-100 text-amber-800",
+                    "İptal Edildi": "bg-red-100 text-red-800",
+                  };
+                  const badgeClass = statusColors[ord.status] || "bg-gray-100 text-gray-800";
 
-                    <div className="space-y-2">
-                      {ord.items.map((it, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-gray-800">{it.name} (x{it.quantity})</span>
-                          <span className="font-extrabold text-emerald-600">{formatPrice(it.price * it.quantity)}</span>
-                        </div>
-                      ))}
-                    </div>
+                  return (
+                    <div key={ord.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex justify-between items-center border-b border-gray-200 pb-2 text-xs">
+                        <span className="font-extrabold text-gray-900">{ord.id}</span>
+                        <span className="text-gray-500 font-semibold">{ord.date}</span>
+                        <span className={`font-bold px-2.5 py-0.5 rounded-md text-[10px] ${badgeClass}`}>{ord.status}</span>
+                      </div>
 
-                    <div className="flex justify-between items-center border-t border-gray-200 pt-2 text-xs">
-                      <span className="text-gray-500 font-bold">Ödeme Yöntemi: {ord.paymentMethod}</span>
-                      <span className="text-sm font-extrabold text-rose-500">Toplam: {formatPrice(ord.total)}</span>
+                      <div className="space-y-2">
+                        {ord.items.map((it, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <span className="font-bold text-gray-800">{it.name} (x{it.quantity})</span>
+                            <span className="font-extrabold text-emerald-600">{formatPrice(it.price * it.quantity)}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-[10px] text-gray-500 font-semibold border-t border-gray-200 pt-2">
+                        <span>📦 Kargo: {ord.carrier}</span>
+                        <span>💳 {ord.paymentMethod}</span>
+                        <span>📍 {ord.deliveryAddress}</span>
+                        {ord.trackingNumber && (
+                          <span className="text-purple-600 font-bold">🔖 Takip: {ord.trackingNumber}</span>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end border-t border-gray-200 pt-2">
+                        <span className="text-sm font-extrabold text-rose-500">Toplam: {formatPrice(ord.total)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
