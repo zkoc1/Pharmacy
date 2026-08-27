@@ -10,20 +10,28 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Package, Truck, CheckCircle, Clock, XCircle, Search, ArrowLeft,
-  ChevronDown, ChevronUp, Eye, Hash, StickyNote, Filter,
+  ChevronDown, ChevronUp, Eye, Hash, StickyNote, Filter, CreditCard,
 } from "lucide-react";
 import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
 
 const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: React.ReactNode }> = {
-  "Ödeme Bekliyor": { color: "#f59e0b", bg: "#fef3c7", icon: <Clock size={14} /> },
-  "Hazırlanıyor":   { color: "#3b82f6", bg: "#dbeafe", icon: <Package size={14} /> },
-  "Kargoda":        { color: "#8b5cf6", bg: "#ede9fe", icon: <Truck size={14} /> },
-  "Teslim Edildi":  { color: "#10b981", bg: "#d1fae5", icon: <CheckCircle size={14} /> },
-  "İptal Edildi":   { color: "#ef4444", bg: "#fee2e2", icon: <XCircle size={14} /> },
+  "Ödeme Bekliyor":      { color: "#f59e0b", bg: "#fef3c7", icon: <Clock size={14} /> },
+  "Mail Order Bekliyor": { color: "#ea580c", bg: "#ffedd5", icon: <CreditCard size={14} /> },
+  "Hazırlanıyor":        { color: "#3b82f6", bg: "#dbeafe", icon: <Package size={14} /> },
+  "Kargoda":             { color: "#8b5cf6", bg: "#ede9fe", icon: <Truck size={14} /> },
+  "Teslim Edildi":       { color: "#10b981", bg: "#d1fae5", icon: <CheckCircle size={14} /> },
+  "İptal Edildi":        { color: "#ef4444", bg: "#fee2e2", icon: <XCircle size={14} /> },
 };
 
-const ALL_STATUSES: OrderStatus[] = ["Ödeme Bekliyor", "Hazırlanıyor", "Kargoda", "Teslim Edildi", "İptal Edildi"];
+const ALL_STATUSES: OrderStatus[] = [
+  "Ödeme Bekliyor",
+  "Mail Order Bekliyor",
+  "Hazırlanıyor",
+  "Kargoda",
+  "Teslim Edildi",
+  "İptal Edildi",
+];
 
 export default function AdminSiparisler() {
   const router = useRouter();
@@ -76,6 +84,7 @@ export default function AdminSiparisler() {
 
   const stats = {
     total: orders.length,
+    mailOrder: orders.filter((o) => o.status === "Mail Order Bekliyor").length,
     hazirlaniyor: orders.filter((o) => o.status === "Hazırlanıyor").length,
     kargoda: orders.filter((o) => o.status === "Kargoda").length,
     teslim: orders.filter((o) => o.status === "Teslim Edildi").length,
@@ -87,31 +96,38 @@ export default function AdminSiparisler() {
     <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
       {/* Header */}
       <header style={{ background: "linear-gradient(135deg, #064e3b 0%, #065f46 100%)", color: "white", padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Link href="/admin" style={{ color: "white", display: "flex" }}><ArrowLeft size={20} /></Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+          <Link
+            href="/admin"
+            className="bg-white/20 hover:bg-white/30 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-sm"
+          >
+            <ArrowLeft size={16} /> Yönetim Paneline Dön
+          </Link>
           <div>
             <h1 style={{ fontSize: "18px", fontWeight: 800, margin: 0 }}>📦 Sipariş Yönetimi</h1>
             <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.7)", margin: 0 }}>Toplam {stats.total} sipariş</p>
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          <Link href="/admin" className="bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Ürün Yönetimi</Link>
-          <Link href="/admin/kampanyalar" className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3 py-1.5 rounded-xl text-xs">Kampanyalar</Link>
+          <Link href="/admin" className="bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-xl text-xs">Ürünler</Link>
+          <Link href="/admin/kampanyalar" className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3 py-1.5 rounded-xl text-xs">⚡ Kampanyalar</Link>
+          <Link href="/" className="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs">🌐 Siteye Dön</Link>
         </div>
       </header>
 
       <div className="container-custom py-6 space-y-6">
         {/* İstatistik Kartları */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "Toplam Sipariş", value: stats.total, color: "#1e293b", bg: "#f1f5f9" },
+            { label: "Mail Order", value: stats.mailOrder, color: "#ea580c", bg: "#ffedd5" },
             { label: "Hazırlanıyor", value: stats.hazirlaniyor, color: "#3b82f6", bg: "#dbeafe" },
             { label: "Kargoda", value: stats.kargoda, color: "#8b5cf6", bg: "#ede9fe" },
             { label: "Teslim Edildi", value: stats.teslim, color: "#10b981", bg: "#d1fae5" },
           ].map((s) => (
-            <div key={s.label} style={{ background: s.bg, borderRadius: "16px", padding: "16px 20px", border: `2px solid ${s.color}20` }}>
+            <div key={s.label} style={{ background: s.bg, borderRadius: "16px", padding: "14px 16px", border: `2px solid ${s.color}20` }}>
               <p style={{ fontSize: "11px", fontWeight: 700, color: s.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>{s.label}</p>
-              <p style={{ fontSize: "28px", fontWeight: 800, color: s.color, margin: 0 }}>{s.value}</p>
+              <p style={{ fontSize: "24px", fontWeight: 800, color: s.color, margin: 0 }}>{s.value}</p>
             </div>
           ))}
         </div>

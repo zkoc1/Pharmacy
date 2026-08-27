@@ -18,7 +18,7 @@ export interface OrderItem {
   image: string;
 }
 
-export type OrderStatus = "Ödeme Bekliyor" | "Hazırlanıyor" | "Kargoda" | "Teslim Edildi" | "İptal Edildi";
+export type OrderStatus = "Ödeme Bekliyor" | "Mail Order Bekliyor" | "Hazırlanıyor" | "Kargoda" | "Teslim Edildi" | "İptal Edildi";
 
 export interface OrderRecord {
   id: string;
@@ -38,7 +38,7 @@ export interface OrderRecord {
 
 interface OrderStore {
   orders: OrderRecord[];
-  addOrder: (order: Omit<OrderRecord, "id" | "date" | "status" | "trackingNumber" | "adminNote">) => OrderRecord;
+  addOrder: (order: Omit<OrderRecord, "id" | "date" | "status" | "trackingNumber" | "adminNote"> & { status?: OrderStatus }) => OrderRecord;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateTrackingNumber: (orderId: string, trackingNumber: string) => void;
   updateAdminNote: (orderId: string, note: string) => void;
@@ -93,7 +93,7 @@ export const useOrderStore = create<OrderStore>()(
           ...newOrder,
           id: `ONB-${Math.floor(100000 + Math.random() * 900000)}`,
           date: new Date().toLocaleDateString("tr-TR"),
-          status: "Hazırlanıyor",
+          status: newOrder.status || "Hazırlanıyor",
           trackingNumber: "",
           adminNote: "",
         };

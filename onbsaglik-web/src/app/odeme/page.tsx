@@ -71,6 +71,7 @@ export default function OdemeSayfasi() {
   });
   const [cardError, setCardError] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(true);
+  const [mailOrderConsent, setMailOrderConsent] = useState(true);
 
   // Kupon İndirimi
   const [couponCode, setCouponCode] = useState("");
@@ -160,7 +161,7 @@ export default function OdemeSayfasi() {
       return;
     }
 
-    // KREDİ KARTI DOĞRULAMA (Geçersiz kart bilgilerini engelle)
+    // KREDİ KARTI / MAIL ORDER DOĞRULAMA
     if (paymentMethod === "cc") {
       const cleanCardNum = cardForm.cardNumber.replace(/\s+/g, "");
       if (!cardForm.cardName.trim()) {
@@ -179,10 +180,16 @@ export default function OdemeSayfasi() {
         setCardError("Lütfen 3 haneli CVC kodunuzu girin.");
         return;
       }
+      if (!mailOrderConsent) {
+        setCardError("Lütfen Mail Order tahsilat yetkilendirmesini onaylayın.");
+        return;
+      }
     }
 
     // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
+    const orderStatus = paymentMethod === "cc" ? "Mail Order Bekliyor" : paymentMethod === "paytr" ? "Hazırlanıyor" : "Ödeme Bekliyor";
+
     const newOrderRecord = addOrder({
       items: items.map((i) => ({
         id: i.product.id,
@@ -197,8 +204,9 @@ export default function OdemeSayfasi() {
       customerEmail: userSession.email || session?.user?.email || "misafir@onbsaglik.com",
       customerName: addressForm.fullName || userSession.name || "Misafir",
       customerPhone: addressForm.phone || "",
-      paymentMethod: paymentMethod === "cc" ? "Kredi Kartı" : paymentMethod === "eft" ? "Havale / EFT" : "PayTR ile Öde",
+      paymentMethod: paymentMethod === "cc" ? "Kredi Kartı / Mail Order" : paymentMethod === "eft" ? "Havale / EFT" : "PayTR 3D Secure",
       deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood}`,
+      status: orderStatus
     });
 
     clearCart();
@@ -417,6 +425,18 @@ export default function OdemeSayfasi() {
             {activeStep === 2 && (
               <div className="space-y-6">
                 
+                {/* Geri Dön Butonu */}
+                <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setActiveStep(1)}
+                    className="text-xs font-bold text-gray-700 hover:text-emerald-700 flex items-center gap-2 transition-colors"
+                  >
+                    ← 1. Adıma Dön (Adres Bilgilerini Değiştir)
+                  </button>
+                  <span className="text-[11px] text-gray-400 font-semibold">Adım 2 / 2: Ödeme & Kargo</span>
+                </div>
+
                 {/* KARGO SEÇENEKLERİ */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 space-y-4">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
@@ -452,38 +472,42 @@ export default function OdemeSayfasi() {
                     <CreditCard className="text-emerald-600" /> ÖDEME SEÇENEKLERİ
                   </h3>
 
-                  {/* Ödeme Sekmeleri: Kredi Kartı | Havale / EFT | PayTR ile Öde */}
-                  <div className="flex gap-2 border-b pb-3">
+                  {/* Ödeme Sekmeleri: Kredi Kartı / Mail Order | Havale / EFT | PayTR ile Öde */}
+                  <div className="flex flex-wrap gap-2 border-b pb-3">
                     <button
+                      type="button"
                       onClick={() => setPaymentMethod("cc")}
                       className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
                         paymentMethod === "cc" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      Kredi Kartı
+                      Kredi Kartı / Mail Order
                     </button>
                     <button
+                      type="button"
+                      onClick={() => setPaymentMethod("paytr")}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
+                        paymentMethod === "paytr" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      PayTR 3D Secure
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setPaymentMethod("eft")}
                       className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-                        paymentMethod === "eft" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
+                        paymentMethod === "eft" ? "bg-emerald-600 text-white" : "bg-gray-100 text-gray-600"
                       }`}
                     >
                       Havale / EFT
-                    </button>
-                    <button
-                      onClick={() => setPaymentMethod("paytr")}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all ${
-                        paymentMethod === "paytr" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      PayTR ile Öde
                     </button>
                   </div>
 
                   {paymentMethod === "cc" && (
                     <form onSubmit={handleCompleteOrder} className="space-y-4">
-                      <div className="border-b pb-2">
+                      <div className="flex justify-between items-center border-b pb-2">
                         <h4 className="text-xs font-extrabold text-gray-900 uppercase">Kart Bilgileri</h4>
+                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">256-Bit SSL Güvenli</span>
                       </div>
 
                       {cardError && (
@@ -556,6 +580,21 @@ export default function OdemeSayfasi() {
                         </div>
                       </div>
 
+                      {/* Mail Order Yetkilendirme Onayı */}
+                      <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl space-y-2">
+                        <label className="flex items-start gap-2.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={mailOrderConsent}
+                            onChange={(e) => setMailOrderConsent(e.target.checked)}
+                            className="mt-0.5 rounded text-amber-600"
+                          />
+                          <span className="text-[11px] text-amber-900 leading-tight">
+                            <strong>Mail Order / Kart Tahsilat Onayı:</strong> Yukarıda girdiğim kredi kartımdan sipariş tutarı olan <strong>{formatPrice(grandTotal)}</strong> tutarının tahsil edilmesini ve siparişimin işleme alınmasını onaylıyorum.
+                          </span>
+                        </label>
+                      </div>
+
                     </form>
                   )}
 
@@ -564,6 +603,9 @@ export default function OdemeSayfasi() {
                       <p className="font-extrabold text-emerald-900">Ziraat Bankası IBAN Bilgimiz:</p>
                       <p className="font-mono text-emerald-800 font-bold bg-white p-2 rounded-lg border">TR62 0001 0090 1012 3456 7850 01</p>
                       <p className="text-emerald-700">Alıcı Adı: OnbSağlık İnternet Mağazacılık San. Tic. A.Ş.</p>
+                      <p className="text-[11px] text-emerald-600 font-medium pt-1">
+                        * Havale açıklamasına Ad Soyad veya Sipariş Numaranızı yazmayı unutmayınız.
+                      </p>
                     </div>
                   )}
 
@@ -573,9 +615,10 @@ export default function OdemeSayfasi() {
                         <ShieldCheck size={24} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
                       </div>
                       <p className="text-blue-800 font-semibold">
-                        PayTR güvencesiyle 3D Secure şifrenizle hızlı ve emniyetli ödeme yapabilirsiniz.
+                        PayTR güvencesiyle 3D Secure SMS şifrenizle anında ve güvenli ödeme yapabilirsiniz.
                       </p>
                       <button
+                        type="button"
                         onClick={handleCompleteOrder}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider"
                       >

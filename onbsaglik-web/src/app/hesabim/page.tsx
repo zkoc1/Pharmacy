@@ -85,6 +85,17 @@ export default function HesabimPage() {
     }
   }, [status, session, router]);
 
+  // ESC TUŞUNA BASILDIĞINDA AKTİF MODALI KAPAT
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveModal(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Hesap yükleniyor...</div>;
   }
@@ -129,7 +140,7 @@ export default function HesabimPage() {
   };
 
   const dashboardCards = [
-    { id: 'siparislerim', title: 'SİPARİŞLERİM', icon: ShoppingBag, color: 'text-emerald-600', badge: orders.length },
+    { id: 'siparislerim', title: 'SİPARİŞLERİM', icon: ShoppingBag, color: 'text-emerald-600', badge: orders.length, link: '/hesabim/siparislerim' },
     { id: 'favorilerim', title: 'FAVORİLERİM', icon: Heart, color: 'text-rose-500', link: '/favoriler' },
     { id: 'hediye-ceklerim', title: 'HEDİYE ÇEKLERİM', icon: Gift, color: 'text-amber-500' },
     { id: 'adreslerim', title: 'ADRESLERİM', icon: MapPin, color: 'text-blue-500', badge: addresses.length },
@@ -286,20 +297,47 @@ export default function HesabimPage() {
 
       {/* DİNAMİK MÜŞTERİ SİPARİŞLERİ MODALİ */}
       {activeModal === 'siparislerim' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto relative">
-            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={20} /></button>
-            <h3 className="font-extrabold text-base text-gray-900 border-b pb-3 flex items-center gap-2">
-              <ShoppingBag className="text-emerald-600" /> Sipariş Geçmişim ({orders.length})
-            </h3>
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
+                <ShoppingBag className="text-emerald-600" /> Sipariş Geçmişim ({orders.length})
+              </h3>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/hesabim/siparislerim"
+                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl flex items-center gap-1"
+                >
+                  Tam Sayfada Gör &rarr;
+                </Link>
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="text-gray-400 hover:text-gray-600 bg-gray-100 p-1.5 rounded-xl transition-colors"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
 
             {orders.length === 0 ? (
-              <p className="text-xs text-gray-500 py-8 text-center">Henüz bir siparişiniz bulunmamaktadır.</p>
+              <div className="py-8 text-center space-y-3">
+                <p className="text-xs text-gray-500">Henüz bir siparişiniz bulunmamaktadır.</p>
+                <button
+                  onClick={() => setActiveModal(null)}
+                  className="bg-gray-100 text-gray-700 font-bold px-4 py-2 rounded-xl text-xs"
+                >
+                  ← Hesabıma Geri Dön
+                </button>
+              </div>
             ) : (
               <div className="space-y-4">
                 {orders.map((ord) => {
                   const statusColors: Record<string, string> = {
                     "Hazırlanıyor": "bg-blue-100 text-blue-800",
+                    "Mail Order Bekliyor": "bg-orange-100 text-orange-800",
                     "Kargoda": "bg-purple-100 text-purple-800",
                     "Teslim Edildi": "bg-emerald-100 text-emerald-800",
                     "Ödeme Bekliyor": "bg-amber-100 text-amber-800",
@@ -339,6 +377,21 @@ export default function HesabimPage() {
                     </div>
                   );
                 })}
+
+                <div className="pt-2 flex justify-between items-center border-t">
+                  <button
+                    onClick={() => setActiveModal(null)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors"
+                  >
+                    ← Hesabıma Geri Dön
+                  </button>
+                  <Link
+                    href="/hesabim/siparislerim"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors"
+                  >
+                    Tüm Detayları Gör &rarr;
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -347,9 +400,12 @@ export default function HesabimPage() {
 
       {/* ADRESLERİM MODALİ */}
       {activeModal === 'adreslerim' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto relative">
-            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={20} /></button>
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 p-1.5 rounded-xl"><X size={18} /></button>
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
                 <MapPin className="text-blue-500" /> Kayıtlı Adreslerim ({addresses.length})
@@ -385,15 +441,27 @@ export default function HesabimPage() {
                 </div>
               ))}
             </div>
+
+            <div className="pt-2 border-t">
+              <button
+                onClick={() => setActiveModal(null)}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-xs transition-colors"
+              >
+                ← Hesabıma Geri Dön
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* DİĞER MODALLAR (HEDİYE ÇEKLERİM, HAVALE BİLDİRİMİ VB.) */}
       {activeModal === 'hediye-ceklerim' && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative">
-            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400"><X size={20} /></button>
+        <div
+          onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative animate-in fade-in zoom-in-95 duration-200">
+            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 bg-gray-100 p-1.5 rounded-xl"><X size={18} /></button>
             <h3 className="font-extrabold text-base text-gray-900 border-b pb-3 flex items-center gap-2">
               <Gift className="text-amber-500" /> Hediye Çeki Tanımla
             </h3>
@@ -401,6 +469,13 @@ export default function HesabimPage() {
               <input type="text" placeholder="Hediye Çeki veya Kupon Kodu" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="w-full p-3 border rounded-xl text-xs bg-gray-50 uppercase font-bold" />
               {couponMsg && <p className="text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded-xl">{couponMsg}</p>}
               <button type="submit" className="w-full bg-amber-500 text-white font-bold py-3 rounded-xl text-xs">TANIMLA</button>
+              <button
+                type="button"
+                onClick={() => setActiveModal(null)}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-xs transition-colors"
+              >
+                ← Hesabıma Geri Dön
+              </button>
             </form>
           </div>
         </div>
