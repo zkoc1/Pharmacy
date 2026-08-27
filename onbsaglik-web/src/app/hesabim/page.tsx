@@ -25,6 +25,7 @@ import {
   Package,
 } from 'lucide-react';
 import { useAddressStore } from '@/stores/addressStore';
+import { useCardStore } from '@/stores/cardStore';
 import { useOrderStore, OrderRecord } from '@/stores/orderStore';
 import { formatPrice } from '@/lib/products';
 import { clearUserSession, isUserLoggedIn } from '@/lib/authUtils';
@@ -39,8 +40,9 @@ export default function HesabimPage() {
 
   const [isAdminUser, setIsAdminUser] = useState(false);
 
-  // Adres ve Sipariş Store'ları
+  // Adres, Kart ve Sipariş Store'ları
   const { addresses, addAddress, removeAddress } = useAddressStore();
+  const { cards, removeCard } = useCardStore();
   const { orders } = useOrderStore();
 
   const [showAddrForm, setShowAddrForm] = useState(false);
@@ -143,8 +145,9 @@ export default function HesabimPage() {
   const dashboardCards = [
     { id: 'siparislerim', title: 'SİPARİŞLERİM', icon: ShoppingBag, color: 'text-emerald-600', badge: orders.length, link: '/hesabim/siparislerim' },
     { id: 'favorilerim', title: 'FAVORİLERİM', icon: Heart, color: 'text-rose-500', link: '/favoriler' },
-    { id: 'hediye-ceklerim', title: 'HEDİYE ÇEKLERİM', icon: Gift, color: 'text-amber-500' },
     { id: 'adreslerim', title: 'ADRESLERİM', icon: MapPin, color: 'text-blue-500', badge: addresses.length },
+    { id: 'kayitli-kartlarim', title: 'KAYITLI KARTLARIM', icon: CreditCard, color: 'text-rose-600', badge: cards.length },
+    { id: 'hediye-ceklerim', title: 'HEDİYE ÇEKLERİM', icon: Gift, color: 'text-amber-500' },
     { id: 'yorumlarim', title: 'YORUMLARIM', icon: MessageSquare, color: 'text-purple-500' },
     { id: 'stok-alarm', title: 'STOK ALARM LİSTEM', icon: Bell, color: 'text-indigo-500' },
     { id: 'havale-bildirimi', title: 'HAVALE BİLDİRİMİ', icon: CreditCard, color: 'text-teal-500' },
@@ -458,29 +461,51 @@ export default function HesabimPage() {
         </div>
       )}
 
-      {/* DİĞER MODALLAR (HEDİYE ÇEKLERİM, HAVALE BİLDİRİMİ VB.) */}
-      {activeModal === 'hediye-ceklerim' && (
+      {/* KAYITLI KARTLARIM MODALİ */}
+      {activeModal === 'kayitli-kartlarim' && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setActiveModal(null); }}
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         >
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 relative animate-in fade-in zoom-in-95 duration-200">
-            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 bg-gray-100 p-1.5 rounded-xl"><X size={18} /></button>
-            <h3 className="font-extrabold text-base text-gray-900 border-b pb-3 flex items-center gap-2">
-              <Gift className="text-amber-500" /> Hediye Çeki Tanımla
-            </h3>
-            <form onSubmit={handleCouponSubmit} className="space-y-3">
-              <input type="text" placeholder="Hediye Çeki veya Kupon Kodu" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="w-full p-3 border rounded-xl text-xs bg-gray-50 uppercase font-bold" />
-              {couponMsg && <p className="text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded-xl">{couponMsg}</p>}
-              <button type="submit" className="w-full bg-amber-500 text-white font-bold py-3 rounded-xl text-xs">TANIMLA</button>
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+            <button onClick={() => setActiveModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 p-1.5 rounded-xl"><X size={18} /></button>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
+                <CreditCard className="text-rose-500" /> Kayıtlı Kartlarım ({cards.length})
+              </h3>
+            </div>
+
+            {cards.length === 0 ? (
+              <div className="text-center py-8 space-y-2">
+                <CreditCard size={36} className="mx-auto text-gray-300" />
+                <p className="text-xs font-bold text-gray-700">Henüz kayıtlı bir kartınız bulunmuyor.</p>
+                <p className="text-[11px] text-gray-400">Ödeme adımında kartınızı kaydederek sonraki alışverişlerinizde tek tıkla kullanabilirsiniz.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {cards.map((c) => (
+                  <div key={c.id} className="bg-gray-50 p-4 rounded-2xl border flex justify-between items-center text-xs">
+                    <div>
+                      <span className="font-mono font-extrabold text-gray-900 block tracking-wider">{c.cardNumberMasked}</span>
+                      <p className="font-semibold text-gray-700 mt-1">{c.cardName} | SKT: {c.expireMonth}/{c.expireYear}</p>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded mt-1 inline-block">{c.cardType} (PCI-DSS Korumalı)</span>
+                    </div>
+                    <button onClick={() => removeCard(c.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors" title="Kartı Sil">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pt-2 border-t">
               <button
-                type="button"
                 onClick={() => setActiveModal(null)}
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 rounded-xl text-xs transition-colors"
               >
                 ← Hesabıma Geri Dön
               </button>
-            </form>
+            </div>
           </div>
         </div>
       )}

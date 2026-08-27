@@ -42,6 +42,21 @@ export function getProductsByBrand(brandSlug: string): Product[] {
   return getActiveProducts().filter((p) => p.brandSlug === brandSlug);
 }
 
+/** Türkçe karakterleri normalize eden arama yardımcısı */
+export function normalizeTurkishText(str: string): string {
+  if (!str) return "";
+  return str
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[\s\-_]+/g, " ")
+    .trim();
+}
+
 /** Çoklu filtre ile ürün listesi döndürür */
 export function filterProducts(filter: ProductFilter): {
   products: Product[];
@@ -72,15 +87,27 @@ export function filterProducts(filter: ProductFilter): {
     result = result.filter((p) => p.stock > 0);
   }
 
-  // Arama filtresi (ürün adı, marka, kategori)
+  // Akıllı Arama filtresi (Türkçe karakter duyarsız & çok kelimeli eşleşme)
   if (filter.search) {
-    const q = filter.search.toLowerCase();
-    result = result.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q)
-    );
+    const rawQ = filter.search.toLocaleLowerCase("tr-TR").trim();
+    const normQ = normalizeTurkishText(filter.search);
+    const searchTerms = normQ.split(" ").filter((t) => t.length > 0);
+
+    result = result.filter((p) => {
+      const nameNorm = normalizeTurkishText(p.name);
+      const brandNorm = normalizeTurkishText(p.brand);
+      const catNorm = normalizeTurkishText(p.category);
+      const combined = `${nameNorm} ${brandNorm} ${catNorm}`;
+
+      // Bütün arama kelimelerini karşılıyor mu?
+      const allWordsMatch = searchTerms.every((term) => combined.includes(term));
+      const directMatch =
+        p.name.toLocaleLowerCase("tr-TR").includes(rawQ) ||
+        p.brand.toLocaleLowerCase("tr-TR").includes(rawQ) ||
+        p.category.toLocaleLowerCase("tr-TR").includes(rawQ);
+
+      return allWordsMatch || directMatch;
+    });
   }
 
   // Sıralama

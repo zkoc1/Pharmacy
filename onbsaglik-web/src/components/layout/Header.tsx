@@ -140,7 +140,8 @@ export default function Header() {
         const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const data = await res.json();
-          setSearchResults(data.slice(0, 6));
+          const list = Array.isArray(data) ? data : data.products || [];
+          setSearchResults(list.slice(0, 6));
           setShowSearchDropdown(true);
         }
       } catch {
@@ -148,7 +149,7 @@ export default function Header() {
       } finally {
         setIsSearching(false);
       }
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
