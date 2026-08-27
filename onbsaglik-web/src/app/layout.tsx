@@ -18,6 +18,7 @@ const inter = Inter({
 
 // Site geneli meta veriler — SEO için kritik
 export const metadata: Metadata = {
+  metadataBase: new URL("https://onbsaglik.com"),
   title: {
     default: "OnbSağlık | Vitamin, Takviye ve Kozmetik Ürünler",
     template: "%s | OnbSağlık",

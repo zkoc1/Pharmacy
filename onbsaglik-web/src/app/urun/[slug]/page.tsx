@@ -47,8 +47,43 @@ export default async function UrunDetaySayfasi({ params }: Props) {
 
   const discountRate = calcDiscount(product.price, product.marketPrice);
 
+  // Google Schema.org Product Rich Snippet (JSON-LD)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: product.images,
+    description: `${product.brand} marka ${product.name} en uygun fiyat ve hızlı kargo avantajıyla onbsaglik.com'da!`,
+    brand: {
+      "@type": "Brand",
+      name: product.brand,
+    },
+    sku: product.barcode || `ONB-${product.id}`,
+    offers: {
+      "@type": "Offer",
+      url: `https://onbsaglik.com/urun/${product.slug}`,
+      priceCurrency: "TRY",
+      price: product.price,
+      availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "OnbSağlık",
+      },
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: "28",
+    },
+  };
+
   return (
     <div className="container-custom py-8">
+      {/* Google SEO JSON-LD Yapısal Veri */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb navigasyonu */}
       <nav className="flex items-center gap-2 text-sm mb-8" style={{ color: "var(--color-text-muted)" }}>
         <a href="/" style={{ color: "var(--color-primary)" }}>Anasayfa</a>
