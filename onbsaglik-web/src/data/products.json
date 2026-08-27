@@ -4146,6 +4146,7 @@
     "desi": 0.5,
     "stock": 12,
     "images": [
+      "/products/la-roche-posay-anthelios-hydrating-lotion-spf50-250ml.png",
       "https://cdn.dsmcdn.com/ty897/product/media/images/20230530/13/364451199/912040049/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4166,6 +4167,7 @@
     "desi": 0.2,
     "stock": 18,
     "images": [
+      "/products/la-roche-posay-effaclar-duo-m-40ml.png",
       "https://cdn.dsmcdn.com/ty527/product/media/images/20220913/12/174327451/533095047/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4186,6 +4188,7 @@
     "desi": 0.6,
     "stock": 7,
     "images": [
+      "/products/la-roche-posay-lipikar-baume-apm-max-400ml.png",
       "https://cdn.dsmcdn.com/ty897/product/media/images/20230530/13/364451199/912040049/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4206,6 +4209,7 @@
     "desi": 0.2,
     "stock": 9,
     "images": [
+      "/products/la-roche-posay-mela-b3-serum-30ml.png",
       "https://cdn.dsmcdn.com/ty760/product/media/images/20230215/17/291037175/758826660/1/1_org_zoom.jpg"
     ],
     "status": "active",

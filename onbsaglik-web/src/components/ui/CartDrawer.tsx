@@ -29,14 +29,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       {/* Overlay arka plan */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] transition-opacity"
           onClick={onClose}
         />
       )}
 
       {/* Drawer paneli */}
       <div 
-        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-[1000] transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
