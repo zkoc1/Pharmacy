@@ -4046,6 +4046,7 @@
     "desi": 0.3,
     "stock": 15,
     "images": [
+      "/products/la-roche-posay-anthelios-uv-air-serum-50ml.png",
       "https://cdn.dsmcdn.com/ty585/product/media/images/20221031/22/206247984/599049999/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4066,6 +4067,7 @@
     "desi": 0.3,
     "stock": 10,
     "images": [
+      "/products/la-roche-posay-anthelios-uvmune-anti-dark-spots-fluid-50ml.png",
       "https://cdn.dsmcdn.com/ty897/product/media/images/20230530/13/364451199/912040049/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4086,6 +4088,7 @@
     "desi": 0.3,
     "stock": 8,
     "images": [
+      "/products/la-roche-posay-anthelios-oil-control-gel-cream-50ml.png",
       "https://cdn.dsmcdn.com/ty585/product/media/images/20221031/22/206247984/599049999/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4126,6 +4129,7 @@
     "desi": 0.3,
     "stock": 25,
     "images": [
+      "/products/la-roche-posay-anthelios-oil-control-fluid-50ml.png",
       "https://cdn.dsmcdn.com/ty760/product/media/images/20230215/17/291037175/758826660/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4230,6 +4234,7 @@
     "desi": 0.3,
     "stock": 11,
     "images": [
+      "/products/la-roche-posay-anthelios-oil-control-fluid-50ml.png",
       "https://cdn.dsmcdn.com/ty585/product/media/images/20221031/22/206247984/599049999/1/1_org_zoom.jpg"
     ],
     "status": "active",
@@ -4250,6 +4255,7 @@
     "desi": 0.5,
     "stock": 6,
     "images": [
+      "/products/la-roche-posay-anthelios-family-spray-300ml.png",
       "https://cdn.dsmcdn.com/ty897/product/media/images/20230530/13/364451199/912040049/1/1_org_zoom.jpg"
     ],
     "status": "active",
