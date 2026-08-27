@@ -10,17 +10,27 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore } from "@/stores/addressStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/products";
 import { CreditCard, Truck, MapPin, ChevronRight, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ALL_81_PROVINCES } from "@/lib/turkeyLocations";
+import { isUserLoggedIn } from "@/lib/authUtils";
 
 export default function OdemeSayfasi() {
+  const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const { getDefaultAddress } = useAddressStore();
   const { addOrder } = useOrderStore();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
+  // Oturum Guard: Kullanıcı giriş yapmamışsa doğrudan giriş sayfasına yönlendir
+  useEffect(() => {
+    if (status !== "loading" && !isUserLoggedIn(session?.user)) {
+      router.replace("/hesabim/giris?callbackUrl=/odeme");
+    }
+  }, [session, status, router]);
 
   // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ (Görsel 3-5 Birebir)
   const [activeStep, setActiveStep] = useState<1 | 2>(1);

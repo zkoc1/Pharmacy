@@ -21,6 +21,7 @@ import {
 import { useCartStore } from "@/stores/cartStore";
 import CartDrawer from "@/components/ui/CartDrawer";
 import LoginModal from "@/components/ui/LoginModal";
+import { isUserLoggedIn } from "@/lib/authUtils";
 
 // Mega Kategori navigasyonu — Alt kategorilerle birlikte (Görsel 5 Birebir)
 const NAV_CATEGORIES = [
@@ -162,7 +163,7 @@ export default function Header() {
 
   const handleHesabimClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (status === "authenticated" || localStorage.getItem("user_session")) {
+    if (isUserLoggedIn(session?.user)) {
       router.push("/hesabim");
     } else {
       setIsLoginModalOpen(true);

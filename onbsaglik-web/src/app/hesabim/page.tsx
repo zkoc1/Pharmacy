@@ -27,6 +27,7 @@ import {
 import { useAddressStore } from '@/stores/addressStore';
 import { useOrderStore, OrderRecord } from '@/stores/orderStore';
 import { formatPrice } from '@/lib/products';
+import { clearUserSession, isUserLoggedIn } from '@/lib/authUtils';
 
 export default function HesabimPage() {
   const { data: session, status } = useSession();
@@ -191,8 +192,11 @@ export default function HesabimPage() {
                   <UserCheck size={16} /> KİŞİSEL BİLGİLERİM
                 </Link>
                 <button
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors"
+                  onClick={() => {
+                    clearUserSession();
+                    signOut({ callbackUrl: '/' });
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors cursor-pointer"
                 >
                   <LogOut size={16} /> ÇIKIŞ
                 </button>

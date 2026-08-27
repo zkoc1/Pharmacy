@@ -6,14 +6,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
 import { formatPrice } from "@/lib/products";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ChevronLeft, Gift, Printer, Calendar, RefreshCw, BookmarkPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types";
+import LoginModal from "@/components/ui/LoginModal";
+import { isUserLoggedIn } from "@/lib/authUtils";
 
 export default function SepetSayfasi() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
   const [couponCode, setCouponCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -21,6 +27,7 @@ export default function SepetSayfasi() {
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [showNotes, setShowNotes] = useState<Record<number, boolean>>({});
   const [specialOffers, setSpecialOffers] = useState<Product[]>([]);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const total = getTotalPrice();
   const grandTotal = Math.max(0, total - discountAmount);
@@ -219,12 +226,20 @@ export default function SepetSayfasi() {
               </form>
 
               {/* SATIN AL Butonu (Görsel 2 Birebir) */}
-              <Link
-                href="/odeme"
-                className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!isUserLoggedIn(session?.user)) {
+                    setShowLoginModal(true);
+                  } else {
+                    router.push("/odeme");
+                  }
+                }}
+                className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
                 SATIN AL &gt;
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -246,8 +261,15 @@ export default function SepetSayfasi() {
                 <p className="text-xs font-bold text-gray-800 line-clamp-2 h-8">{sp.name}</p>
                 <p className="text-xs font-extrabold text-emerald-600 mt-2">{formatPrice(sp.price)}</p>
                 <button
-                  onClick={() => useCartStore.getState().addItem(sp, 1)}
-                  className="mt-3 w-full bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-emerald-600 font-bold py-2 rounded-xl text-xs transition-colors"
+                  type="button"
+                  onClick={() => {
+                    if (!isUserLoggedIn(session?.user)) {
+                      setShowLoginModal(true);
+                    } else {
+                      useCartStore.getState().addItem(sp, 1);
+                    }
+                  }}
+                  className="mt-3 w-full bg-emerald-50 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-emerald-600 font-bold py-2 rounded-xl text-xs transition-colors cursor-pointer"
                 >
                   Sepete Ekle
                 </button>
@@ -257,6 +279,8 @@ export default function SepetSayfasi() {
         </div>
 
       </div>
+
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }

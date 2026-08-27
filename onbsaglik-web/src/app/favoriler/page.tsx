@@ -1,18 +1,21 @@
-/**
- * Favoriler sayfası — /favoriler rotası.
- * Kullanıcının favoriye eklediği ürünleri listeler.
- */
 "use client";
+
+import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useCartStore } from "@/stores/cartStore";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/products";
+import LoginModal from "@/components/ui/LoginModal";
+import { isUserLoggedIn } from "@/lib/authUtils";
 
 export default function FavorilerSayfasi() {
+  const { data: session } = useSession();
   const { items, removeFavorite, clearFavorites } = useFavoritesStore();
   const addItem = useCartStore((s) => s.addItem);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -53,8 +56,15 @@ export default function FavorilerSayfasi() {
               <p style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px' }}>{formatPrice(product.price)}</p>
             </Link>
             <button
-              onClick={() => addItem(product)}
-              className="btn-primary"
+              type="button"
+              onClick={() => {
+                if (!isUserLoggedIn(session?.user)) {
+                  setShowLoginModal(true);
+                } else {
+                  addItem(product);
+                }
+              }}
+              className="btn-primary cursor-pointer"
               style={{ width: '100%', fontSize: '13px', padding: '8px' }}
             >
               <ShoppingCart size={14} /> Sepete Ekle
@@ -62,6 +72,8 @@ export default function FavorilerSayfasi() {
           </div>
         ))}
       </div>
+
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }

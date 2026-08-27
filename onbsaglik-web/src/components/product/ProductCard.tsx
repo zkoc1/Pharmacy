@@ -11,6 +11,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useFavoritesStore } from '@/stores/favoritesStore';
 import AddToCartModal from '@/components/ui/AddToCartModal';
 import LoginModal from '@/components/ui/LoginModal';
+import { isUserLoggedIn } from '@/lib/authUtils';
 
 interface ProductCardProps {
   product: Product;
@@ -32,16 +33,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
   const imageUrl = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : '/placeholder.png';
 
-  const checkIsLoggedIn = () => {
-    return !!session || !!localStorage.getItem("user_session");
-  };
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     // Kullanıcı giriş yapmadıysa Görsel 1 birebir Üye Girişi Modalı açılır
-    if (!checkIsLoggedIn()) {
+    if (!isUserLoggedIn(session?.user)) {
       setShowLoginModal(true);
       return;
     }
@@ -58,7 +55,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.stopPropagation();
 
     // Kullanıcı giriş yapmadıysa Görsel 1 birebir Üye Girişi Modalı açılır
-    if (!checkIsLoggedIn()) {
+    if (!isUserLoggedIn(session?.user)) {
       setShowLoginModal(true);
       return;
     }

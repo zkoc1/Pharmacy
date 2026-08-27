@@ -16,6 +16,7 @@ import { useCampaignStore } from "@/stores/campaignStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import LoginModal from "@/components/ui/LoginModal";
 import AddToCartModal from "@/components/ui/AddToCartModal";
+import { isUserLoggedIn } from "@/lib/authUtils";
 
 interface Props {
   product: Product;
@@ -46,15 +47,11 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
     import("@/data/products.json").then((m) => setAllProducts(m.default as Product[]));
   }, []);
 
-  const checkIsLoggedIn = () => {
-    return !!session || !!localStorage.getItem("user_session");
-  };
-
   const increaseQty = () => setQuantity((q) => Math.min(q + 1, product.stock || 99));
   const decreaseQty = () => setQuantity((q) => Math.max(q - 1, 1));
 
   const handleAddToCart = () => {
-    if (!checkIsLoggedIn()) {
+    if (!isUserLoggedIn(session?.user)) {
       setShowLoginModal(true);
       return;
     }
@@ -67,7 +64,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   };
 
   const handleToggleFavorite = () => {
-    if (!checkIsLoggedIn()) {
+    if (!isUserLoggedIn(session?.user)) {
       setShowLoginModal(true);
       return;
     }
@@ -75,7 +72,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   };
 
   const handleAddComboToCart = () => {
-    if (!checkIsLoggedIn()) {
+    if (!isUserLoggedIn(session?.user)) {
       setShowLoginModal(true);
       return;
     }
