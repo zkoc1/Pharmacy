@@ -1,8 +1,7 @@
 /**
  * Zustand ile Merkezi Sipariş Yönetim Store'u — orderStore.ts
+ * İleri Seviye OMS: Zaman Çizelgesi (Timeline), e-Arşiv Fatura No, Toplu İşlemler ve Müşteri Notları.
  * Hem kullanıcı hem admin tarafından erişilir.
- * Tüm siparişler localStorage'da merkezi olarak saklanır.
- * Ürün slug bilgisi içerir (kullanıcı siparişten ürüne doğrudan gidebilir).
  */
 
 "use client";
@@ -28,8 +27,15 @@ export type OrderStatus =
   | "Teslim Edildi"
   | "İptal Edildi";
 
+export interface OrderTimelineItem {
+  status: OrderStatus;
+  date: string;
+  note?: string;
+}
+
 export interface OrderRecord {
   id: string;
+  invoiceNo?: string;
   date: string;
   customerEmail: string;
   customerName: string;
@@ -40,8 +46,11 @@ export interface OrderRecord {
   paymentMethod: string;
   status: OrderStatus;
   deliveryAddress: string;
+  billingAddress?: string;
   trackingNumber: string;
   adminNote: string;
+  customerNote?: string;
+  timeline?: OrderTimelineItem[];
 }
 
 interface OrderStore {
@@ -51,9 +60,11 @@ interface OrderStore {
       status?: OrderStatus;
     }
   ) => OrderRecord;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => void;
+  bulkUpdateStatus: (orderIds: string[], status: OrderStatus) => void;
   updateTrackingNumber: (orderId: string, trackingNumber: string) => void;
   updateAdminNote: (orderId: string, note: string) => void;
+  deleteOrder: (orderId: string) => void;
   getOrders: () => OrderRecord[];
   getOrdersByEmail: (email: string) => OrderRecord[];
   getOrderById: (id: string) => OrderRecord | undefined;
@@ -65,7 +76,8 @@ export const useOrderStore = create<OrderStore>()(
       orders: [
         {
           id: "ONB-847291",
-          date: "18.08.2026",
+          invoiceNo: "ONB2026000001",
+          date: "18.08.2026 14:32",
           customerEmail: "fkoc899@gmail.com",
           customerName: "Zehra Koç",
           customerPhone: "+90 553 272 38 58",
@@ -84,13 +96,21 @@ export const useOrderStore = create<OrderStore>()(
           carrier: "Kolay Gelsin",
           paymentMethod: "Kredi Kartı",
           status: "Kargoda",
-          deliveryAddress: "Kayseri / Kocasinan / Yeni Mah.",
+          deliveryAddress: "Kayseri / Kocasinan / Yeni Mah. Bağdat Cad. No: 14 D: 3",
+          billingAddress: "Kayseri / Kocasinan / Yeni Mah. Bağdat Cad. No: 14 D: 3",
           trackingNumber: "KG123456789",
-          adminNote: "",
+          adminNote: "Kargo paketi özenli sarıldı.",
+          customerNote: "Zil çalınmasın lütfen, bebek uyuyor.",
+          timeline: [
+            { status: "Ödeme Bekliyor", date: "18.08.2026 14:32", note: "Sipariş oluşturuldu" },
+            { status: "Hazırlanıyor", date: "18.08.2026 15:10", note: "Ödeme onaylandı, depoya iletildi" },
+            { status: "Kargoda", date: "19.08.2026 10:00", note: "Kolay Gelsin kuryesine teslim edildi (KG123456789)" },
+          ],
         },
         {
           id: "ONB-523018",
-          date: "20.08.2026",
+          invoiceNo: "ONB2026000002",
+          date: "20.08.2026 11:15",
           customerEmail: "fatihselda58@gmail.com",
           customerName: "Fatih Koç",
           customerPhone: "+90 541 317 65 35",
@@ -118,29 +138,104 @@ export const useOrderStore = create<OrderStore>()(
           carrier: "Aras Kargo",
           paymentMethod: "Havale / EFT",
           status: "Hazırlanıyor",
-          deliveryAddress: "Ankara / Haymana / Çalış Mh.",
+          deliveryAddress: "Ankara / Haymana / Çalış Mh. Atatürk Bulv. No: 42",
+          billingAddress: "Ankara / Haymana / Çalış Mh. Atatürk Bulv. No: 42",
           trackingNumber: "",
-          adminNote: "",
+          adminNote: "Havale dekontu kontrol edildi, tutar hesapta görüldü.",
+          timeline: [
+            { status: "Ödeme Bekliyor", date: "20.08.2026 11:15", note: "Havale bekleniyor" },
+            { status: "Hazırlanıyor", date: "20.08.2026 12:40", note: "Havale onaylandı, ürünler paketleniyor" },
+          ],
         },
       ],
 
       addOrder: (newOrder) => {
+        const orderCount = get().orders.length + 1;
+        const now = new Date();
+        const dateStr = `${now.toLocaleDateString("tr-TR")} ${now.toLocaleTimeString("tr-TR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`;
+        const initialStatus = newOrder.status || "Hazırlanıyor";
+
         const record: OrderRecord = {
           ...newOrder,
           id: `ONB-${Math.floor(100000 + Math.random() * 900000)}`,
-          date: new Date().toLocaleDateString("tr-TR"),
-          status: newOrder.status || "Hazırlanıyor",
+          invoiceNo: `ONB2026${orderCount.toString().padStart(6, "0")}`,
+          date: dateStr,
+          status: initialStatus,
           trackingNumber: "",
           adminNote: "",
+          timeline: [
+            {
+              status: initialStatus,
+              date: dateStr,
+              note: "Sipariş sisteme kaydedildi",
+            },
+          ],
         };
+
         set((s) => ({ orders: [record, ...s.orders] }));
         return record;
       },
 
-      updateOrderStatus: (orderId, status) =>
+      updateOrderStatus: (orderId, status, note) => {
+        const now = new Date();
+        const dateStr = `${now.toLocaleDateString("tr-TR")} ${now.toLocaleTimeString("tr-TR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`;
+
         set((s) => ({
-          orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)),
-        })),
+          orders: s.orders.map((o) => {
+            if (o.id === orderId) {
+              const currentTimeline = o.timeline || [];
+              return {
+                ...o,
+                status,
+                timeline: [
+                  ...currentTimeline,
+                  {
+                    status,
+                    date: dateStr,
+                    note: note || `Durum "${status}" olarak güncellendi`,
+                  },
+                ],
+              };
+            }
+            return o;
+          }),
+        }));
+      },
+
+      bulkUpdateStatus: (orderIds, status) => {
+        const now = new Date();
+        const dateStr = `${now.toLocaleDateString("tr-TR")} ${now.toLocaleTimeString("tr-TR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}`;
+
+        set((s) => ({
+          orders: s.orders.map((o) => {
+            if (orderIds.includes(o.id)) {
+              const currentTimeline = o.timeline || [];
+              return {
+                ...o,
+                status,
+                timeline: [
+                  ...currentTimeline,
+                  {
+                    status,
+                    date: dateStr,
+                    note: `Toplu işlem: Durum "${status}" yapıldı`,
+                  },
+                ],
+              };
+            }
+            return o;
+          }),
+        }));
+      },
 
       updateTrackingNumber: (orderId, trackingNumber) =>
         set((s) => ({
@@ -150,6 +245,11 @@ export const useOrderStore = create<OrderStore>()(
       updateAdminNote: (orderId, note) =>
         set((s) => ({
           orders: s.orders.map((o) => (o.id === orderId ? { ...o, adminNote: note } : o)),
+        })),
+
+      deleteOrder: (orderId) =>
+        set((s) => ({
+          orders: s.orders.filter((o) => o.id !== orderId),
         })),
 
       getOrders: () => get().orders,
