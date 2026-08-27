@@ -1,7 +1,8 @@
 /**
- * Zustand ile Merkezi Sipariş Yönetim Store'u.
+ * Zustand ile Merkezi Sipariş Yönetim Store'u — orderStore.ts
  * Hem kullanıcı hem admin tarafından erişilir.
  * Tüm siparişler localStorage'da merkezi olarak saklanır.
+ * Ürün slug bilgisi içerir (kullanıcı siparişten ürüne doğrudan gidebilir).
  */
 
 "use client";
@@ -11,6 +12,7 @@ import { persist } from "zustand/middleware";
 
 export interface OrderItem {
   id: number;
+  slug?: string;
   name: string;
   brand: string;
   price: number;
@@ -18,7 +20,13 @@ export interface OrderItem {
   image: string;
 }
 
-export type OrderStatus = "Ödeme Bekliyor" | "Mail Order Bekliyor" | "Hazırlanıyor" | "Kargoda" | "Teslim Edildi" | "İptal Edildi";
+export type OrderStatus =
+  | "Ödeme Bekliyor"
+  | "Mail Order Bekliyor"
+  | "Hazırlanıyor"
+  | "Kargoda"
+  | "Teslim Edildi"
+  | "İptal Edildi";
 
 export interface OrderRecord {
   id: string;
@@ -38,7 +46,11 @@ export interface OrderRecord {
 
 interface OrderStore {
   orders: OrderRecord[];
-  addOrder: (order: Omit<OrderRecord, "id" | "date" | "status" | "trackingNumber" | "adminNote"> & { status?: OrderStatus }) => OrderRecord;
+  addOrder: (
+    order: Omit<OrderRecord, "id" | "date" | "status" | "trackingNumber" | "adminNote"> & {
+      status?: OrderStatus;
+    }
+  ) => OrderRecord;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   updateTrackingNumber: (orderId: string, trackingNumber: string) => void;
   updateAdminNote: (orderId: string, note: string) => void;
@@ -58,7 +70,15 @@ export const useOrderStore = create<OrderStore>()(
           customerName: "Zehra Koç",
           customerPhone: "+90 553 272 38 58",
           items: [
-            { id: 1, name: "Ocean Balık Yağı Şurubu Karışık Meyve Aromalı 150 ml", brand: "ORZAX", price: 479, quantity: 1, image: "/placeholder.png" },
+            {
+              id: 1,
+              slug: "ocean-balik-yagi-surubu-karisik-meyve-aromali-150-ml-cocuklar-icin-omega-3-orzax",
+              name: "Ocean Balık Yağı Şurubu Karışık Meyve Aromalı 150 ml",
+              brand: "ORZAX",
+              price: 479,
+              quantity: 1,
+              image: "/products/ocean-balik-yagi.png",
+            },
           ],
           total: 479,
           carrier: "Kolay Gelsin",
@@ -75,8 +95,24 @@ export const useOrderStore = create<OrderStore>()(
           customerName: "Fatih Koç",
           customerPhone: "+90 541 317 65 35",
           items: [
-            { id: 5, name: "La Roche Posay Anthelios UV Air Serum SPF50+", brand: "LA ROCHE POSAY", price: 549.5, quantity: 1, image: "/placeholder.png" },
-            { id: 8, name: "La Roche Posay Effaclar Gel 400 ml", brand: "LA ROCHE POSAY", price: 666, quantity: 1, image: "/placeholder.png" },
+            {
+              id: 540,
+              slug: "la-roche-posay-anthelios-uv-air-serum-spf50-50ml",
+              name: "La Roche Posay Anthelios UV Air Serum SPF50+ 50 ml",
+              brand: "LA ROCHE POSAY",
+              price: 549.5,
+              quantity: 1,
+              image: "/products/la-roche-posay-anthelios-uv-air-serum-50ml.png",
+            },
+            {
+              id: 545,
+              slug: "la-roche-posay-effaclar-gel-400ml",
+              name: "La Roche Posay Effaclar Gel 400 ml",
+              brand: "LA ROCHE POSAY",
+              price: 666,
+              quantity: 1,
+              image: "/products/la-roche-posay-effaclar-gel-400ml.png",
+            },
           ],
           total: 1215.5,
           carrier: "Aras Kargo",
@@ -102,17 +138,26 @@ export const useOrderStore = create<OrderStore>()(
       },
 
       updateOrderStatus: (orderId, status) =>
-        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)) })),
+        set((s) => ({
+          orders: s.orders.map((o) => (o.id === orderId ? { ...o, status } : o)),
+        })),
 
       updateTrackingNumber: (orderId, trackingNumber) =>
-        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, trackingNumber } : o)) })),
+        set((s) => ({
+          orders: s.orders.map((o) => (o.id === orderId ? { ...o, trackingNumber } : o)),
+        })),
 
       updateAdminNote: (orderId, note) =>
-        set((s) => ({ orders: s.orders.map((o) => (o.id === orderId ? { ...o, adminNote: note } : o)) })),
+        set((s) => ({
+          orders: s.orders.map((o) => (o.id === orderId ? { ...o, adminNote: note } : o)),
+        })),
 
       getOrders: () => get().orders,
 
-      getOrdersByEmail: (email) => get().orders.filter((o) => o.customerEmail === email),
+      getOrdersByEmail: (email) =>
+        get().orders.filter(
+          (o) => o.customerEmail && o.customerEmail.toLowerCase() === email.toLowerCase()
+        ),
 
       getOrderById: (id) => get().orders.find((o) => o.id === id),
     }),

@@ -1,5 +1,6 @@
 /**
- * Zustand ile müşteri teslimat adresleri yönetimi.
+ * Zustand ile müşteri teslimat adresleri yönetimi — addressStore.ts
+ * Kullanıcı kimliğine (userEmail) göre kişiye özel saklanır.
  * LocalStorage'a kalıcı kaydedilir.
  */
 "use client";
@@ -9,6 +10,7 @@ import { persist } from "zustand/middleware";
 
 export interface Address {
   id: string;
+  userEmail?: string;
   title: string; // Ev, İş, Yazlık vb.
   fullName: string;
   phone: string;
@@ -24,7 +26,8 @@ interface AddressStore {
   addAddress: (addr: Omit<Address, "id">) => Address;
   removeAddress: (id: string) => void;
   updateAddress: (id: string, addr: Partial<Address>) => void;
-  getDefaultAddress: () => Address | undefined;
+  getDefaultAddress: (userEmail?: string) => Address | undefined;
+  getUserAddresses: (userEmail?: string) => Address[];
 }
 
 export const useAddressStore = create<AddressStore>()(
@@ -34,7 +37,10 @@ export const useAddressStore = create<AddressStore>()(
 
       addAddress: (addr) => {
         const newId = `addr-${Date.now()}`;
-        const isFirst = get().addresses.length === 0;
+        const userList = addr.userEmail
+          ? get().addresses.filter((a) => a.userEmail === addr.userEmail)
+          : get().addresses;
+        const isFirst = userList.length === 0;
         const newAddr = { ...addr, id: newId, isDefault: isFirst || addr.isDefault };
         set((s) => ({
           addresses: [...s.addresses, newAddr],
@@ -52,9 +58,20 @@ export const useAddressStore = create<AddressStore>()(
           addresses: s.addresses.map((a) => (a.id === id ? { ...a, ...updates } : a)),
         })),
 
-      getDefaultAddress: () => {
-        const list = get().addresses;
+      getDefaultAddress: (userEmail?: string) => {
+        const list = userEmail
+          ? get().addresses.filter(
+              (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
+            )
+          : get().addresses;
         return list.find((a) => a.isDefault) || list[0];
+      },
+
+      getUserAddresses: (userEmail?: string) => {
+        if (!userEmail) return get().addresses;
+        return get().addresses.filter(
+          (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
       },
     }),
     { name: "onbsaglik-addresses" }

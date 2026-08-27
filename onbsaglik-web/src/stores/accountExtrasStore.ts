@@ -1,5 +1,6 @@
 /**
  * Zustand ile Stok Alarmları, Fiyat Alarmları, Havale Bildirimleri ve Hediye Çekleri Yönetimi.
+ * Kullanıcı kimliğine (userEmail) göre kişiye özel saklanır.
  * LocalStorage'a kalıcı kaydedilir (persist).
  */
 
@@ -10,6 +11,7 @@ import { persist } from "zustand/middleware";
 
 export interface StockAlertItem {
   id: string;
+  userEmail?: string;
   productId: number;
   productSlug: string;
   productName: string;
@@ -21,6 +23,7 @@ export interface StockAlertItem {
 
 export interface PriceAlertItem {
   id: string;
+  userEmail?: string;
   productId: number;
   productSlug: string;
   productName: string;
@@ -32,6 +35,7 @@ export interface PriceAlertItem {
 
 export interface TransferNotification {
   id: string;
+  userEmail?: string;
   orderId: string;
   bankName: string;
   senderName: string;
@@ -44,6 +48,7 @@ export interface TransferNotification {
 
 export interface UserCoupon {
   id: string;
+  userEmail?: string;
   code: string;
   discountAmount: number;
   minSpend: number;
@@ -61,17 +66,21 @@ interface AccountExtrasState {
   // Stok Alarmı Eylemleri
   addStockAlert: (alert: Omit<StockAlertItem, "id" | "createdAt">) => void;
   removeStockAlert: (id: string) => void;
+  getUserStockAlerts: (userEmail?: string) => StockAlertItem[];
 
   // Fiyat Alarmı Eylemleri
   addPriceAlert: (alert: Omit<PriceAlertItem, "id" | "createdAt">) => void;
   removePriceAlert: (id: string) => void;
+  getUserPriceAlerts: (userEmail?: string) => PriceAlertItem[];
 
   // Havale Bildirimi Eylemleri
   addTransferNotification: (notif: Omit<TransferNotification, "id" | "status" | "createdAt">) => void;
+  getUserTransferNotifications: (userEmail?: string) => TransferNotification[];
 
   // Kupon / Hediye Çeki Eylemleri
-  addCoupon: (code: string) => { success: boolean; message: string; coupon?: UserCoupon };
+  addCoupon: (code: string, userEmail?: string) => { success: boolean; message: string; coupon?: UserCoupon };
   useCoupon: (code: string) => void;
+  getUserCoupons: (userEmail?: string) => UserCoupon[];
 }
 
 export const useAccountExtrasStore = create<AccountExtrasState>()(
@@ -80,6 +89,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
       stockAlerts: [
         {
           id: "stock-1",
+          userEmail: "saglikonb@gmail.com",
           productId: 540,
           productSlug: "la-roche-posay-anthelios-uv-air-serum-spf50-50ml",
           productName: "La Roche Posay Anthelios UV Air Serum SPF50+ 50 ml",
@@ -93,6 +103,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
       priceAlerts: [
         {
           id: "price-1",
+          userEmail: "saglikonb@gmail.com",
           productId: 546,
           productSlug: "la-roche-posay-effaclar-duo-m-cilt-kusurlari-karsiti-bakim-kremi-40ml",
           productName: "La Roche Posay Effaclar Duo+ M Cilt Kusurları Karşıtı Bakım Kremi 40 ml",
@@ -129,7 +140,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
       addStockAlert: (alert) =>
         set((s) => ({
           stockAlerts: [
-            ...s.stockAlerts.filter((a) => a.productId !== alert.productId),
+            ...s.stockAlerts.filter((a) => a.productId !== alert.productId || (alert.userEmail && a.userEmail !== alert.userEmail)),
             {
               ...alert,
               id: `stock-${Date.now()}`,
@@ -143,10 +154,17 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           stockAlerts: s.stockAlerts.filter((a) => a.id !== id),
         })),
 
+      getUserStockAlerts: (userEmail?: string) => {
+        if (!userEmail) return get().stockAlerts;
+        return get().stockAlerts.filter(
+          (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
+      },
+
       addPriceAlert: (alert) =>
         set((s) => ({
           priceAlerts: [
-            ...s.priceAlerts.filter((a) => a.productId !== alert.productId),
+            ...s.priceAlerts.filter((a) => a.productId !== alert.productId || (alert.userEmail && a.userEmail !== alert.userEmail)),
             {
               ...alert,
               id: `price-${Date.now()}`,
@@ -159,6 +177,13 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         set((s) => ({
           priceAlerts: s.priceAlerts.filter((a) => a.id !== id),
         })),
+
+      getUserPriceAlerts: (userEmail?: string) => {
+        if (!userEmail) return get().priceAlerts;
+        return get().priceAlerts.filter(
+          (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
+      },
 
       addTransferNotification: (notif) =>
         set((s) => ({
@@ -173,9 +198,18 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           ],
         })),
 
-      addCoupon: (code) => {
+      getUserTransferNotifications: (userEmail?: string) => {
+        if (!userEmail) return get().transferNotifications;
+        return get().transferNotifications.filter(
+          (n) => !n.userEmail || n.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
+      },
+
+      addCoupon: (code, userEmail?: string) => {
         const clean = code.trim().toUpperCase();
-        const existing = get().coupons.find((c) => c.code === clean);
+        const existing = get().coupons.find(
+          (c) => c.code === clean && (!userEmail || !c.userEmail || c.userEmail === userEmail)
+        );
         if (existing) {
           return { success: false, message: `"${clean}" kuponu zaten hesabınızda tanımlı.` };
         }
@@ -191,6 +225,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           const info = validCoupons[clean];
           const newCoupon: UserCoupon = {
             id: `cp-${Date.now()}`,
+            userEmail,
             code: clean,
             discountAmount: info.amount,
             minSpend: info.min,
@@ -209,6 +244,13 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         set((s) => ({
           coupons: s.coupons.map((c) => (c.code === code ? { ...c, isUsed: true } : c)),
         })),
+
+      getUserCoupons: (userEmail?: string) => {
+        if (!userEmail) return get().coupons;
+        return get().coupons.filter(
+          (c) => !c.userEmail || c.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
+      },
     }),
     { name: "onbsaglik-account-extras" }
   )

@@ -1,6 +1,6 @@
 /**
  * Zustand ile Kayıtlı Kartlar Yönetimi — cardStore.ts
- * Kullanıcının ödemelerde tek tıkla seçebilmesi için kayıtlı kartları yönetir.
+ * Kullanıcı kimliğine (userEmail) göre kişiye özel saklanır.
  * Güvenlik (PCI-DSS): CVV asla saklanmaz, kart numarası maskelenir.
  */
 
@@ -11,6 +11,7 @@ import { persist } from "zustand/middleware";
 
 export interface SavedCard {
   id: string;
+  userEmail?: string;
   cardName: string;
   cardNumberMasked: string; // Örn: 5528 **** **** 4829
   cardLast4: string;
@@ -25,6 +26,7 @@ interface CardStore {
   addCard: (card: Omit<SavedCard, "id">) => SavedCard;
   removeCard: (id: string) => void;
   getCards: () => SavedCard[];
+  getUserCards: (userEmail?: string) => SavedCard[];
 }
 
 export const useCardStore = create<CardStore>()(
@@ -34,7 +36,10 @@ export const useCardStore = create<CardStore>()(
 
       addCard: (card) => {
         const newId = `card-${Date.now()}`;
-        const isFirst = get().cards.length === 0;
+        const userList = card.userEmail
+          ? get().cards.filter((c) => c.userEmail === card.userEmail)
+          : get().cards;
+        const isFirst = userList.length === 0;
         const newCard: SavedCard = {
           ...card,
           id: newId,
@@ -52,6 +57,13 @@ export const useCardStore = create<CardStore>()(
         })),
 
       getCards: () => get().cards,
+
+      getUserCards: (userEmail?: string) => {
+        if (!userEmail) return get().cards;
+        return get().cards.filter(
+          (c) => !c.userEmail || c.userEmail.toLowerCase() === userEmail.toLowerCase()
+        );
+      },
     }),
     { name: "onbsaglik-saved-cards" }
   )

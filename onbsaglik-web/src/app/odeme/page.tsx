@@ -1,7 +1,7 @@
 /**
  * Ödeme & Teslimat Sayfası — /odeme
- * Kayıtlı Adres Seçimi, Form Validasyonları, Kayıtlı Kartlar & Kart Kaydetme,
- * PayTR 3D Secure, Mail Order & Havale/EFT Entegrasyonu.
+ * Kullanıcıya Özel Kayıtlı Adres & Kart Seçimi (userEmail Scoped),
+ * Form Validasyonları, Ürün Slug Desteği, PayTR 3D Secure, Mail Order & Havale/EFT.
  */
 
 "use client";
@@ -33,10 +33,12 @@ import { isUserLoggedIn } from "@/lib/authUtils";
 export default function OdemeSayfasi() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { addresses, addAddress, getDefaultAddress } = useAddressStore();
-  const { cards, addCard } = useCardStore();
+  const { addresses, addAddress, getUserAddresses, getDefaultAddress } = useAddressStore();
+  const { cards, addCard, getUserCards } = useCardStore();
   const { addOrder } = useOrderStore();
   const { data: session, status } = useSession();
+
+  const currentUserEmail = session?.user?.email || "";
 
   // Oturum Guard: Kullanıcı giriş yapmamışsa doğrudan giriş sayfasına yönlendir
   useEffect(() => {
@@ -47,6 +49,10 @@ export default function OdemeSayfasi() {
 
   // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ
   const [activeStep, setActiveStep] = useState<1 | 2>(1);
+
+  // Kullanıcıya Özel Adresler ve Kartlar
+  const userAddresses = getUserAddresses(currentUserEmail);
+  const userCards = getUserCards(currentUserEmail);
 
   // Kayıtlı Adres & Yeni Adres Modu
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
@@ -163,8 +169,8 @@ export default function OdemeSayfasi() {
 
   // Kullanıcının Mevcut Kayıtlı Adreslerini Yükle
   useEffect(() => {
-    if (addresses.length > 0) {
-      const def = getDefaultAddress() || addresses[0];
+    if (userAddresses.length > 0) {
+      const def = getDefaultAddress(currentUserEmail) || userAddresses[0];
       setSelectedAddressId(def.id);
       setIsAddingNewAddress(false);
       setAddressForm({
@@ -186,17 +192,17 @@ export default function OdemeSayfasi() {
         setAddressForm((p) => ({ ...p, fullName: session.user?.name || "" }));
       }
     }
-  }, [addresses, session, getDefaultAddress]);
+  }, [addresses, session, currentUserEmail, getDefaultAddress]);
 
   // Kayıtlı Kartları Yükle
   useEffect(() => {
-    if (cards.length > 0) {
-      const defCard = cards.find((c) => c.isDefault) || cards[0];
+    if (userCards.length > 0) {
+      const defCard = userCards.find((c) => c.isDefault) || userCards[0];
       setSelectedCardId(defCard.id);
     } else {
       setSelectedCardId("new");
     }
-  }, [cards]);
+  }, [cards, currentUserEmail]);
 
   // Adres Seçimi Değiştirildiğinde Formu Güncelle
   const handleSelectSavedAddress = (addr: Address) => {
@@ -221,7 +227,7 @@ export default function OdemeSayfasi() {
 
     // Kayıtlı Adres Seçildiyse
     if (!isAddingNewAddress && selectedAddressId) {
-      const chosen = addresses.find((a) => a.id === selectedAddressId);
+      const chosen = userAddresses.find((a) => a.id === selectedAddressId);
       if (chosen) {
         setActiveStep(2);
         return;
@@ -254,8 +260,9 @@ export default function OdemeSayfasi() {
       return;
     }
 
-    // Adresi Sisteme Kaydet
+    // Adresi Kullanıcıya Özel Olarak Sisteme Kaydet
     const saved = addAddress({
+      userEmail: currentUserEmail,
       title: addressForm.title || "Evim",
       fullName: addressForm.fullName,
       phone: addressForm.phone,
@@ -302,7 +309,7 @@ export default function OdemeSayfasi() {
           return;
         }
 
-        // Kartı Güvenle Kaydet
+        // Kartı Kullanıcıya Özel Güvenle Kaydet
         if (saveCardCheckbox) {
           const type = cleanCardNum.startsWith("4")
             ? "Visa"
@@ -313,13 +320,14 @@ export default function OdemeSayfasi() {
             : "Diğer";
 
           addCard({
+            userEmail: currentUserEmail,
             cardName: cardForm.cardName,
             cardNumberMasked: `${cleanCardNum.slice(0, 4)} **** **** ${cleanCardNum.slice(-4)}`,
             cardLast4: cleanCardNum.slice(-4),
             expireMonth: cardForm.expireMonth,
             expireYear: cardForm.expireYear,
             cardType: type,
-            isDefault: cards.length === 0,
+            isDefault: userCards.length === 0,
           });
         }
       } else {
@@ -336,7 +344,7 @@ export default function OdemeSayfasi() {
       }
     }
 
-    // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET
+    // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET (SLUG DAHİL)
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
     const orderStatus =
       paymentMethod === "cc"
@@ -348,6 +356,7 @@ export default function OdemeSayfasi() {
     const newOrderRecord = addOrder({
       items: items.map((i) => ({
         id: i.product.id,
+        slug: i.product.slug,
         name: i.product.name,
         brand: i.product.brand,
         price: i.product.price,
@@ -356,7 +365,7 @@ export default function OdemeSayfasi() {
       })),
       total: grandTotal,
       carrier: selectedCarrier,
-      customerEmail: userSession.email || session?.user?.email || "musteri@onbsaglik.com",
+      customerEmail: currentUserEmail || userSession.email || "musteri@onbsaglik.com",
       customerName: addressForm.fullName || userSession.name || "Değerli Müşterimiz",
       customerPhone: addressForm.phone || "",
       paymentMethod:
@@ -411,7 +420,7 @@ export default function OdemeSayfasi() {
             onClick={() => {
               if (addressForm.fullName && addressForm.city && addressForm.district) {
                 setActiveStep(2);
-              } else if (addresses.length > 0) {
+              } else if (userAddresses.length > 0) {
                 setActiveStep(2);
               } else {
                 setAddressError("Lütfen önce teslimat adresi bilgilerinizi tamamlayınız.");
@@ -445,7 +454,7 @@ export default function OdemeSayfasi() {
                 )}
 
                 {/* 1. SEÇENEK: KAYITLI ADRESLER LİSTESİ */}
-                {addresses.length > 0 && !isAddingNewAddress ? (
+                {userAddresses.length > 0 && !isAddingNewAddress ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b pb-4">
                       <div>
@@ -484,7 +493,7 @@ export default function OdemeSayfasi() {
 
                     {/* Adres Kartları Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {addresses.map((addr) => {
+                      {userAddresses.map((addr) => {
                         const isSelected = selectedAddressId === addr.id;
                         return (
                           <div
@@ -562,7 +571,7 @@ export default function OdemeSayfasi() {
                         </p>
                       </div>
 
-                      {addresses.length > 0 && (
+                      {userAddresses.length > 0 && (
                         <button
                           type="button"
                           onClick={() => {
@@ -927,14 +936,14 @@ export default function OdemeSayfasi() {
                       )}
 
                       {/* KAYITLI KARTLAR SEÇİCİ */}
-                      {cards.length > 0 && (
+                      {userCards.length > 0 && (
                         <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
                           <label className="block text-xs font-extrabold text-gray-700">
                             Kayıtlı Kartlarım:
                           </label>
 
                           <div className="space-y-2">
-                            {cards.map((c) => (
+                            {userCards.map((c) => (
                               <label
                                 key={c.id}
                                 onClick={() => setSelectedCardId(c.id)}
@@ -1176,7 +1185,7 @@ export default function OdemeSayfasi() {
               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
                 {items.map(({ product, quantity }) => (
                   <div key={product.id} className="flex items-center gap-3 text-xs border-b pb-2">
-                    <div className="relative w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg p-1 border">
+                    <Link href={`/urun/${product.slug}`} className="relative w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg p-1 border hover:border-emerald-500 transition-colors">
                       <Image
                         src={product.images?.[0] || "/placeholder.png"}
                         alt={product.name}
@@ -1184,12 +1193,14 @@ export default function OdemeSayfasi() {
                         className="object-contain"
                         unoptimized
                       />
-                    </div>
+                    </Link>
                     <div className="flex-grow min-w-0">
                       <span className="font-bold text-gray-400 block uppercase truncate">
                         {product.brand}
                       </span>
-                      <p className="font-bold text-gray-800 truncate">{product.name}</p>
+                      <Link href={`/urun/${product.slug}`} className="font-bold text-gray-800 hover:text-emerald-600 truncate block transition-colors">
+                        {product.name}
+                      </Link>
                       <span className="text-gray-500 font-semibold">{quantity} Adet</span>
                     </div>
                     <span className="font-extrabold text-rose-500">
