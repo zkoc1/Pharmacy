@@ -36,7 +36,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    if (cleanEmail === "admin@onbsaglik.com") {
+    if (cleanEmail === "admin@onbsaglik.com.tr") {
       localStorage.setItem("admin_session", JSON.stringify({ email: cleanEmail, role: "super_admin" }));
       localStorage.setItem("user_session", JSON.stringify({ email: cleanEmail, name: "Sistem Yöneticisi", role: "admin" }));
     } else {
@@ -64,22 +64,22 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     try {
       if (provider === "google") {
         window.open(
-          "https://accounts.google.com/o/oauth2/v2/auth?client_id=824105571389-dummy.apps.googleusercontent.com&redirect_uri=https://onbsaglik.com/api/auth/callback/google&response_type=code&scope=openid%20email%20profile",
+          "https://accounts.google.com/o/oauth2/v2/auth?client_id=824105571389-dummy.apps.googleusercontent.com&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/google&response_type=code&scope=openid%20email%20profile",
           "GoogleSignIn",
           "width=500,height=600"
         );
       } else if (provider === "facebook") {
-        window.open("https://www.facebook.com/v18.0/dialog/oauth?client_id=dummy_app_id&redirect_uri=https://onbsaglik.com/api/auth/callback/facebook", "FacebookSignIn", "width=600,height=700");
+        window.open("https://www.facebook.com/v18.0/dialog/oauth?client_id=dummy_app_id&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/facebook", "FacebookSignIn", "width=600,height=700");
       } else if (provider === "apple") {
-        window.open("https://appleid.apple.com/auth/authorize?client_id=com.onbsaglik.web&redirect_uri=https://onbsaglik.com/api/auth/callback/apple&response_type=code", "AppleSignIn", "width=600,height=700");
+        window.open("https://appleid.apple.com/auth/authorize?client_id=com.onbsaglik.web&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/apple&response_type=code", "AppleSignIn", "width=600,height=700");
       }
 
-      localStorage.setItem("user_session", JSON.stringify({ email: `${provider}_user@onbsaglik.com`, name: `${provider.toUpperCase()} Kullanıcısı`, role: "customer" }));
-      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com`, password: "demoPassword123" });
+      localStorage.setItem("user_session", JSON.stringify({ email: `${provider}_user@onbsaglik.com.tr`, name: `${provider.toUpperCase()} Kullanıcısı`, role: "customer" }));
+      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: "demoPassword123" });
       onClose();
       setTimeout(() => router.push("/hesabim"), 1000);
     } catch {
-      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com`, password: "demoPassword123" });
+      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: "demoPassword123" });
       onClose();
       router.push("/hesabim");
     }

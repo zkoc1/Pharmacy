@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/api/", "/ara"],
       },
     ],
-    sitemap: "https://onbsaglik.com/sitemap.xml",
-    host: "https://onbsaglik.com",
+    sitemap: "https://onbsaglik.com.tr/sitemap.xml",
+    host: "https://onbsaglik.com.tr",
   };
 }

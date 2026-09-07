@@ -359,7 +359,7 @@ export default function AdminPaneli() {
               <form onSubmit={handleAddAdminSubmit} className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Admin E-posta Adresi *</label>
-                  <input type="email" required value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="yeniadmin@onbsaglik.com" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50" />
+                  <input type="email" required value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)} placeholder="yeniadmin@onbsaglik.com.tr" className="w-full p-2.5 border rounded-xl text-xs bg-gray-50" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Şifre *</label>

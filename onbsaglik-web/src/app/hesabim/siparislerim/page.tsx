@@ -58,7 +58,7 @@ export default function SiparislerimSayfasi() {
 
   // Kullanıcıya özel sipariş filtreleme (Admin tümünü görür)
   const userOrders =
-    currentUserEmail === "admin@onbsaglik.com"
+    currentUserEmail === "admin@onbsaglik.com.tr"
       ? orders
       : orders.filter(
           (o) => o.customerEmail && o.customerEmail.toLowerCase() === currentUserEmail.toLowerCase()

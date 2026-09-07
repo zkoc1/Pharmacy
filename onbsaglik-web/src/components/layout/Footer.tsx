@@ -65,7 +65,7 @@ export default function Footer() {
 
         {/* Alt Kısım */}
         <div className="border-t border-emerald-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-emerald-200/60">
-          <p>© 2024 onbsaglik.com. Tüm hakları saklıdır.</p>
+          <p>© 2024 onbsaglik.com.tr. Tüm hakları saklıdır.</p>
         </div>
       </div>
     </footer>

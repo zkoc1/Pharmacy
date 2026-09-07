@@ -1,5 +1,5 @@
 /**
- * Anasayfa — onbsaglik.com giriş sayfası.
+ * Anasayfa — onbsaglik.com.tr giriş sayfası.
  * Hero banner, marka şeridi, öne çıkan ürünler ve kategori kartları içerir.
  */
 

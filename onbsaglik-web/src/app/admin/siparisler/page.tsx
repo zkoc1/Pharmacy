@@ -368,7 +368,7 @@ export default function AdminSiparisler() {
 
     const newRecord = addOrder({
       customerName: manualForm.customerName,
-      customerEmail: manualForm.customerEmail || "manuel@onbsaglik.com",
+      customerEmail: manualForm.customerEmail || "manuel@onbsaglik.com.tr",
       customerPhone: manualForm.customerPhone || "05555555555",
       deliveryAddress: `${manualForm.city} / ${manualForm.district} - ${manualForm.fullAddress}`,
       carrier: manualForm.carrier,
@@ -1047,7 +1047,7 @@ export default function AdminSiparisler() {
               <div className="flex justify-between items-start border-b-2 border-black pb-3">
                 <div>
                   <h2 className="text-lg font-black tracking-wider">ONBSAĞLIK</h2>
-                  <p className="text-[10px]">www.onbsaglik.com</p>
+                  <p className="text-[10px]">www.onbsaglik.com.tr</p>
                 </div>
                 <div className="text-right">
                   <span className="text-base font-black uppercase border-2 border-black px-2 py-0.5 rounded">

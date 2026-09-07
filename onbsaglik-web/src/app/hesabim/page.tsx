@@ -92,7 +92,7 @@ export default function HesabimPage() {
 
   // KULLANICIYA ÖZEL İZOLE EDİLMİŞ VERİLER
   const userOrders =
-    currentUserEmail === 'admin@onbsaglik.com'
+    currentUserEmail === 'admin@onbsaglik.com.tr'
       ? orders
       : orders.filter(
           (o) => o.customerEmail && o.customerEmail.toLowerCase() === currentUserEmail.toLowerCase()
@@ -152,7 +152,7 @@ export default function HesabimPage() {
 
     const adminSessionRaw = localStorage.getItem('admin_session');
 
-    if (currentUserEmail === 'admin@onbsaglik.com') {
+    if (currentUserEmail === 'admin@onbsaglik.com.tr') {
       setIsAdminUser(true);
     } else if (adminSessionRaw) {
       try {

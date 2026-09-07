@@ -77,7 +77,7 @@ function buildOrderHtml(data: OrderEmailPayload): string {
 
     <div style="text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;">
       <p style="color:#94a3b8;font-size:12px;margin:0 0 4px;">© 2024 OnbSağlık | Tüm hakları saklıdır.</p>
-      <a href="https://onbsaglik.com" style="color:#10b981;font-size:12px;text-decoration:none;font-weight:600;">onbsaglik.com</a>
+      <a href="https://onbsaglik.com.tr" style="color:#10b981;font-size:12px;text-decoration:none;font-weight:600;">onbsaglik.com.tr</a>
     </div>
 
   </div>
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'OnbSağlık <noreply@onbsaglik.com>',
+        from: 'OnbSağlık <noreply@onbsaglik.com.tr>',
         to: [data.to],
         subject: `Siparişiniz Alındı — ${data.orderId}`,
         html: buildOrderHtml(data),

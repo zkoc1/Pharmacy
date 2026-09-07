@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     ]);
     const user_basket = Buffer.from(JSON.stringify(basketArray)).toString("base64");
 
-    const baseUrl = process.env.NEXTAUTH_URL || "https://onbsaglik.com";
+    const baseUrl = process.env.NEXTAUTH_URL || "https://onbsaglik.com.tr";
     const merchant_ok_url = `${baseUrl}/odeme/basarili?orderId=${merchant_oid}`;
     const merchant_fail_url = `${baseUrl}/odeme?status=fail`;
 

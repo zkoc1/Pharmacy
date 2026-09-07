@@ -25,7 +25,7 @@ export default function AdminGiris() {
     // Basit demo kimlik doğrulama (gerçek uygulamada API çağrısı yapılır)
     await new Promise((r) => setTimeout(r, 800));
 
-    if (email === "admin@onbsaglik.com" && password === "onbAdmin2024!") {
+    if (email === "admin@onbsaglik.com.tr" && password === "onbAdmin2024!") {
       // Oturum bilgisini localStorage'a kaydet
       localStorage.setItem("admin_session", JSON.stringify({ email, role: "super_admin" }));
       router.push("/admin");
@@ -77,7 +77,7 @@ export default function AdminGiris() {
             Admin Paneli
           </h1>
           <p style={{ fontSize: "14px", color: "var(--color-text-muted)" }}>
-            onbsaglik.com yönetim sistemi
+            onbsaglik.com.tr yönetim sistemi
           </p>
         </div>
 
@@ -97,7 +97,7 @@ export default function AdminGiris() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="admin@onbsaglik.com"
+              placeholder="admin@onbsaglik.com.tr"
               style={{
                 width: "100%",
                 padding: "12px 16px",

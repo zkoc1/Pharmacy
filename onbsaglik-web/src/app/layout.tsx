@@ -18,7 +18,7 @@ const inter = Inter({
 
 // Site geneli meta veriler — SEO için kritik
 export const metadata: Metadata = {
-  metadataBase: new URL("https://onbsaglik.com"),
+  metadataBase: new URL("https://onbsaglik.com.tr"),
   title: {
     default: "OnbSağlık | Vitamin, Takviye ve Kozmetik Ürünler",
     template: "%s | OnbSağlık",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "tr_TR",
-    url: "https://onbsaglik.com",
+    url: "https://onbsaglik.com.tr",
     siteName: "OnbSağlık",
     title: "OnbSağlık | Vitamin, Takviye ve Kozmetik Ürünler",
     description:
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
   alternates: {
-    canonical: "https://onbsaglik.com",
+    canonical: "https://onbsaglik.com.tr",
   },
 };
 

@@ -373,7 +373,7 @@ export default function OdemeSayfasi() {
       })),
       total: grandTotal,
       carrier: selectedCarrier,
-      customerEmail: currentUserEmail || userSession.email || "musteri@onbsaglik.com",
+      customerEmail: currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr",
       customerName: addressForm.fullName || userSession.name || "Değerli Müşterimiz",
       customerPhone: addressForm.phone || "",
       paymentMethod:
