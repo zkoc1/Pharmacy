@@ -9,7 +9,9 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
+import { useOrderStore } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
+import { calculateMultiBuyDiscount, applyCouponDiscount } from "@/lib/pricing";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ChevronLeft, Gift, Printer, Calendar, RefreshCw, BookmarkPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +23,7 @@ export default function SepetSayfasi() {
   const { data: session } = useSession();
   const router = useRouter();
   const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const getOrdersByEmail = useOrderStore((s) => s.getOrdersByEmail);
   const [couponCode, setCouponCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponMsg, setCouponMsg] = useState("");
@@ -30,7 +33,11 @@ export default function SepetSayfasi() {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const total = getTotalPrice();
-  const grandTotal = Math.max(0, total - discountAmount);
+  
+  // Çoklu alım indirimi
+  const multiBuyDiscount = calculateMultiBuyDiscount(items, total);
+  
+  const grandTotal = Math.max(0, total - multiBuyDiscount - discountAmount);
 
   useEffect(() => {
     import("@/data/products.json").then((m) => {
@@ -42,15 +49,21 @@ export default function SepetSayfasi() {
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
     const code = couponCode.trim().toUpperCase();
-    if (code === "ONB100") {
-      setDiscountAmount(100);
-      setCouponMsg("🎉 100 TL İndirim Uygulandı!");
-    } else if (code === "YAZ50") {
-      setDiscountAmount(50);
-      setCouponMsg("🎉 50 TL İndirim Uygulandı!");
-    } else {
+    const userEmail = session?.user?.email;
+    const isFirstOrder = userEmail ? getOrdersByEmail(userEmail).length === 0 : true;
+
+    try {
+      const discount = applyCouponDiscount(code, total, isFirstOrder);
+      if (discount > 0) {
+        setDiscountAmount(discount);
+        setCouponMsg(`🎉 ${discount} TL İndirim Uygulandı!`);
+      } else {
+        setDiscountAmount(0);
+        setCouponMsg("⚠️ Geçersiz kupon kodu.");
+      }
+    } catch (error: any) {
       setDiscountAmount(0);
-      setCouponMsg("⚠️ Geçersiz veya süresi dolmuş kupon kodu.");
+      setCouponMsg(`⚠️ ${error.message}`);
     }
   };
 
@@ -196,6 +209,13 @@ export default function SepetSayfasi() {
                   <span className="text-gray-500 font-bold">Sepet Toplamı :</span>
                   <span className="font-extrabold text-gray-900">{formatPrice(total)}</span>
                 </div>
+
+                {multiBuyDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Sepet İndirimi (%5) :</span>
+                    <span>-{formatPrice(multiBuyDiscount)}</span>
+                  </div>
+                )}
 
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">

@@ -7,6 +7,9 @@
 import { useState, useEffect } from "react";
 import { Star, MessageSquare, CheckCircle2, User, Send, ThumbsUp } from "lucide-react";
 import { useReviewStore, Review } from "@/stores/reviewStore";
+import { useCartStore } from "@/stores/cartStore";
+import { useOrderStore } from "@/stores/orderStore";
+import { useAccountExtrasStore } from "@/stores/accountExtrasStore";
 
 interface Props {
   productSlug: string;
@@ -31,9 +34,14 @@ export default function ProductReviews({ productSlug, productId }: Props) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [rewardMsg, setRewardMsg] = useState("");
 
   const reviews = useReviewStore((s) => s.reviews);
   const addReview = useReviewStore((s) => s.addReview);
+  
+  const userEmail = useCartStore((s) => s.userEmail);
+  const getOrdersByEmail = useOrderStore((s) => s.getOrdersByEmail);
+  const grantReviewReward = useAccountExtrasStore((s) => s.grantReviewReward);
 
   useEffect(() => {
     setMounted(true);
@@ -46,9 +54,18 @@ export default function ProductReviews({ productSlug, productId }: Props) {
       ? Number((productReviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount).toFixed(1))
       : 0;
 
+  const userOrders = mounted && userEmail !== "guest" ? getOrdersByEmail(userEmail) : [];
+  const hasPurchased = mounted && productId ? userOrders.some((o) => o.status === "Teslim Edildi" && o.items.some((i) => i.id === productId)) : false;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
+    setRewardMsg("");
+
+    if (!hasPurchased) {
+      setErrorMsg("Yorum yapabilmek için ürünü satın almış olmanız ve siparişinizin 'Teslim Edildi' durumunda olması gerekmektedir.");
+      return;
+    }
 
     if (!authorName.trim()) {
       setErrorMsg("Lütfen adınızı ve soyadınızı giriniz.");
@@ -74,6 +91,11 @@ export default function ProductReviews({ productSlug, productId }: Props) {
       comment: comment.trim(),
     });
 
+    if (userEmail && userEmail !== "guest") {
+      const rewardCode = grantReviewReward(userEmail);
+      setRewardMsg(`Tebrikler! Yorumunuz onaylandı ve 5 TL hediye çekiniz tanımlandı. Kodunuz: ${rewardCode}`);
+    }
+
     setAuthorName("");
     setEmail("");
     setComment("");
@@ -82,7 +104,8 @@ export default function ProductReviews({ productSlug, productId }: Props) {
     setTimeout(() => {
       setIsSuccess(false);
       setIsFormOpen(false);
-    }, 3000);
+      setRewardMsg("");
+    }, 5000);
   };
 
   const formatDate = (dateString: string) => {
@@ -174,9 +197,16 @@ export default function ProductReviews({ productSlug, productId }: Props) {
           </h3>
 
           {isSuccess ? (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex items-center gap-3 text-sm">
-              <CheckCircle2 size={20} className="text-emerald-600 flex-shrink-0" />
-              <span>Yorumunuz başarıyla kaydedildi! Teşekkür ederiz.</span>
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex flex-col gap-2 text-sm">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={20} className="text-emerald-600 flex-shrink-0" />
+                <span>Yorumunuz başarıyla kaydedildi! Teşekkür ederiz.</span>
+              </div>
+              {rewardMsg && (
+                <div className="font-semibold text-emerald-700 pl-8">
+                  🎁 {rewardMsg}
+                </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

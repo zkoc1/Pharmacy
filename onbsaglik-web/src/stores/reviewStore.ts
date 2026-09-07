@@ -23,6 +23,7 @@ interface ReviewState {
   addReview: (review: Omit<Review, "id" | "createdAt">) => void;
   getProductReviews: (slug: string) => Review[];
   getAverageRating: (slug: string) => { average: number; count: number };
+  deleteReview: (id: string) => void;
 }
 
 // Varsayılan ilk örnek yorumlar (Mağaza açılışı için gerçekçi kullanıcı deneyimi)
@@ -90,6 +91,12 @@ export const useReviewStore = create<ReviewState>()(
         const total = productReviews.reduce((sum, r) => sum + r.rating, 0);
         const average = Number((total / productReviews.length).toFixed(1));
         return { average, count: productReviews.length };
+      },
+
+      deleteReview: (id: string) => {
+        set((state) => ({
+          reviews: state.reviews.filter((r) => r.id !== id),
+        }));
       },
     }),
     {

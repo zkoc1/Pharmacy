@@ -7,6 +7,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useAccountExtrasStore } from "./accountExtrasStore";
 import type { CartItem, Product } from "@/types";
 
 export type { CartItem };
@@ -59,6 +60,26 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: (product, quantity = 1) => {
+        // Stok Alarm Kontrolü
+        if (product.stock < 10) {
+          const { addStockAlert, stockAlerts } = useAccountExtrasStore.getState();
+          const currentEmail = get().userEmail || "guest";
+          const alreadyExists = stockAlerts.some(
+            (a) => a.productId === product.id && a.userEmail === currentEmail
+          );
+          if (!alreadyExists && currentEmail !== "guest") {
+            addStockAlert({
+              userEmail: currentEmail,
+              productId: product.id,
+              productSlug: product.slug,
+              productName: product.name,
+              productImage: product.images[0] || "/placeholder.png",
+              price: product.price,
+              email: currentEmail,
+            });
+          }
+        }
+
         set((state) => {
           const currentEmail = state.userEmail || "guest";
           const currentItems = state.cartsByUser[currentEmail] || state.items || [];

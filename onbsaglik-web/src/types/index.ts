@@ -27,6 +27,14 @@ export interface Product {
   trendyolLink: string;
   /** Admin tarafından eklenen açıklama (opsiyonel) */
   description?: string;
+  /** Uzun / Detaylı ürün açıklaması */
+  longDescription?: string;
+  /** İçindekiler / Özellikler */
+  ingredients?: string;
+  /** Kullanım Şekli */
+  usage?: string;
+  /** Uyarılar / Önlemler */
+  warnings?: string;
 }
 
 /** Marka veri modeli */

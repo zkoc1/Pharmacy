@@ -183,6 +183,9 @@ export default function AdminPaneli() {
           <a href="/admin/kampanyalar" style={{ background: "#f59e0b", color: "#78350f", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             ⚡ Kampanya Yönetimi
           </a>
+          <a href="/admin/yorumlar" style={{ background: "#10b981", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            ⭐ Yorum Yönetimi
+          </a>
           <a href="/" style={{ background: "rgba(255,255,255,0.15)", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
             Siteye Dön &rarr;
           </a>

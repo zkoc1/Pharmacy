@@ -14,6 +14,7 @@ import { useOrderStore } from "@/stores/orderStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/products";
+import { calculateMultiBuyDiscount, applyCouponDiscount, calculateShipping, calculateEftDiscount, PRICING_RULES } from "@/lib/pricing";
 import {
   CreditCard,
   Truck,
@@ -114,9 +115,16 @@ export default function OdemeSayfasi() {
   const [discount, setDiscount] = useState(0);
 
   const total = getTotalPrice();
+  const multiBuyDiscount = calculateMultiBuyDiscount(items, total);
+  
   const carrierObj = carriers.find((c) => c.name === selectedCarrier);
-  const shippingCost = carrierObj ? carrierObj.price : 0;
-  const grandTotal = Math.max(0, total + shippingCost - discount);
+  const defaultShippingCost = carrierObj ? carrierObj.price : 0;
+  // Sadece ücretli kargolar için ücretsiz kargo barajını uygula (zaten 0 ise elleme)
+  const shippingCost = defaultShippingCost > 0 ? calculateShipping(total - multiBuyDiscount - discount) : 0;
+  
+  let tempGrandTotal = Math.max(0, total - multiBuyDiscount - discount + shippingCost);
+  const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
+  const grandTotal = Math.max(0, tempGrandTotal - eftDiscount);
 
   // 1. API'den Şehir İsimlerini Çek
   useEffect(() => {
@@ -1146,12 +1154,12 @@ export default function OdemeSayfasi() {
 
                   {paymentMethod === "eft" && (
                     <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl space-y-2 text-xs">
-                      <p className="font-extrabold text-emerald-900">Ziraat Bankası IBAN Bilgimiz:</p>
+                      <p className="font-extrabold text-emerald-900">Banka IBAN Bilgimiz:</p>
                       <p className="font-mono text-emerald-800 font-bold bg-white p-2 rounded-lg border">
-                        TR62 0001 0090 1012 3456 7850 01
+                        {PRICING_RULES.COMPANY_IBAN}
                       </p>
                       <p className="text-emerald-700">
-                        Alıcı Adı: OnbSağlık İnternet Mağazacılık San. Tic. A.Ş.
+                        Alıcı Adı: {PRICING_RULES.COMPANY_NAME}
                       </p>
                       <p className="text-[11px] text-emerald-600 font-medium pt-1">
                         * Havale açıklamasına Ad Soyad veya Sipariş Numaranızı yazmayı unutmayınız.
@@ -1222,7 +1230,15 @@ export default function OdemeSayfasi() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (couponCode.toUpperCase() === "ONB100") setDiscount(100);
+                    const userEmail = session?.user?.email;
+                    const isFirstOrder = userEmail ? useOrderStore.getState().getOrdersByEmail(userEmail).length === 0 : true;
+                    try {
+                        const discountVal = applyCouponDiscount(couponCode.trim().toUpperCase(), total, isFirstOrder);
+                        setDiscount(discountVal);
+                    } catch (e: any) {
+                        alert(e.message);
+                        setDiscount(0);
+                    }
                   }}
                   className="bg-gray-400 hover:bg-gray-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer"
                 >
@@ -1237,6 +1253,13 @@ export default function OdemeSayfasi() {
                   <span className="font-extrabold text-gray-900">{formatPrice(total)}</span>
                 </div>
 
+                {multiBuyDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Sepet İndirimi (%5)</span>
+                    <span>-{formatPrice(multiBuyDiscount)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-bold">Kargo Ücreti</span>
                   <span className="font-extrabold text-rose-500">
@@ -1248,6 +1271,13 @@ export default function OdemeSayfasi() {
                   <div className="flex justify-between text-emerald-600 font-bold">
                     <span>Kupon İndirimi</span>
                     <span>-{formatPrice(discount)}</span>
+                  </div>
+                )}
+
+                {eftDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-bold">
+                    <span>Havale/EFT İndirimi</span>
+                    <span>-{formatPrice(eftDiscount)}</span>
                   </div>
                 )}
 

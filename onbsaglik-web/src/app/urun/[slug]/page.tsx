@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAllProducts, getProductBySlug, formatPrice, calcDiscount } from "@/lib/products";
 import ProductDetailClient from "@/components/product/ProductDetailClient";
+import ProductTabs from "@/components/product/ProductTabs";
 import ProductReviews from "@/components/product/ProductReviews";
 
 interface Props {
@@ -98,59 +99,8 @@ export default async function UrunDetaySayfasi({ params }: Props) {
       {/* İstemci taraflı ürün detay bileşeni */}
       <ProductDetailClient product={product} discountRate={discountRate} />
 
-      {/* Ürün açıklaması */}
-      <div
-        className="card mt-8"
-        style={{ padding: "32px" }}
-      >
-        <h2 className="text-xl font-bold mb-4">Ürün Bilgileri</h2>
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            color: "var(--color-text-muted)",
-            fontSize: "14px",
-          }}
-        >
-          {product.brand && (
-            <div>
-              <span className="font-semibold" style={{ color: "var(--color-text)" }}>Marka: </span>
-              {product.brand}
-            </div>
-          )}
-          {product.barcode && (
-            <div>
-              <span className="font-semibold" style={{ color: "var(--color-text)" }}>Barkod: </span>
-              {product.barcode}
-            </div>
-          )}
-          <div>
-            <span className="font-semibold" style={{ color: "var(--color-text)" }}>KDV Oranı: </span>
-            %{product.vatRate}
-          </div>
-          <div>
-            <span className="font-semibold" style={{ color: "var(--color-text)" }}>Stok Durumu: </span>
-            {product.stock > 0 ? (
-              <span style={{ color: "var(--color-primary)" }}>Stokta Var</span>
-            ) : (
-              <span style={{ color: "#ef4444" }}>Stokta Yok</span>
-            )}
-          </div>
-        </div>
-
-        {product.trendyolLink && (
-          <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--color-border)" }}>
-            <a
-              href={product.trendyolLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--color-primary)", fontSize: "13px" }}
-            >
-              Trendyol&apos;da görüntüle →
-            </a>
-          </div>
-        )}
-      </div>
+      {/* İstemci taraflı detaylı ürün sekmeleri */}
+      <ProductTabs product={product} />
 
       {/* Müşteri Yorumları */}
       <ProductReviews productSlug={slug} productId={product.id} />

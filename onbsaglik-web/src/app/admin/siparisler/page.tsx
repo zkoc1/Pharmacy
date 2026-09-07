@@ -783,51 +783,62 @@ export default function AdminSiparisler() {
                           </select>
                         </td>
 
-                        {/* İşlem Butonları */}
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* Detay Çekmecesi */}
+                        {/* İşlem Butonları (Trendyol Tarzı Dropdown) */}
+                        <td className="p-4 text-right relative group">
+                          <button className="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 font-extrabold text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer ml-auto">
+                            İşlemler ▾
+                          </button>
+                          
+                          <div className="absolute right-4 top-10 mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden flex flex-col text-left">
+                            <button
+                              onClick={() => {
+                                updateOrderStatus(ord.id, "Hazırlanıyor");
+                                showToast(`${ord.id} İşleme Alındı.`);
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 border-b border-gray-50"
+                            >
+                              📦 İşleme Al
+                            </button>
+                            <button
+                              onClick={() => setPrintInvoiceOrder(ord)}
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 border-b border-gray-50"
+                            >
+                              📄 Fatura Oluştur / Yazdır
+                            </button>
+                            <button
+                              onClick={() => setPrintLabelOrder(ord)}
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 border-b border-gray-50"
+                            >
+                              🏷️ Kargo Etiketi Yazdır
+                            </button>
+                            <button
+                              onClick={() => {
+                                updateOrderStatus(ord.id, "Kargoda");
+                                showToast(`${ord.id} Kargoya Verildi.`);
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 border-b border-gray-50"
+                            >
+                              🚚 Kargoya Ver
+                            </button>
                             <button
                               onClick={() => {
                                 setActiveDrawerOrder(ord);
                                 setAdminNoteInput(ord.adminNote || "");
                               }}
-                              className="p-2 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-700 rounded-xl text-gray-600 transition-colors cursor-pointer"
-                              title="Sipariş Detayı & Timeline"
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-gray-700 hover:bg-orange-50 hover:text-orange-600 border-b border-gray-50"
                             >
-                              <Eye size={15} />
+                              👁️ Sipariş Detayları
                             </button>
-
-                            {/* Kargo Etiketi Yazdır */}
-                            <button
-                              onClick={() => setPrintLabelOrder(ord)}
-                              className="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl transition-colors cursor-pointer"
-                              title="Kargo Çıkış Etiketi Yazdır"
-                            >
-                              <Truck size={15} />
-                            </button>
-
-                            {/* E-Arşiv Fatura Yazdır */}
-                            <button
-                              onClick={() => setPrintInvoiceOrder(ord)}
-                              className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl transition-colors cursor-pointer"
-                              title="E-Arşiv Fatura / Bilgi Fişi Yazdır"
-                            >
-                              <Printer size={15} />
-                            </button>
-
-                            {/* Sipariş Sil */}
                             <button
                               onClick={() => {
-                                if (confirm(`${ord.id} numaralı siparişi silmek istediğinize emin misiniz?`)) {
-                                  deleteOrder(ord.id);
-                                  showToast(`🗑️ ${ord.id} silindi.`);
+                                if (confirm(`${ord.id} iptal edilecek, emin misiniz?`)) {
+                                  updateOrderStatus(ord.id, "İptal Edildi");
+                                  showToast(`${ord.id} İptal Edildi.`);
                                 }
                               }}
-                              className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors cursor-pointer"
-                              title="Siparişi Sil"
+                              className="w-full text-left px-4 py-2.5 text-[11px] font-bold text-red-600 hover:bg-red-50 hover:text-red-700"
                             >
-                              <Trash2 size={15} />
+                              ❌ İptal Et
                             </button>
                           </div>
                         </td>

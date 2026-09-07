@@ -81,6 +81,7 @@ interface AccountExtrasState {
   addCoupon: (code: string, userEmail?: string) => { success: boolean; message: string; coupon?: UserCoupon };
   useCoupon: (code: string) => void;
   getUserCoupons: (userEmail?: string) => UserCoupon[];
+  grantReviewReward: (userEmail: string) => string;
 }
 
 export const useAccountExtrasStore = create<AccountExtrasState>()(
@@ -219,6 +220,8 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           HOSGELDIN50: { amount: 50, min: 250, desc: "Hoş Geldin 50 TL İndirim Kuponu" },
           SAGLIK20: { amount: 20, min: 100, desc: "Tüm Ürünlerde Geçerli 20 TL İndirim Kuponu" },
           ECZANE150: { amount: 150, min: 750, desc: "Bahar Kampanyası 150 TL İndirim Kuponu" },
+          ILK100: { amount: 100, min: 500, desc: "İlk Siparişe Özel 100 TL İndirim" },
+          YORUM5: { amount: 5, min: 0, desc: "Yorum Ödülü 5 TL Hediye Çeki" },
         };
 
         if (validCoupons[clean]) {
@@ -238,6 +241,22 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         }
 
         return { success: false, message: "Geçersiz veya süresi dolmuş bir kupon kodu girdiniz." };
+      },
+
+      grantReviewReward: (userEmail: string) => {
+        const rewardCode = `YORUM5-${Date.now()}`;
+        const newCoupon: UserCoupon = {
+          id: `cp-${Date.now()}`,
+          userEmail,
+          code: rewardCode,
+          discountAmount: 5,
+          minSpend: 0,
+          description: "Yorum Ödülü 5 TL Hediye Çeki",
+          expireDate: "31.12.2026",
+          isUsed: false,
+        };
+        set((s) => ({ coupons: [newCoupon, ...s.coupons] }));
+        return rewardCode;
       },
 
       useCoupon: (code) =>
