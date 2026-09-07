@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useReviewStore, Review } from "@/stores/reviewStore";
 import { Star, Trash2, ArrowLeft, Search, CheckCircle, ExternalLink, MessageCircle } from "lucide-react";
-import { format, parseISO } from "date-fns";
-import { tr } from "date-fns/locale";
+
 
 export default function AdminYorumlar() {
   const router = useRouter();
@@ -139,7 +138,7 @@ export default function AdminYorumlar() {
                       </td>
                       <td className="p-4">
                         <span className="text-[11px] text-gray-500 font-bold block">
-                          {format(parseISO(r.createdAt), "dd MMM yyyy", { locale: tr })}
+                          {new Date(r.createdAt).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })}
                         </span>
                       </td>
                       <td className="p-4 text-right">

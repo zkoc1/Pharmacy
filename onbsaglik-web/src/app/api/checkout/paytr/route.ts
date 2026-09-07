@@ -12,11 +12,18 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { total, items, customerInfo } = body;
 
-    if (!total || !items || items.length === 0) {
-      return NextResponse.json({ error: "Sepet verisi eksik." }, { status: 400 });
+    // Madde 6: Girdiyi Doğrula
+    if (typeof total !== "number" || total <= 0 || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Geçersiz sepet veya tutar verisi." }, { status: 400 });
     }
 
-    const merchant_id = process.env.PAYTR_MERCHANT_ID || "678666";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const email = customerInfo?.email && emailRegex.test(customerInfo.email)
+      ? customerInfo.email
+      : "musteri@onbsaglik.com.tr";
+
+    // Madde 1: Anahtarları Çıkar (process.env üzerinden zorunlu)
+    const merchant_id = process.env.PAYTR_MERCHANT_ID || "";
     const merchant_key = process.env.PAYTR_MERCHANT_KEY || "";
     const merchant_salt = process.env.PAYTR_MERCHANT_SALT || "";
 
@@ -24,7 +31,6 @@ export async function POST(req: Request) {
     const merchant_oid = `ONB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     // Kullanıcı Bilgileri
-    const email = customerInfo?.email || "saglikonb@gmail.com";
     const user_name = customerInfo?.fullName || "Değerli Müşterimiz";
     const user_address = customerInfo?.address || "Türkiye";
     const user_phone = customerInfo?.phone || "05555555555";
@@ -101,7 +107,15 @@ export async function POST(req: Request) {
       }
     }
 
-    // Keyler henüz girilmemişse fallback token döner
+    // Madde 1: Prodüksiyonda sahte ödeme token'ı üretilmez, anahtar zorunludur
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Ödeme sistemi yapılandırması tamamlanmadı. Lütfen yöneticiyle iletişime geçin." },
+        { status: 503 }
+      );
+    }
+
+    // Sadece yerel geliştirme (dev) ortamında fallback token döner
     return NextResponse.json({
       success: true,
       token: `demo_token_${merchant_oid}`,

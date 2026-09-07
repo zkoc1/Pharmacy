@@ -19,7 +19,17 @@ export async function POST(request: Request) {
     const merchantSalt = process.env.PAYTR_MERCHANT_SALT ?? "";
     const merchantKey  = process.env.PAYTR_MERCHANT_KEY  ?? "";
 
-    if (merchantKey && merchantSalt && hash) {
+    // Madde 17: Webhook İmza Doğrulaması
+    if (!merchantOid || !status || !totalAmount || !hash) {
+      return new Response("PAYTR notification failed: missing parameters", { status: 400 });
+    }
+
+    if (process.env.NODE_ENV === "production" && (!merchantKey || !merchantSalt)) {
+      console.error("[PayTR Callback] PAYTR_MERCHANT_KEY veya PAYTR_MERCHANT_SALT eksik!");
+      return new Response("PAYTR notification failed: configuration error", { status: 500 });
+    }
+
+    if (merchantKey && merchantSalt) {
       // Hash doğrulama: SHA256-HMAC(merchant_oid + merchant_salt + status + total_amount, merchant_key)
       const hashStr = `${merchantOid}${merchantSalt}${status}${totalAmount}`;
       const expectedHash = crypto
@@ -28,22 +38,23 @@ export async function POST(request: Request) {
         .digest("base64");
 
       if (hash !== expectedHash) {
-        console.error("[PayTR Callback] Hash doğrulaması başarısız!");
+        console.error("[PayTR Callback] Hash doğrulaması başarısız! Sahte veya bozuk istek.");
         return new Response("PAYTR notification failed: bad hash", { status: 400 });
       }
     }
 
     if (status === "success") {
-      console.log(`[PayTR Callback] Sipariş başarılı! Order ID: ${merchantOid}, Tutar: ${totalAmount}`);
-      // Sipariş veritabanında "ödeye dönüştürüldü" olarak güncellenir
+      // Sipariş başarılı onaylandı
+      // Madde 14: Hassas müşteri/kart verisi loglanmaz
+      console.log(`[PayTR Callback] Sipariş başarıyla ödendi: ${merchantOid}`);
     } else {
-      console.log(`[PayTR Callback] Sipariş başarısız. Order ID: ${merchantOid}`);
+      console.log(`[PayTR Callback] Sipariş ödeme başarısız: ${merchantOid}`);
     }
 
     // PayTR her zaman "OK" yanıtı bekler
     return new Response("OK", { status: 200 });
   } catch (err) {
-    console.error("[PayTR Callback] Hata:", err);
-    return new Response("OK", { status: 200 });
+    console.error("[PayTR Callback] Sunucu hatası:", err);
+    return new Response("PAYTR notification failed: internal error", { status: 500 });
   }
 }

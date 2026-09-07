@@ -85,18 +85,46 @@ function buildOrderHtml(data: OrderEmailPayload): string {
 </html>`;
 }
 
+function escapeHtml(str: string): string {
+  return (str || '').replace(/[&<>"']/g, (m) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  }[m] || m));
+}
+
 export async function POST(req: Request) {
   try {
     const data: OrderEmailPayload = await req.json();
 
-    if (!data.to || !data.orderId) {
-      return NextResponse.json({ error: 'Eksik parametre' }, { status: 400 });
+    // Madde 6: Girdiyi Doğrula
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!data.to || !emailRegex.test(data.to) || !data.orderId) {
+      return NextResponse.json({ error: 'Geçersiz parametreler.' }, { status: 400 });
     }
+
+    if (!Array.isArray(data.items) || data.items.length === 0) {
+      return NextResponse.json({ error: 'Sipariş içeriği boş olamaz.' }, { status: 400 });
+    }
+
+    // Madde 16: XSS & HTML Enjeksiyonu Koruması
+    const safeData: OrderEmailPayload = {
+      ...data,
+      customerName: escapeHtml(data.customerName || 'Müşterimiz'),
+      orderId: escapeHtml(data.orderId),
+      items: data.items.map((i) => ({
+        ...i,
+        name: escapeHtml(i.name || 'Ürün'),
+        quantity: Math.max(1, Number(i.quantity) || 1),
+        price: Math.max(0, Number(i.price) || 0),
+      })),
+    };
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
-      // API key yoksa loglayip başarılı dön (canliya alinca çalışır)
-      console.log('[Email] RESEND_API_KEY yok — e-posta gönderilmedi:', data.to);
+      // API key yoksa güvenle atla
       return NextResponse.json({ success: true, skipped: true });
     }
 

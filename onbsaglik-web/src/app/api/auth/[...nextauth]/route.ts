@@ -50,7 +50,19 @@ const handler = NextAuth({
     error: '/hesabim/giris',
   },
   session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET ?? 'onbsaglik-nextauth-secret-2024',
+  secret: process.env.NEXTAUTH_SECRET || 'onbsaglik-secret-key-development-only',
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.user = user;

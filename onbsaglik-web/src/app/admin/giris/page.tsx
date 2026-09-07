@@ -22,18 +22,27 @@ export default function AdminGiris() {
     setError("");
     setLoading(true);
 
-    // Basit demo kimlik doğrulama (gerçek uygulamada API çağrısı yapılır)
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (email === "admin@onbsaglik.com.tr" && password === "onbAdmin2024!") {
-      // Oturum bilgisini localStorage'a kaydet
-      localStorage.setItem("admin_session", JSON.stringify({ email, role: "super_admin" }));
-      router.push("/admin");
-    } else {
-      setError("E-posta veya şifre hatalı.");
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // İstemci state'i ve localStorage yedekliği
+        localStorage.setItem("admin_session", JSON.stringify(data.user));
+        router.push("/admin");
+      } else {
+        setError(data.error || "Giriş başarısız.");
+      }
+    } catch {
+      setError("Bağlantı hatası oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
