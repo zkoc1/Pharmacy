@@ -101,7 +101,7 @@ export function middleware(request: NextRequest) {
     if (adminToken) {
       try {
         // Token formatı: base64(email:role:timestamp)
-        const decoded = Buffer.from(adminToken, "base64").toString("utf-8");
+        const decoded = atob(adminToken);
         const parts = decoded.split(":");
         if (parts.length >= 3) {
           const [email, role, timeStr] = parts;
@@ -113,7 +113,8 @@ export function middleware(request: NextRequest) {
             userRole = role;
           }
         }
-      } catch {
+      } catch (err) {
+        console.error("Middleware decode error:", err);
         isValidAdmin = false;
       }
     }

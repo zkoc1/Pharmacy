@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
     // Güvenli Token Üretimi (email:role:timestamp)
     const tokenPayload = `${cleanEmail}:${role}:${Date.now()}`;
-    const token = Buffer.from(tokenPayload).toString("base64");
+    const token = btoa(tokenPayload);
 
     // HTTP-Only Güvenli Çerez (Madde 12: JavaScript çalamaz)
     const cookieStore = await cookies();
