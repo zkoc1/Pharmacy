@@ -43,6 +43,7 @@ export async function GET() {
     marketPrice: p.market_price,
     vatRate: p.vat_rate,
     trendyolLink: p.trendyol_link,
+    images: typeof p.images === 'string' ? (p.images.startsWith('[') ? JSON.parse(p.images) : p.images.split(',')) : (p.images || []),
   }));
 
   return NextResponse.json(mappedData);
@@ -91,6 +92,7 @@ export async function POST(req: Request) {
     marketPrice: data.market_price,
     vatRate: data.vat_rate,
     trendyolLink: data.trendyol_link,
+    images: typeof data.images === 'string' ? (data.images.startsWith('[') ? JSON.parse(data.images) : data.images.split(',')) : (data.images || []),
   };
 
   return NextResponse.json({ success: true, product: mappedData });
