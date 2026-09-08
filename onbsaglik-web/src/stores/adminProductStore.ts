@@ -5,7 +5,7 @@ import type { Product } from "@/types";
 interface AdminProductState {
   products: Product[];
   setInitialProducts: (products: Product[]) => void;
-  addProduct: (product: Omit<Product, "id" | "createdAt" | "updatedAt">) => void;
+  addProduct: (product: Omit<Product, "id">) => void;
   updateProduct: (id: number, updates: Partial<Product>) => void;
   deleteProduct: (id: number) => void;
   toggleStatus: (id: number) => void;
@@ -27,13 +27,11 @@ export const useAdminProductStore = create<AdminProductState>()(
         const fullProduct: Product = {
           ...newProd,
           id: newId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         };
         return { products: [fullProduct, ...state.products] };
       }),
       updateProduct: (id, updates) => set((state) => ({
-        products: state.products.map(p => p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p)
+        products: state.products.map(p => p.id === id ? { ...p, ...updates } : p)
       })),
       deleteProduct: (id) => set((state) => ({
         products: state.products.filter(p => p.id !== id)
@@ -41,7 +39,7 @@ export const useAdminProductStore = create<AdminProductState>()(
       toggleStatus: (id) => set((state) => ({
         products: state.products.map(p => 
           p.id === id 
-            ? { ...p, status: p.status === "active" ? "draft" : "active", updatedAt: new Date().toISOString() } 
+            ? { ...p, status: p.status === "active" ? "draft" : "active" } 
             : p
         )
       })),

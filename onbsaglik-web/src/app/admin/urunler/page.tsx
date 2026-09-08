@@ -97,7 +97,9 @@ export default function AdminUrunlerPage() {
       images: newProd.image ? [newProd.image] : [],
       barcode: newProd.barcode,
       status: "active",
-      description: "Yeni eklenen ürün açıklaması."
+      description: "Yeni eklenen ürün açıklaması.",
+      desi: 1,
+      trendyolLink: ""
     });
     
     setShowAddModal(false);

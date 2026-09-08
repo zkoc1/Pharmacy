@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, TrendingUp, ShoppingBag, Eye, EyeOff, Search, Shield, UserPlus, Gift, ArrowRight } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, Eye, EyeOff, Search, Shield, UserPlus, Gift, ArrowRight, X } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
 import type { Product } from "@/types";
 
