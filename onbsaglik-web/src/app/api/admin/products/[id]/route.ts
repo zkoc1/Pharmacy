@@ -32,9 +32,33 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   const body = await req.json();
   const supabase = getServiceSupabase();
 
+  const updateData = { ...body };
+  if (updateData.marketPrice !== undefined) {
+    updateData.market_price = updateData.marketPrice;
+    delete updateData.marketPrice;
+  }
+  if (updateData.vatRate !== undefined) {
+    updateData.vat_rate = updateData.vatRate;
+    delete updateData.vatRate;
+  }
+  if (updateData.brandSlug !== undefined) {
+    updateData.brand_slug = updateData.brandSlug;
+    delete updateData.brandSlug;
+  }
+  if (updateData.categorySlug !== undefined) {
+    updateData.category_slug = updateData.categorySlug;
+    delete updateData.categorySlug;
+  }
+  if (updateData.trendyolLink !== undefined) {
+    updateData.trendyol_link = updateData.trendyolLink;
+    delete updateData.trendyolLink;
+  }
+  delete updateData.description; // We didn't add description to table yet
+  delete updateData.desi; // We didn't add desi to table yet
+
   const { data, error } = await supabase
     .from("products")
-    .update(body)
+    .update(updateData)
     .eq("id", id)
     .select()
     .single();

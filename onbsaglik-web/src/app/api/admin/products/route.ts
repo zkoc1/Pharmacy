@@ -36,7 +36,16 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  const mappedData = data.map(p => ({
+    ...p,
+    brandSlug: p.brand_slug,
+    categorySlug: p.category_slug,
+    marketPrice: p.market_price,
+    vatRate: p.vat_rate,
+    trendyolLink: p.trendyol_link,
+  }));
+
+  return NextResponse.json(mappedData);
 }
 
 // POST /api/admin/products -> Yeni ürün ekle
@@ -47,9 +56,25 @@ export async function POST(req: Request) {
   const body = await req.json();
   const supabase = getServiceSupabase();
 
+  const insertData = {
+    ...body,
+    brand_slug: body.brandSlug,
+    category_slug: body.categorySlug,
+    market_price: body.marketPrice,
+    vat_rate: body.vatRate,
+    trendyol_link: body.trendyolLink,
+  };
+  delete insertData.brandSlug;
+  delete insertData.categorySlug;
+  delete insertData.marketPrice;
+  delete insertData.vatRate;
+  delete insertData.trendyolLink;
+  delete insertData.description; // We didn't add description to table yet
+  delete insertData.desi; // We didn't add desi to table yet
+
   const { data, error } = await supabase
     .from("products")
-    .insert(body)
+    .insert(insertData)
     .select()
     .single();
 
@@ -59,5 +84,14 @@ export async function POST(req: Request) {
 
   await logAction(adminEmail, "ÜRÜN EKLENDİ", `${data.name} (Barkod: ${data.barcode || '-'}) eklendi.`);
 
-  return NextResponse.json({ success: true, product: data });
+  const mappedData = {
+    ...data,
+    brandSlug: data.brand_slug,
+    categorySlug: data.category_slug,
+    marketPrice: data.market_price,
+    vatRate: data.vat_rate,
+    trendyolLink: data.trendyol_link,
+  };
+
+  return NextResponse.json({ success: true, product: mappedData });
 }
