@@ -1,52 +1,70 @@
-/**
- * Admin Ürün Güncelleme API — PATCH /api/admin/products/[id]
- * Belirli ürünün fiyat, stok ve durum bilgisini günceller.
- * Şu an in-memory — Faz 2'de PostgreSQL API çağrısına dönüşecek.
- */
-
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getServiceSupabase } from "@/lib/supabase";
 
-interface UpdateBody {
-  price?: number;
-  stock?: number;
-  status?: "active" | "draft";
+async function getAdminEmail(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token")?.value;
+  if (!token) return null;
+  try {
+    const decoded = atob(token);
+    const parts = decoded.split(":");
+    return parts[0]; // email
+  } catch {
+    return null;
+  }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-  const body: UpdateBody = await request.json();
-
-  // Doğrulama: en az bir alan gerekli
-  if (!body.price && !body.stock && !body.status) {
-    return NextResponse.json(
-      { success: false, error: "Güncellenecek alan belirtilmedi." },
-      { status: 400 }
-    );
-  }
-
-  // Fiyat negatif olamaz
-  if (body.price !== undefined && body.price < 0) {
-    return NextResponse.json(
-      { success: false, error: "Fiyat negatif olamaz." },
-      { status: 400 }
-    );
-  }
-
-  // Stok negatif olamaz
-  if (body.stock !== undefined && body.stock < 0) {
-    return NextResponse.json(
-      { success: false, error: "Stok negatif olamaz." },
-      { status: 400 }
-    );
-  }
-
-  // Başarılı güncelleme yanıtı (gerçek DB update Faz 2'de eklenecek)
-  return NextResponse.json({
-    success: true,
-    message: `Ürün #${id} güncellendi.`,
-    updated: { id: Number(id), ...body },
+async function logAction(email: string, action: string, details: string) {
+  const supabase = getServiceSupabase();
+  await supabase.from("admin_logs").insert({
+    admin_email: email,
+    action,
+    details
   });
+}
+
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+  const adminEmail = await getAdminEmail();
+  if (!adminEmail) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const { id } = await context.params;
+  const body = await req.json();
+  const supabase = getServiceSupabase();
+
+  const { data, error } = await supabase
+    .from("products")
+    .update(body)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  await logAction(adminEmail, "ÜRÜN GÜNCELLENDİ", `Ürün #${id} güncellendi.`);
+
+  return NextResponse.json({ success: true, product: data });
+}
+
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const adminEmail = await getAdminEmail();
+  if (!adminEmail) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+
+  const { id } = await context.params;
+  const supabase = getServiceSupabase();
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  await logAction(adminEmail, "ÜRÜN SİLİNDİ", `Ürün #${id} tamamen silindi.`);
+
+  return NextResponse.json({ success: true });
 }

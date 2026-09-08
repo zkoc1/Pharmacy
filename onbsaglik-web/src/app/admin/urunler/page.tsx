@@ -15,7 +15,7 @@ export default function AdminUrunlerPage() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-  const { products, setInitialProducts, addProduct, updateProduct, deleteProduct, toggleStatus } = useAdminProductStore();
+  const { products, setProducts, addProduct, updateProduct, deleteProduct, toggleStatus } = useAdminProductStore();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft">("all");
@@ -24,6 +24,9 @@ export default function AdminUrunlerPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
+  // Upload State
+  const [uploading, setUploading] = useState(false);
+
   // Add Form State
   const [newProd, setNewProd] = useState({
     name: "",
@@ -44,6 +47,18 @@ export default function AdminUrunlerPage() {
   // Notification
   const [toastMsg, setToastMsg] = useState("");
 
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/admin/products");
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data);
+      }
+    } catch (err) {
+      console.error("Fetch hatası:", err);
+    }
+  };
+
   useEffect(() => {
     const rawSession = localStorage.getItem("admin_session");
     if (!rawSession) {
@@ -54,20 +69,14 @@ export default function AdminUrunlerPage() {
       const parsed = JSON.parse(rawSession);
       if (parsed.role === "super_admin" || parsed.role === "admin") {
         setIsAuthorized(true);
+        fetchProducts(); // Login ise ürünleri çek
       } else {
         router.replace("/admin/giris");
-        return;
       }
     } catch {
       router.replace("/admin/giris");
-      return;
     }
-
-    // Initialize products from JSON if store is empty
-    import("@/data/products.json").then((m) => {
-      setInitialProducts(m.default as Product[]);
-    });
-  }, [router, setInitialProducts]);
+  }, [router, setProducts]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -81,9 +90,37 @@ export default function AdminUrunlerPage() {
     return matchSearch && matchStatus;
   });
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewProd({ ...newProd, image: data.url });
+        showToast("✅ Resim başarıyla yüklendi!");
+      } else {
+        alert("Resim yükleme hatası: " + data.error);
+      }
+    } catch (err) {
+      alert("Yükleme sırasında hata oluştu.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addProduct({
+    
+    const productData = {
       name: newProd.name,
       slug: newProd.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       brand: newProd.brand || "OnbSağlık",
@@ -100,31 +137,82 @@ export default function AdminUrunlerPage() {
       description: "Yeni eklenen ürün açıklaması.",
       desi: 1,
       trendyolLink: ""
-    });
-    
-    setShowAddModal(false);
-    showToast("✅ Ürün başarıyla eklendi!");
-    setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", image: "", barcode: "" });
+    };
+
+    try {
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productData),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        addProduct(data.product);
+        setShowAddModal(false);
+        showToast("✅ Ürün başarıyla eklendi!");
+        setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", image: "", barcode: "" });
+      } else {
+        alert("Hata: " + data.error);
+      }
+    } catch (err) {
+      alert("Hata oluştu.");
+    }
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
     
-    updateProduct(editingProduct.id, {
+    const updates = {
       price: parseFloat(editPrice) || editingProduct.price,
       marketPrice: parseFloat(editMarketPrice) || editingProduct.marketPrice,
       stock: parseInt(editStock) || editingProduct.stock
-    });
-    
-    setEditingProduct(null);
-    showToast("✅ Ürün güncellendi!");
+    };
+
+    try {
+      const res = await fetch(`/api/admin/products/${editingProduct.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        updateProduct(editingProduct.id, updates);
+        setEditingProduct(null);
+        showToast("✅ Ürün güncellendi!");
+      }
+    } catch (err) {
+      alert("Güncelleme hatası.");
+    }
   };
 
-  const handleDelete = (id: number, name: string) => {
-    if (confirm(`"${name}" ürününü silmek istediğinize emin misiniz?`)) {
-      deleteProduct(id);
-      showToast("🗑️ Ürün silindi.");
+  const handleDelete = async (id: number, name: string) => {
+    if (confirm(`"${name}" ürününü tamamen silmek istediğinize emin misiniz?`)) {
+      try {
+        const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          deleteProduct(id);
+          showToast("🗑️ Ürün veritabanından silindi.");
+        }
+      } catch {
+        alert("Silme hatası.");
+      }
+    }
+  };
+
+  const toggleProductStatus = async (p: Product) => {
+    const newStatus = p.status === "active" ? "draft" : "active";
+    try {
+      const res = await fetch(`/api/admin/products/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        toggleStatus(p.id);
+        showToast(`Durum güncellendi: ${newStatus === 'active' ? 'Yayında' : 'Taslak'}`);
+      }
+    } catch {
+      alert("Hata oluştu.");
     }
   };
 
@@ -285,7 +373,7 @@ export default function AdminUrunlerPage() {
                       </td>
                       <td className="p-4">
                         <button
-                          onClick={() => { toggleStatus(p.id); showToast(`Durum değiştirildi: ${p.status === 'active' ? 'Taslak' : 'Aktif'}`); }}
+                          onClick={() => toggleProductStatus(p)}
                           className={`px-3 py-1 rounded-full text-[10px] font-extrabold flex items-center gap-1 w-fit transition-colors ${
                             p.status === "active" ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           }`}
@@ -384,8 +472,14 @@ export default function AdminUrunlerPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Görsel URL (İsteğe Bağlı)</label>
-                  <input type="url" value={newProd.image} onChange={e => setNewProd({...newProd, image: e.target.value})} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" placeholder="https://..." />
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Görseli (Dosya Seçin)</label>
+                  <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
+                  {uploading && <p className="text-xs text-sky-600 mt-1 font-bold animate-pulse">Resim yükleniyor, lütfen bekleyin...</p>}
+                  {newProd.image && (
+                    <div className="mt-2 w-16 h-16 border rounded-xl overflow-hidden relative">
+                      <img src={newProd.image} alt="Önizleme" className="object-cover w-full h-full" />
+                    </div>
+                  )}
                 </div>
               </div>
               
