@@ -16,7 +16,7 @@ export default function AdminPaneli() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   
-  const { products, setInitialProducts } = useAdminProductStore();
+  const { products, setProducts } = useAdminProductStore();
 
   // Admin Ekleme & Kupon Oluşturma Modal State'leri
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -51,10 +51,13 @@ export default function AdminPaneli() {
       return;
     }
 
-    import("@/data/products.json").then((m) => {
-      setInitialProducts(m.default as Product[]);
-    });
-  }, [router, setInitialProducts]);
+    fetch("/api/admin/products")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setProducts(data);
+      })
+      .catch(err => console.error("Dashboard fetch error:", err));
+  }, [router, setProducts]);
 
   const handleAddAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
