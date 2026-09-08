@@ -7,22 +7,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, TrendingUp, ShoppingBag, Edit2, Eye, EyeOff, Search, RefreshCw, Shield, UserPlus, Gift, Check, X } from "lucide-react";
+import { Package, TrendingUp, ShoppingBag, Eye, EyeOff, Search, Shield, UserPlus, Gift, ArrowRight } from "lucide-react";
+import { useAdminProductStore } from "@/stores/adminProductStore";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/products";
 
 export default function AdminPaneli() {
 
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editPrice, setEditPrice] = useState("");
-  const [editStock, setEditStock] = useState("");
-  const [saveMsg, setSaveMsg] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "draft">("all");
-
   const [isAuthorized, setIsAuthorized] = useState(false);
+  
+  const { products, setInitialProducts } = useAdminProductStore();
 
   // Admin Ekleme & Kupon Oluşturma Modal State'leri
   const [showAdminModal, setShowAdminModal] = useState(false);
@@ -57,52 +51,10 @@ export default function AdminPaneli() {
       return;
     }
 
-    fetch("/api/admin/products")
-      .then((r) => r.json())
-      .then((data) => setProducts(data))
-      .catch(() => {
-        import("@/data/products.json").then((m) => setProducts(m.default as Product[]));
-      });
-  }, [router]);
-
-  const filtered = products.filter((p) => {
-    const matchSearch =
-      !searchQuery ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchStatus = filterStatus === "all" || p.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
-
-  const handleSave = () => {
-    if (!editingProduct) return;
-    const price = parseFloat(editPrice);
-    const stock = parseInt(editStock);
-
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === editingProduct.id
-          ? { ...p, price: isNaN(price) ? p.price : price, stock: isNaN(stock) ? p.stock : stock }
-          : p
-      )
-    );
-
-    setSaveMsg("Kaydedildi!");
-    setTimeout(() => {
-      setSaveMsg("");
-      setEditingProduct(null);
-    }, 1500);
-  };
-
-  const toggleStatus = (product: Product) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === product.id
-          ? { ...p, status: p.status === "active" ? "draft" : "active" }
-          : p
-      )
-    );
-  };
+    import("@/data/products.json").then((m) => {
+      setInitialProducts(m.default as Product[]);
+    });
+  }, [router, setInitialProducts]);
 
   const handleAddAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,6 +129,9 @@ export default function AdminPaneli() {
           <button onClick={() => setShowCouponModal(true)} className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
             <Gift size={14} /> Hediye Çeki Tanımla
           </button>
+          <a href="/admin/urunler" style={{ background: "#0284c7", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            🏷️ Ürünler ve Stok
+          </a>
           <a href="/admin/siparisler" style={{ background: "#8b5cf6", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             📦 Sipariş Yönetimi
           </a>
@@ -236,116 +191,17 @@ export default function AdminPaneli() {
           </div>
         </div>
 
-        {/* Ürün Filtreleme ve Arama */}
-        <div className="card p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="relative w-full md:w-96">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Ürün adı veya marka ara..."
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-
-          <div className="flex gap-2 w-full md:w-auto">
-            {(["all", "active", "draft"] as const).map((st) => (
-              <button
-                key={st}
-                onClick={() => setFilterStatus(st)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  filterStatus === st
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {st === "all" ? "Tümü" : st === "active" ? "Aktif" : "Taslak"}
-              </button>
-            ))}
-          </div>
+        {/* Hızlı Yönlendirmeler */}
+        <div className="card p-8 mt-8 flex flex-col items-center justify-center text-center bg-sky-50 border-sky-100">
+          <div className="p-4 bg-white rounded-full mb-4 shadow-sm text-sky-600"><Package size={32}/></div>
+          <h2 className="text-xl font-black text-gray-900 mb-2">Gelişmiş Ürün ve Stok Yönetimi (PIM)</h2>
+          <p className="text-gray-500 font-medium mb-6 max-w-md">
+            Yeni ürün eklemek, mevcut ürünlerin stok veya fiyatlarını güncellemek için yeni gelişmiş modülü kullanın.
+          </p>
+          <a href="/admin/urunler" className="bg-sky-600 hover:bg-sky-700 text-white font-extrabold px-6 py-3 rounded-2xl flex items-center gap-2 shadow-md transition-all">
+            Ürün Yönetimine Git <ArrowRight size={18}/>
+          </a>
         </div>
-
-        {/* Ürün Listesi Tablosu */}
-        <div className="card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  <th className="p-4">Ürün</th>
-                  <th className="p-4">Marka</th>
-                  <th className="p-4">Fiyat</th>
-                  <th className="p-4">Stok</th>
-                  <th className="p-4">Durum</th>
-                  <th className="p-4 text-right">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-xs">
-                {filtered.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4 font-bold text-gray-900 max-w-xs truncate">{product.name}</td>
-                    <td className="p-4 text-gray-500 font-semibold uppercase">{product.brand}</td>
-                    <td className="p-4 font-extrabold text-emerald-600">{formatPrice(product.price)}</td>
-                    <td className="p-4 font-bold text-gray-700">
-                      <span className={`px-2.5 py-1 rounded-md text-[11px] ${product.stock > 0 ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}`}>
-                        {product.stock} Adet
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => toggleStatus(product)}
-                        className={`px-3 py-1 rounded-full text-[11px] font-bold ${
-                          product.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        {product.status === "active" ? "Aktif" : "Taslak"}
-                      </button>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() => {
-                          setEditingProduct(product);
-                          setEditPrice(String(product.price));
-                          setEditStock(String(product.stock));
-                        }}
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg font-bold flex items-center gap-1 ml-auto"
-                      >
-                        <Edit2 size={16} /> Düzenle
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* HIZLI FİYAT/STOK DÜZENLEME MODALİ */}
-        {editingProduct && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-              <h3 className="font-extrabold text-lg text-gray-900 border-b pb-3">Ürün Güncelle (#{editingProduct.id})</h3>
-              <p className="text-xs text-gray-500 font-bold">{editingProduct.name}</p>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Satış Fiyatı (TL)</label>
-                <input type="number" step="0.01" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-full p-2.5 border rounded-xl font-bold" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Stok Miktarı</label>
-                <input type="number" value={editStock} onChange={(e) => setEditStock(e.target.value)} className="w-full p-2.5 border rounded-xl font-bold" />
-              </div>
-
-              {saveMsg && <div className="text-xs font-bold text-emerald-600 bg-emerald-50 p-2 rounded">{saveMsg}</div>}
-
-              <div className="flex gap-2 pt-2">
-                <button onClick={handleSave} className="flex-1 bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">KAYDET</button>
-                <button onClick={() => setEditingProduct(null)} className="px-4 py-2.5 bg-gray-200 text-gray-700 font-bold rounded-xl text-xs">İPTAL</button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* YENİ ADMİN HESABI EKLEME MODALİ */}
         {showAdminModal && (
