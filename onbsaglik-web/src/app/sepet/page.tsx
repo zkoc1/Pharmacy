@@ -40,10 +40,10 @@ export default function SepetSayfasi() {
   const grandTotal = Math.max(0, total - multiBuyDiscount - discountAmount);
 
   useEffect(() => {
-    import("@/data/products.json").then((m) => {
-      const all = m.default as Product[];
-      setSpecialOffers(all.slice(0, 4));
-    });
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setSpecialOffers(data.slice(0, 4)))
+      .catch(console.error);
   }, []);
 
   const handleApplyCoupon = (e: React.FormEvent) => {

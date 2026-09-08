@@ -9,8 +9,8 @@ import { getAllProducts, getAllCategories, getAllBrands } from "@/lib/products";
 
 const BASE_URL = "https://onbsaglik.com.tr";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const products = getAllProducts();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const products = await getAllProducts();
   const categories = getAllCategories();
   const brands = getAllBrands();
 

@@ -6,22 +6,28 @@
 import type { Metadata } from "next";
 import { filterProducts } from "@/lib/products";
 import ProductGrid from "@/components/product/ProductGrid";
+import type { ProductFilter } from "@/types";
 
 interface Props {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; sort?: string }>;
 }
 
 export const metadata: Metadata = {
   title: "Arama Sonuçları | OnbSağlık",
 };
 
-export default async function AramaSayfasi({ searchParams }: Props) {
-  const { q } = await searchParams;
-  const query = q?.trim() || "";
+export default async function SearchPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams;
+  const q = resolvedParams.q || "";
+  const query = q.trim();
+  const page = parseInt(resolvedParams.page || "1", 10);
+  const sort = (resolvedParams.sort as ProductFilter["sortBy"]) || "price_asc";
 
-  const { products, total } = filterProducts({
+  const { products, total } = await filterProducts({
     search: query,
-    limit: 48,
+    page,
+    limit: 24,
+    sortBy: sort,
   });
 
   return (

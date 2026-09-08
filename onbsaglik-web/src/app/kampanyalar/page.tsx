@@ -22,7 +22,10 @@ export default function KampanyalarSayfasi() {
   const activeCampaigns = getActiveCampaigns();
 
   useEffect(() => {
-    import("@/data/products.json").then((m) => setProducts(m.default as Product[]));
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(console.error);
   }, []);
 
   const handleAddComboToCart = (camp: Campaign, isOutOfStock: boolean) => {

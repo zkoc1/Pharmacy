@@ -51,7 +51,7 @@ import {
   OrderItem,
   OrderTimelineItem,
 } from "@/stores/orderStore";
-import { formatPrice, getAllProducts } from "@/lib/products";
+import { formatPrice } from "@/lib/products";
 import { ALL_81_PROVINCES } from "@/lib/turkeyLocations";
 
 const STATUS_CONFIG: Record<
@@ -159,7 +159,14 @@ export default function AdminSiparisler() {
   const [adminNoteInput, setAdminNoteInput] = useState("");
 
   // Manuel Sipariş Form State
-  const allCatalogProducts = useMemo(() => getAllProducts(), []);
+  const [allCatalogProducts, setAllCatalogProducts] = useState<any[]>([]);
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setAllCatalogProducts(data))
+      .catch(console.error);
+  }, []);
+
   const [manualForm, setManualForm] = useState({
     customerName: "",
     customerEmail: "",
@@ -170,7 +177,7 @@ export default function AdminSiparisler() {
     carrier: "Kolay Gelsin",
     paymentMethod: "Havale / EFT",
     status: "Hazırlanıyor" as OrderStatus,
-    selectedProducts: [] as { product: (typeof allCatalogProducts)[0]; quantity: number }[],
+    selectedProducts: [] as { product: any; quantity: number }[],
   });
   const [productSearchTerm, setProductSearchTerm] = useState("");
 

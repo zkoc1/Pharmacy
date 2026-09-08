@@ -5,41 +5,73 @@
  */
 
 import type { Product, Brand, Category, ProductFilter } from "@/types";
-import productsData from "@/data/products.json";
 import brandsData from "@/data/brands.json";
 import categoriesData from "@/data/categories.json";
+import { supabase } from "@/lib/supabase";
 
-// JSON verilerini TypeScript tiplerine dönüştür
-const ALL_PRODUCTS = productsData as Product[];
 const ALL_BRANDS = brandsData as Brand[];
 const ALL_CATEGORIES = categoriesData as Category[];
 
-/**
- * Yalnızca aktif (yayındaki) ürünleri filtreler.
- * Taslak ürünler admin onayı olmadan müşterilere gösterilmez.
- */
-function getActiveProducts(): Product[] {
-  return ALL_PRODUCTS.filter((p) => p.status === "active");
+// Yardımcı: Veritabanından gelen veriyi Product tipine çevirir
+function mapProduct(p: any): Product {
+  return {
+    ...p,
+    brandSlug: p.brand_slug,
+    categorySlug: p.category_slug,
+    marketPrice: p.market_price,
+    vatRate: p.vat_rate,
+    trendyolLink: p.trendyol_link,
+    images: typeof p.images === 'string' ? (p.images.startsWith('[') ? JSON.parse(p.images) : p.images.split(',')) : (p.images || []),
+  };
 }
 
 /** Tüm aktif ürünleri döndürür */
-export function getAllProducts(): Product[] {
-  return getActiveProducts();
+export async function getAllProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("status", "active")
+    .order("id", { ascending: false });
+    
+  if (error || !data) return [];
+  return data.map(mapProduct);
 }
 
 /** Slug'a göre tek ürün döndürür */
-export function getProductBySlug(slug: string): Product | undefined {
-  return getActiveProducts().find((p) => p.slug === slug);
+export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "active")
+    .single();
+    
+  if (error || !data) return undefined;
+  return mapProduct(data);
 }
 
 /** Kategori slug'ına göre ürünleri filtreler */
-export function getProductsByCategory(categorySlug: string): Product[] {
-  return getActiveProducts().filter((p) => p.categorySlug === categorySlug);
+export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("category_slug", categorySlug)
+    .eq("status", "active");
+    
+  if (error || !data) return [];
+  return data.map(mapProduct);
 }
 
 /** Marka slug'ına göre ürünleri filtreler */
-export function getProductsByBrand(brandSlug: string): Product[] {
-  return getActiveProducts().filter((p) => p.brandSlug === brandSlug);
+export async function getProductsByBrand(brandSlug: string): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("brand_slug", brandSlug)
+    .eq("status", "active");
+    
+  if (error || !data) return [];
+  return data.map(mapProduct);
 }
 
 /** Türkçe karakterleri normalize eden arama yardımcısı */
@@ -58,34 +90,39 @@ export function normalizeTurkishText(str: string): string {
 }
 
 /** Çoklu filtre ile ürün listesi döndürür */
-export function filterProducts(filter: ProductFilter): {
+export async function filterProducts(filter: ProductFilter): Promise<{
   products: Product[];
   total: number;
-} {
-  let result = getActiveProducts();
+}> {
+  let query = supabase.from("products").select("*").eq("status", "active");
 
   // Kategori filtresi
   if (filter.categorySlug) {
-    result = result.filter((p) => p.categorySlug === filter.categorySlug);
+    query = query.eq("category_slug", filter.categorySlug);
   }
 
   // Marka filtresi
   if (filter.brandSlug) {
-    result = result.filter((p) => p.brandSlug === filter.brandSlug);
+    query = query.eq("brand_slug", filter.brandSlug);
   }
 
   // Fiyat filtresi
   if (filter.minPrice !== undefined) {
-    result = result.filter((p) => p.price >= filter.minPrice!);
+    query = query.gte("price", filter.minPrice);
   }
   if (filter.maxPrice !== undefined) {
-    result = result.filter((p) => p.price <= filter.maxPrice!);
+    query = query.lte("price", filter.maxPrice);
   }
 
   // Stok filtresi
   if (filter.inStock) {
-    result = result.filter((p) => p.stock > 0);
+    query = query.gt("stock", 0);
   }
+
+  const { data, error } = await query;
+  if (error || !data) return { products: [], total: 0 };
+  
+  let result = data.map(mapProduct);
 
   // Akıllı Arama filtresi (Türkçe karakter duyarsız & çok kelimeli eşleşme)
   if (filter.search) {
@@ -123,6 +160,7 @@ export function filterProducts(filter: ProductFilter): {
       break;
     default:
       // Varsayılan: ID sırası (veri tabanı ekleme sırası)
+      result.sort((a, b) => b.id - a.id);
       break;
   }
 
@@ -138,11 +176,11 @@ export function filterProducts(filter: ProductFilter): {
 }
 
 /** Öne çıkan ürünler — anasayfa için (stoklu, indirimli önce) */
-export function getFeaturedProducts(count = 8): Product[] {
-  return getActiveProducts()
+export async function getFeaturedProducts(count = 8): Promise<Product[]> {
+  const all = await getAllProducts();
+  return all
     .filter((p) => p.stock > 0 && p.images.length > 0)
     .sort((a, b) => {
-      // İndirimli ürünler önce gelsin
       const aDiscount = a.marketPrice > 0 ? 1 : 0;
       const bDiscount = b.marketPrice > 0 ? 1 : 0;
       return bDiscount - aDiscount;
@@ -151,19 +189,20 @@ export function getFeaturedProducts(count = 8): Product[] {
 }
 
 /** Yeni ürünler — son eklenen (ID'ye göre azalan) */
-export function getNewProducts(count = 8): Product[] {
-  return getActiveProducts()
+export async function getNewProducts(count = 8): Promise<Product[]> {
+  const all = await getAllProducts();
+  return all
     .filter((p) => p.images.length > 0)
     .sort((a, b) => b.id - a.id)
     .slice(0, count);
 }
 
 /** İndirimli ürünler */
-export function getDiscountedProducts(count = 8): Product[] {
-  return getActiveProducts()
+export async function getDiscountedProducts(count = 8): Promise<Product[]> {
+  const all = await getAllProducts();
+  return all
     .filter((p) => p.marketPrice > 0 && p.images.length > 0)
     .sort((a, b) => {
-      // İndirim yüzdesine göre sırala
       const aRate = (a.marketPrice - a.price) / a.marketPrice;
       const bRate = (b.marketPrice - b.price) / b.marketPrice;
       return bRate - aRate;

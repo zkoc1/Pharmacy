@@ -30,11 +30,13 @@ export default function AddToCartModal({ product, isOpen, onClose }: Props) {
 
   useEffect(() => {
     if (isOpen) {
-      import("@/data/products.json").then((m) => {
-        const all = m.default as Product[];
-        const recs = all.filter((p) => p.id !== product?.id).slice(0, 4);
-        setRecommendations(recs);
-      });
+      fetch("/api/products")
+        .then((res) => res.json())
+        .then((data) => {
+          const recs = (data as Product[]).filter((p) => p.id !== product?.id).slice(0, 4);
+          setRecommendations(recs);
+        })
+        .catch(console.error);
     }
   }, [isOpen, product]);
 

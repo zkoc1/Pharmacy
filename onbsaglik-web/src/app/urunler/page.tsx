@@ -28,7 +28,7 @@ export default async function TumUrunler({ searchParams }: Props) {
     limit: 24,
   };
 
-  const { products, total } = filterProducts(filter);
+  const { products, total } = await filterProducts(filter);
   const totalPages = Math.ceil(total / 24);
 
   return (

@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ products: [], total: 0 });
   }
 
-  const { products, total } = filterProducts({
+  const { products, total } = await filterProducts({
     search: query,
     limit: 10, // Anlık arama için max 10 sonuç
   });

@@ -22,11 +22,11 @@ export const metadata: Metadata = {
     "Ocean, Dermoskin, Nutraxin, Bioxcin ve 60+ marka. Vitamin, güneş kremi, şampuan ve cilt bakımı ürünlerini uygun fiyatla satın alın.",
 };
 
-export default function AnaSayfa() {
+export default async function AnaSayfa() {
   // Sayfa için veri hazırlığı (Server Component avantajı)
-  const featuredProducts = getFeaturedProducts(12);
-  const discountedProducts = getDiscountedProducts(8);
-  const newProducts = getNewProducts(8);
+  const featuredProducts = await getFeaturedProducts(12);
+  const discountedProducts = await getDiscountedProducts(8);
+  const newProducts = await getNewProducts(8);
   const brands = getAllBrands();
 
   return (

@@ -47,12 +47,10 @@ export default function KampanyalarSayfasi() {
 
   // Ürünleri yükle
   useEffect(() => {
-    fetch("/api/admin/products")
-      .then((r) => r.json())
-      .then((data) => setProducts(Array.isArray(data) ? data : data.products ?? []))
-      .catch(() => {
-        import("@/data/products.json").then((m) => setProducts(m.default as Product[]));
-      });
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch(console.error);
   }, []);
 
   const selectedProduct = products.find((p) => p.id === Number(form.productId));

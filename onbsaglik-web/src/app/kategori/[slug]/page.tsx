@@ -61,7 +61,7 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
     limit: 24,
   };
 
-  const { products, total } = filterProducts(filter);
+  const { products, total } = await filterProducts(filter);
 
   return (
     <div className="container-custom py-8">

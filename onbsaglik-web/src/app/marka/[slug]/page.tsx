@@ -31,7 +31,7 @@ export default async function MarkaSayfasi({ params }: Props) {
   const brand = getBrandBySlug(slug);
   if (!brand) notFound();
 
-  const products = getProductsByBrand(slug);
+  const products = await getProductsByBrand(slug);
 
   return (
     <div className="container-custom py-8">

@@ -12,7 +12,7 @@
  */
 
 import { NextResponse } from "next/server";
-import products from "@/data/products.json";
+import { getServiceSupabase } from "@/lib/supabase";
 
 // Trendyol API base URL
 const TRENDYOL_BASE = "https://api.trendyol.com/sapigw";
@@ -72,10 +72,13 @@ export async function GET() {
     const data: TrendyolApiResponse = await res.json();
     const trendyolItems = data.content ?? [];
 
+    const supabase = getServiceSupabase();
+    const { data: products } = await supabase.from("products").select("name, barcode");
+    
     // Barcode ile eşleştirip güncel stok/fiyat bilgisi oluştur
     const updates: { barcode: string; localProduct: string; trendyolStock: number; trendyolPrice: number }[] = [];
 
-    for (const local of products) {
+    for (const local of (products || [])) {
       if (!local.barcode) continue;
       const match = trendyolItems.find((t) => t.barcode === local.barcode);
       if (match) {

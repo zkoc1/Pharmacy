@@ -44,7 +44,10 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const isOutOfStock = product.stock === 0;
 
   useEffect(() => {
-    import("@/data/products.json").then((m) => setAllProducts(m.default as Product[]));
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => setAllProducts(data))
+      .catch(console.error);
   }, []);
 
   const increaseQty = () => setQuantity((q) => Math.min(q + 1, product.stock || 99));

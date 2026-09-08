@@ -16,14 +16,14 @@ interface Props {
 
 // Statik sayfa üretimi için tüm slug'ları döndür
 export async function generateStaticParams() {
-  const products = getAllProducts();
+  const products = await getAllProducts();
   return products.map((p) => ({ slug: p.slug }));
 }
 
 // Her ürün için dinamik meta veriler
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return {};
 
   return {
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UrunDetaySayfasi({ params }: Props) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
 
   // Ürün bulunamazsa 404 sayfası
   if (!product) {
