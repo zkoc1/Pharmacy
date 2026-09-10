@@ -31,10 +31,35 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ success: true });
   }
 
+  const { data: order } = await supabase.from("orders").select("customer_email, customer_name, status, tracking_number").eq("id", id).single();
+  const oldStatus = order?.status;
+
   const { error } = await supabase.from("orders").update(updates).eq("id", id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Eğer kargo takip numarası eklendiyse veya durumu kargoda yapıldıysa kullanıcıya mail at
+  const newStatus = updates.status || oldStatus;
+  const newTrackingNumber = updates.tracking_number !== undefined ? updates.tracking_number : order?.tracking_number;
+  
+  if (order?.customer_email && (updates.tracking_number || (updates.status === "Kargoda" && oldStatus !== "Kargoda"))) {
+    const { sendEmail } = await import("@/lib/email");
+    const mailHtml = `
+      <h2>Siparişiniz Kargoya Verildi! 🚚</h2>
+      <p>Merhaba ${order.customer_name},</p>
+      <p><strong>#${id}</strong> numaralı siparişiniz kargoya teslim edilmiştir.</p>
+      ${newTrackingNumber ? `<p><strong>Kargo Takip Numaranız:</strong> ${newTrackingNumber}</p>` : ""}
+      <p>Bizi tercih ettiğiniz için teşekkür ederiz.</p>
+      <br/>
+      <p><strong>OnbSağlık</strong></p>
+    `;
+    await sendEmail({
+      to: order.customer_email,
+      subject: `Siparişiniz Kargoya Verildi! #${id}`,
+      html: mailHtml,
+    });
   }
 
   let details = `#${id} numaralı sipariş güncellendi: `;

@@ -211,16 +211,78 @@ export default function SiparislerimSayfasi() {
                     </div>
                   </div>
 
-                  {/* Kargo Takip No Varsa */}
-                  {ord.trackingNumber && (
-                    <div className="bg-purple-50 border border-purple-200 text-purple-900 p-3.5 rounded-2xl text-xs flex items-center justify-between font-bold">
-                      <span className="flex items-center gap-2">
-                        <Truck size={16} className="text-purple-600" /> Kargo Takip No:{" "}
-                        <span className="font-extrabold underline">{ord.trackingNumber}</span>
-                      </span>
-                      <span className="text-[11px] bg-purple-200/60 px-2 py-0.5 rounded-lg text-purple-800">
-                        Kargoya Verildi
-                      </span>
+                  {/* Kargo Durum Çubuğu (Stepper) */}
+                  {ord.status === "İptal Edildi" ? (
+                    <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center gap-3 text-red-700">
+                      <XCircle size={24} />
+                      <div>
+                        <p className="font-extrabold text-sm">Sipariş İptal Edildi</p>
+                        <p className="text-xs font-medium">Bu sipariş iptal edilmiş veya ödemesi başarısız olmuştur.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-4">
+                      {(() => {
+                        const steps = ["Sipariş Alındı", "Hazırlanıyor", "Kargoya Verildi", "Dağıtıma Çıktı", "Teslim Edildi"];
+                        
+                        let currentStepIndex = 0;
+                        if (["Ödeme Bekliyor", "PayTR Ödeme Bekliyor", "Mail Order Bekliyor"].includes(ord.status)) currentStepIndex = 0;
+                        else if (ord.status === "Hazırlanıyor") currentStepIndex = 1;
+                        else if (ord.status === "Kargoda") currentStepIndex = 2; // Kargoya Verildi
+                        else if (ord.status === "Teslim Edildi") currentStepIndex = 4;
+                        
+                        // Kargo takibi için
+                        if (ord.trackingNumber && ord.status === "Hazırlanıyor") currentStepIndex = 2; // Takip no girildiyse kargoya verilmiştir
+
+                        return (
+                          <div className="relative flex items-center justify-between">
+                            {/* Arkadaki çizgi */}
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full z-0"></div>
+                            {/* İlerleyen yeşil çizgi */}
+                            <div 
+                              className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 rounded-full z-0 transition-all duration-500"
+                              style={{ width: \`\${(currentStepIndex / (steps.length - 1)) * 100}%\` }}
+                            ></div>
+
+                            {/* Adımlar */}
+                            {steps.map((step, idx) => {
+                              const isCompleted = idx <= currentStepIndex;
+                              const isCurrent = idx === currentStepIndex;
+                              return (
+                                <div key={step} className="relative z-10 flex flex-col items-center gap-2">
+                                  <div className={\`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-colors \${isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "bg-white border-gray-300 text-gray-300"}\`}>
+                                    {isCompleted ? <CheckCircle size={16} /> : <div className="w-2 h-2 rounded-full bg-gray-200"></div>}
+                                  </div>
+                                  <span className={\`text-[9px] sm:text-[11px] font-extrabold text-center hidden sm:block max-w-[60px] leading-tight \${isCurrent ? "text-emerald-700" : isCompleted ? "text-gray-800" : "text-gray-400"}\`}>
+                                    {step}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Kargo Takip Linki Varsa */}
+                  {ord.trackingNumber && ord.status !== "İptal Edildi" && (
+                    <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-bold text-blue-800/60 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
+                          <Truck size={14} /> Kargo Takip Numarası
+                        </p>
+                        <p className="font-extrabold text-blue-900 text-sm">
+                          {ord.trackingNumber}
+                        </p>
+                      </div>
+                      <a 
+                        href={\`https://www.google.com/search?q=\${ord.carrier}+kargo+sorgulama+\${ord.trackingNumber}\`}
+                        target="_blank" rel="noreferrer"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+                      >
+                        Kargomu Takip Et <ExternalLink size={14} />
+                      </a>
                     </div>
                   )}
 

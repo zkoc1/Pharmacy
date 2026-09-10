@@ -51,6 +51,27 @@ export async function POST(req: Request) {
       }
     }
 
+    // Müşteriye Sipariş Onay E-postası Gönder (Eğer PayTR değilse hemen gönder. PayTR ise callback'te onaylanır)
+    if (orderData.payment_method !== "PayTR 3D Secure" && body.customerEmail) {
+      const { sendEmail } = await import("@/lib/email");
+      const mailHtml = `
+        <h2>Siparişiniz Alındı! ✅</h2>
+        <p>Merhaba ${body.customerName},</p>
+        <p><strong>#${id}</strong> numaralı siparişiniz başarıyla oluşturulmuştur.</p>
+        <p><strong>Ödeme Yöntemi:</strong> ${body.paymentMethod}</p>
+        <p><strong>Sipariş Tutarı:</strong> ${body.total} TL</p>
+        <br/>
+        <p>Siparişinizin durumunu web sitemizden Hesabım > Siparişlerim adımından takip edebilirsiniz.</p>
+        <p>Teşekkür ederiz.<br/><strong>OnbSağlık</strong></p>
+      `;
+      // Arka planda mail at, response'u bekletme
+      sendEmail({
+        to: body.customerEmail,
+        subject: `Siparişiniz Alındı #${id}`,
+        html: mailHtml,
+      }).catch(console.error);
+    }
+
     return NextResponse.json({ success: true, id });
   } catch (error: any) {
     console.error("Order create error:", error);

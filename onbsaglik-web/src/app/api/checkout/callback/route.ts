@@ -49,7 +49,32 @@ export async function POST(request: Request) {
       
       const { getServiceSupabase } = await import("@/lib/supabase");
       const supabase = getServiceSupabase();
-      await supabase.from("orders").update({ status: "Hazırlanıyor" }).eq("id", merchantOid);
+      
+      // Sipariş durumunu güncelle ve müşteri emailini al
+      const { data: updatedOrder } = await supabase.from("orders")
+        .update({ status: "Hazırlanıyor" })
+        .eq("id", merchantOid)
+        .select("customer_email, customer_name, total, payment_method")
+        .single();
+        
+      if (updatedOrder?.customer_email) {
+        const { sendEmail } = await import("@/lib/email");
+        const mailHtml = `
+          <h2>Siparişiniz Alındı ve Ödemeniz Onaylandı! ✅</h2>
+          <p>Merhaba ${updatedOrder.customer_name},</p>
+          <p><strong>#${merchantOid}</strong> numaralı siparişinizin ödemesi (${updatedOrder.total} TL) PayTR üzerinden başarıyla alınmıştır.</p>
+          <p>Siparişiniz şu an <strong>Hazırlanıyor</strong> aşamasına geçmiştir. Kargoya verildiğinde size tekrar bilgi vereceğiz.</p>
+          <br/>
+          <p>Teşekkür ederiz.<br/><strong>OnbSağlık</strong></p>
+        `;
+        // Arka planda yolla
+        sendEmail({
+          to: updatedOrder.customer_email,
+          subject: `Ödemeniz Onaylandı! Sipariş #${merchantOid}`,
+          html: mailHtml,
+        }).catch(console.error);
+      }
+      
     } else {
       console.log(`[PayTR Callback] Sipariş ödeme başarısız: ${merchantOid}`);
       

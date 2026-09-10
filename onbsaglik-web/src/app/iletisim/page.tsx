@@ -37,10 +37,24 @@ export default function IletisimSayfasi() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
-    // Form gönderimi simülasyonu (Faz 2'de e-posta API'sine bağlanacak)
-    await new Promise((r) => setTimeout(r, 1000));
-    setSent(true);
-    setSending(false);
+    
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      
+      if (res.ok) {
+        setSent(true);
+      } else {
+        alert("Mesaj gönderilemedi, lütfen e-posta ayarlarının yapıldığından emin olun.");
+      }
+    } catch (err) {
+      alert("Bağlantı hatası oluştu.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
