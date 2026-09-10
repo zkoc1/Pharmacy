@@ -18,11 +18,12 @@ function OdemeBasariliContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const clearCart = useCartStore((s) => s.clearCart);
-  const { getOrderById } = useOrderStore();
+  const { getOrderById, fetchOrders } = useOrderStore();
 
   useEffect(() => {
     clearCart();
-  }, [clearCart]);
+    fetchOrders();
+  }, [clearCart, fetchOrders]);
 
   const order = orderId ? getOrderById(orderId) : null;
 
@@ -53,7 +54,7 @@ function OdemeBasariliContent() {
 
           {/* Tıklanabilir Ürün Listesi */}
           <div className="space-y-2.5">
-            {order.items.map((it, idx) => {
+            {order.items.map((it: any, idx: number) => {
               const href = it.slug ? `/urun/${it.slug}` : `/ara?q=${encodeURIComponent(it.name)}`;
               return (
                 <Link

@@ -287,7 +287,7 @@ export default function OdemeSayfasi() {
   };
 
   // 2. Adım Siparişi Tamamlama
-  const handleCompleteOrder = (e?: React.FormEvent) => {
+  const handleCompleteOrder = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setCardError("");
 
@@ -361,7 +361,7 @@ export default function OdemeSayfasi() {
         ? "Hazırlanıyor"
         : "Ödeme Bekliyor";
 
-    const newOrderRecord = addOrder({
+    const newOrderId = await addOrder({
       items: items.map((i) => ({
         id: i.product.id,
         slug: i.product.slug,
@@ -387,7 +387,7 @@ export default function OdemeSayfasi() {
     });
 
     clearCart();
-    window.location.href = `/odeme/basarili?orderId=${newOrderRecord.id}`;
+    window.location.href = `/odeme/basarili?orderId=${newOrderId}`;
   };
 
   const months = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
