@@ -358,7 +358,7 @@ export default function OdemeSayfasi() {
       paymentMethod === "cc"
         ? "Mail Order Bekliyor"
         : paymentMethod === "paytr"
-        ? "Hazırlanıyor"
+        ? "PayTR Ödeme Bekliyor"
         : "Ödeme Bekliyor";
 
     const newOrderId = await addOrder({
@@ -387,6 +387,33 @@ export default function OdemeSayfasi() {
     });
 
     clearCart();
+
+    if (paymentMethod === "paytr") {
+      try {
+        const response = await fetch("/api/checkout/paytr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: newOrderId,
+            total: grandTotal,
+            items: items.map(i => ({ name: i.product.name, price: i.product.price, quantity: i.quantity })),
+            customerInfo: { email: currentUserEmail, fullName: addressForm.fullName, phone: addressForm.phone, address: addressForm.fullAddress }
+          })
+        });
+        const data = await response.json();
+        if (data.success && data.iframeUrl) {
+          window.location.href = data.iframeUrl; // Redirect to PayTR
+          return;
+        } else {
+          alert("PayTR token alınamadı, lütfen tekrar deneyin.");
+          return;
+        }
+      } catch (err) {
+        alert("Ödeme başlatılamadı.");
+        return;
+      }
+    }
+
     window.location.href = `/odeme/basarili?orderId=${newOrderId}`;
   };
 

@@ -82,7 +82,7 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
 
   addOrder: async (newOrder) => {
     try {
-      const res = await fetch("/api/admin/orders", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newOrder)

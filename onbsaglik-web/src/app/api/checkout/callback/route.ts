@@ -45,10 +45,17 @@ export async function POST(request: Request) {
 
     if (status === "success") {
       // Sipariş başarılı onaylandı
-      // Madde 14: Hassas müşteri/kart verisi loglanmaz
       console.log(`[PayTR Callback] Sipariş başarıyla ödendi: ${merchantOid}`);
+      
+      const { getServiceSupabase } = await import("@/lib/supabase");
+      const supabase = getServiceSupabase();
+      await supabase.from("orders").update({ status: "Hazırlanıyor" }).eq("id", merchantOid);
     } else {
       console.log(`[PayTR Callback] Sipariş ödeme başarısız: ${merchantOid}`);
+      
+      const { getServiceSupabase } = await import("@/lib/supabase");
+      const supabase = getServiceSupabase();
+      await supabase.from("orders").update({ status: "İptal Edildi", admin_note: "Ödeme Başarısız" }).eq("id", merchantOid);
     }
 
     // PayTR her zaman "OK" yanıtı bekler

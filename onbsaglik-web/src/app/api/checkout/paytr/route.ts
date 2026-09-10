@@ -10,7 +10,7 @@ import crypto from "crypto";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { total, items, customerInfo } = body;
+    const { total, items, customerInfo, orderId } = body;
 
     // Madde 6: Girdiyi Doğrula
     if (typeof total !== "number" || total <= 0 || !Array.isArray(items) || items.length === 0) {
@@ -23,12 +23,12 @@ export async function POST(req: Request) {
       : "musteri@onbsaglik.com.tr";
 
     // Madde 1: Anahtarları Çıkar (process.env üzerinden zorunlu)
-    const merchant_id = process.env.PAYTR_MERCHANT_ID || "";
+    const merchant_id = process.env.PAYTR_MERCHANT_ID || "678666";
     const merchant_key = process.env.PAYTR_MERCHANT_KEY || "";
     const merchant_salt = process.env.PAYTR_MERCHANT_SALT || "";
 
-    // Benzersiz Sipariş Numarası
-    const merchant_oid = `ONB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Sipariş Numarası
+    const merchant_oid = orderId || `ONB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     // Kullanıcı Bilgileri
     const user_name = customerInfo?.fullName || "Değerli Müşterimiz";
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
     const timeout_limit = "30";
     const currency = "TL";
-    const test_mode = process.env.NODE_ENV === "production" ? "0" : "1";
+    const test_mode = process.env.PAYTR_TEST_MODE === "1" ? "1" : "0";
     const no_installment = "0";
     const max_installment = "0";
 
