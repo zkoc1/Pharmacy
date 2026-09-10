@@ -241,7 +241,7 @@ export default function SiparislerimSayfasi() {
                             {/* İlerleyen yeşil çizgi */}
                             <div 
                               className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-emerald-500 rounded-full z-0 transition-all duration-500"
-                              style={{ width: \`\${(currentStepIndex / (steps.length - 1)) * 100}%\` }}
+                              style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
                             ></div>
 
                             {/* Adımlar */}
@@ -250,10 +250,10 @@ export default function SiparislerimSayfasi() {
                               const isCurrent = idx === currentStepIndex;
                               return (
                                 <div key={step} className="relative z-10 flex flex-col items-center gap-2">
-                                  <div className={\`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-colors \${isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "bg-white border-gray-300 text-gray-300"}\`}>
+                                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center transition-colors ${isCompleted ? "bg-emerald-500 border-emerald-500 text-white" : "bg-white border-gray-300 text-gray-300"}`}>
                                     {isCompleted ? <CheckCircle size={16} /> : <div className="w-2 h-2 rounded-full bg-gray-200"></div>}
                                   </div>
-                                  <span className={\`text-[9px] sm:text-[11px] font-extrabold text-center hidden sm:block max-w-[60px] leading-tight \${isCurrent ? "text-emerald-700" : isCompleted ? "text-gray-800" : "text-gray-400"}\`}>
+                                  <span className={`text-[9px] sm:text-[11px] font-extrabold text-center hidden sm:block max-w-[60px] leading-tight ${isCurrent ? "text-emerald-700" : isCompleted ? "text-gray-800" : "text-gray-400"}`}>
                                     {step}
                                   </span>
                                 </div>
@@ -277,7 +277,7 @@ export default function SiparislerimSayfasi() {
                         </p>
                       </div>
                       <a 
-                        href={\`https://www.google.com/search?q=\${ord.carrier}+kargo+sorgulama+\${ord.trackingNumber}\`}
+                        href={`https://www.google.com/search?q=${ord.carrier}+kargo+sorgulama+${ord.trackingNumber}`}
                         target="_blank" rel="noreferrer"
                         className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
                       >
