@@ -74,15 +74,6 @@ Pharmacy/
 | İkonlar | Lucide React |
 | Font | Inter (Google Fonts) |
 
----
-
-## 🔒 Admin Paneli
-
-Admin paneline erişmek için `/admin/giris` sayfasına gidin.
-
-> **Demo kimlik bilgileri:**  
-> E-posta: `admin@onbsaglik.com`  
-> Şifre: `onbAdmin2024!`
 
 ---
 
