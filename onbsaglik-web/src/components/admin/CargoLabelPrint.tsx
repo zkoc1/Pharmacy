@@ -12,6 +12,8 @@ interface Props {
 export default function CargoLabelPrint({ order, onClose }: Props) {
   const printRef = useRef<HTMLDivElement>(null);
 
+  const barcodeData = order.trackingNumber || `272${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+
   const handlePrint = () => {
     if (!printRef.current) return;
     const content = printRef.current.innerHTML;
@@ -23,30 +25,47 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
         <head>
           <title>Kargo Etiketi - ${order.id}</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 20px; color: #000; }
-            .label-container { width: 100%; max-width: 800px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
-            .warning-box { background: #f9f9f9; border: 1px solid #ccc; padding: 10px; font-size: 12px; text-align: center; margin-bottom: 20px; font-weight: bold; border-radius: 4px; }
-            .header-logos { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            .header-logos h1 { margin: 0; font-size: 32px; color: #f27a1a; }
-            .grid-2 { display: flex; gap: 20px; margin-bottom: 20px; }
-            .box { flex: 1; border: 1px solid #ddd; padding: 15px; border-radius: 6px; }
-            .box-title { font-weight: bold; margin-bottom: 15px; color: #555; }
-            .row { display: flex; margin-bottom: 8px; font-size: 14px; }
-            .row-label { width: 100px; font-weight: bold; }
-            .barcode-area { text-align: center; }
-            .barcode-box { display: inline-block; width: 100%; height: 60px; background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px); margin-bottom: 10px; }
-            .products-box { border: 1px solid #ddd; padding: 15px; border-radius: 6px; }
-            .product-row { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-            .product-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-            .qty-circle { width: 30px; height: 30px; border: 1px solid #999; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
-            .product-info { flex: 1; font-size: 12px; }
-            .product-name { font-weight: bold; font-size: 14px; margin-bottom: 4px; }
-            .product-meta { display: flex; gap: 20px; color: #666; }
+            @page { size: A5 portrait; margin: 0; }
+            body { 
+              font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+              margin: 0; padding: 0; background: #fff; color: #000;
+              width: 148mm; height: 210mm; /* A5 Format */
+              box-sizing: border-box;
+            }
+            .a5-container { 
+              width: 100%; height: 100%; padding: 15mm; box-sizing: border-box; 
+              display: flex; flex-direction: column; border: 1px solid #000;
+            }
             
+            /* Top Section: Logos & Barcode */
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+            .brand { font-size: 24px; font-weight: 900; letter-spacing: -1px; margin: 0; }
+            .carrier { font-size: 20px; font-weight: bold; text-transform: uppercase; }
+            .barcode-container { text-align: center; margin-top: 10px; }
+            .barcode-img { height: 60px; max-width: 100%; }
+            .tracking-text { font-size: 16px; font-weight: bold; margin-top: 5px; letter-spacing: 2px; }
+
+            /* Middle Section: Addresses */
+            .address-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+            .address-box { border: 2px solid #000; padding: 10px; border-radius: 4px; }
+            .box-title { font-size: 12px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px; color: #333; }
+            .address-content { font-size: 14px; line-height: 1.4; }
+            .address-content strong { font-size: 16px; display: block; margin-bottom: 4px; }
+
+            /* Bottom Section: Order Details */
+            .order-details { flex-grow: 1; border: 2px solid #000; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+            .item-row { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dashed #ccc; padding: 6px 0; }
+            .item-row:last-child { border-bottom: none; }
+            .item-name { width: 70%; font-weight: bold; }
+            .item-qty { width: 30%; text-align: right; }
+
+            /* Footer */
+            .footer { text-align: center; font-size: 10px; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
+
+            /* Hide buttons when printing */
             @media print {
-              body { padding: 0; }
-              .label-container { border: none; }
-              button { display: none !important; }
+              body { margin: 0; padding: 0; }
+              .a5-container { border: none; }
             }
           </style>
         </head>
@@ -60,82 +79,79 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold">Kargo Etiketini A4 Yazdır</h2>
+        <div className="flex items-center justify-between p-4 border-b bg-white">
+          <h2 className="text-lg font-bold text-gray-800">Kargo Etiketi (A5 Formatı)</h2>
           <div className="flex gap-2">
-            <button onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 text-sm">
-              <Printer size={16} /> Yazdır
+            <button onClick={handlePrint} className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 text-sm shadow-md transition-all">
+              <Printer size={16} /> A5 Yazdır
             </button>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-              <X size={20} />
+            <button onClick={onClose} className="p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
+              <X size={24} />
             </button>
           </div>
         </div>
 
-        {/* Modal Body / Print Area */}
-        <div className="p-6 overflow-y-auto bg-gray-50 flex-1 flex justify-center">
+        {/* Modal Body / Print Preview Area */}
+        <div className="p-8 overflow-y-auto flex-1 flex justify-center items-start">
           
-          <div ref={printRef} className="bg-white w-full max-w-[800px] p-8 border rounded-lg shadow-sm">
-            {/* Warning Box */}
-            <div className="warning-box">
-              ⚠️ Kargo şirketinin dikkatine, bu bir onbsaglik.com gönderisidir. İlgili anlaşmasına uygun işlem yapabilirsiniz.
-            </div>
-
+          {/* A5 Container Preview */}
+          <div ref={printRef} className="bg-white shadow-xl" style={{ width: "148mm", minHeight: "210mm", padding: "15mm", boxSizing: "border-box", display: "flex", flexDirection: "column", border: "1px solid #000" }}>
+            
             {/* Header */}
-            <div className="header-logos">
-              <h1 style={{ fontWeight: 900, fontSize: "28px", color: "#10b981", margin: 0, letterSpacing: "-1px" }}>
-                onb<span style={{ color: "#333" }}>sağlık</span>
-              </h1>
-              <div style={{ fontSize: "24px", fontWeight: "bold", color: "#666" }}>
-                {order.carrier === "PTT Kargo" ? "PTT Kargo" : order.carrier}
+            <div className="header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "15px" }}>
+              <div>
+                <h1 className="brand" style={{ fontSize: "24px", fontWeight: 900, letterSpacing: "-1px", margin: 0 }}>onb<span style={{ color: "#333" }}>sağlık</span></h1>
+                <div style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>www.onbsaglik.com.tr</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div className="carrier" style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{order.carrier}</div>
+                <div style={{ fontSize: "12px", fontWeight: "bold", marginTop: "4px" }}>Sipariş No: {order.id}</div>
               </div>
             </div>
 
-            {/* Grid 2 */}
-            <div className="grid-2">
-              <div className="box">
-                <div className="box-title">Alıcı Bilgileri</div>
-                <div className="row">
-                  <div className="row-label">Sipariş No</div>
-                  <div>: {order.id}</div>
-                </div>
-                <div className="row">
-                  <div className="row-label">Ad-Soyad</div>
-                  <div>: {order.customerName}</div>
-                </div>
-                <div className="row">
-                  <div className="row-label">Adres</div>
-                  <div>: {order.deliveryAddress}</div>
+            {/* Main Barcode */}
+            <div className="barcode-container" style={{ textAlign: "center", marginBottom: "15px" }}>
+              {/* TEC-IT Barcode API for real barcodes */}
+              <img src={\`https://barcode.tec-it.com/barcode.ashx?data=\${barcodeData}&code=Code128&dpi=96\`} alt="Barcode" style={{ height: "70px", maxWidth: "100%" }} />
+              <div className="tracking-text" style={{ fontSize: "18px", fontWeight: "bold", marginTop: "5px", letterSpacing: "2px" }}>{barcodeData}</div>
+            </div>
+
+            {/* Addresses */}
+            <div className="address-grid" style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "15px" }}>
+              <div className="address-box" style={{ border: "2px solid #000", padding: "10px", borderRadius: "4px" }}>
+                <div className="box-title" style={{ fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "8px" }}>ALICI BİLGİLERİ</div>
+                <div className="address-content" style={{ fontSize: "14px", lineHeight: 1.4 }}>
+                  <strong style={{ fontSize: "18px", display: "block", marginBottom: "4px" }}>{order.customerName}</strong>
+                  <div>{order.deliveryAddress}</div>
+                  <div style={{ marginTop: "4px", fontWeight: "bold" }}>Tel: {order.customerPhone || "Müşteri paneline kayıtlı"}</div>
                 </div>
               </div>
 
-              <div className="box barcode-area">
-                <div className="box-title" style={{ textAlign: "left" }}>Kargo Barkodu</div>
-                <div className="barcode-box"></div>
-                <div style={{ fontSize: "14px", fontWeight: "bold", letterSpacing: "2px" }}>
-                  {order.trackingNumber || Math.floor(1000000000000 + Math.random() * 9000000000000)}
+              <div className="address-box" style={{ border: "1px solid #666", padding: "8px", borderRadius: "4px", backgroundColor: "#f9f9f9" }}>
+                <div className="box-title" style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #ccc", paddingBottom: "2px", marginBottom: "4px", color: "#666" }}>GÖNDERİCİ BİLGİLERİ</div>
+                <div className="address-content" style={{ fontSize: "12px", lineHeight: 1.3, color: "#333" }}>
+                  <strong>OnbSağlık E-Ticaret</strong>
+                  <div>Kayseri / Kocasinan / Yeni Mah. - Yeni Mahalle 12. Cadde Toktay Apartmanı No:95/4 Kocasinan Kayseri</div>
                 </div>
               </div>
             </div>
 
-            {/* Products Box */}
-            <div className="products-box">
-              <div className="box-title">Ürün Bilgileri</div>
+            {/* Order Details */}
+            <div className="order-details" style={{ flexGrow: 1, border: "2px solid #000", padding: "10px", borderRadius: "4px", marginBottom: "15px" }}>
+              <div className="box-title" style={{ fontSize: "12px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #000", paddingBottom: "4px", marginBottom: "8px" }}>İÇERİK ({order.items.reduce((acc, item) => acc + item.quantity, 0)} Parça)</div>
               {order.items.map((item, idx) => (
-                <div className="product-row" key={idx}>
-                  <div className="qty-circle">{item.quantity}</div>
-                  <div className="product-info">
-                    <div className="product-name">{item.name}</div>
-                    <div className="product-meta">
-                      <div><span style={{color: '#999'}}>Adet:</span> {item.quantity} Adet</div>
-                      <div><span style={{color: '#999'}}>Barkod:</span> {item.id}</div>
-                      <div><span style={{color: '#999'}}>Stok Kodu:</span> ONB-{item.id}</div>
-                    </div>
-                  </div>
+                <div className="item-row" key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", borderBottom: "1px dashed #ccc", padding: "6px 0" }}>
+                  <div className="item-name" style={{ width: "75%", fontWeight: "bold" }}>{item.name}</div>
+                  <div className="item-qty" style={{ width: "25%", textAlign: "right", fontWeight: "bold", fontSize: "14px" }}>{item.quantity} Adet</div>
                 </div>
               ))}
+            </div>
+
+            {/* Footer */}
+            <div className="footer" style={{ textAlign: "center", fontSize: "11px", fontWeight: "bold", borderTop: "2px solid #000", paddingTop: "10px" }}>
+              DİKKAT KIRILACAK EŞYA - LÜTFEN ÖZENLE TAŞIYINIZ
             </div>
             
           </div>

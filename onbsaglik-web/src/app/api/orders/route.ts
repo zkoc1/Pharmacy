@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       status: body.status || "Ödeme Bekliyor",
       delivery_address: body.deliveryAddress,
       billing_address: body.billingAddress || body.deliveryAddress,
-      tracking_number: body.trackingNumber || "",
+      tracking_number: body.trackingNumber || `272${Math.floor(1000000000 + Math.random() * 9000000000)}`,
       admin_note: body.adminNote || "",
       customer_note: body.customerNote || ""
     };
