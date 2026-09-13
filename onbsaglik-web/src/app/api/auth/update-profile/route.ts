@@ -5,7 +5,8 @@ import { getServerSession } from 'next-auth';
 export async function GET(req: Request) {
   try {
     const session = await getServerSession();
-    if (!session?.user?.email) {
+    const userEmail = session?.user?.email;
+    if (!userEmail) {
       return NextResponse.json({ error: 'Oturum bulunamadı' }, { status: 401 });
     }
 
@@ -13,7 +14,7 @@ export async function GET(req: Request) {
     const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
     if (listError) throw listError;
 
-    const targetUser = users.find(u => u.email === session.user.email);
+    const targetUser = users.find(u => u.email === userEmail);
     if (!targetUser) {
       return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
@@ -27,7 +28,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession();
-    if (!session?.user?.email) {
+    const userEmail = session?.user?.email;
+    if (!userEmail) {
       return NextResponse.json({ error: 'Oturum bulunamadı' }, { status: 401 });
     }
 
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
     const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
     if (listError) throw listError;
 
-    const targetUser = users.find(u => u.email === session.user.email);
+    const targetUser = users.find(u => u.email === userEmail);
     if (!targetUser) {
       return NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 404 });
     }
