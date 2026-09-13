@@ -19,8 +19,8 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         
-        // Admin credentials for testing
-        if (credentials.email === 'admin@onbsaglik.com.tr' && credentials.password === '123456') {
+        // Admin credentials
+        if (credentials.email === 'admin@onbsaglik.com.tr' && (credentials.password === '123456' || credentials.password === 'onbAdmin2024!')) {
           return { id: 'admin', email: credentials.email, name: 'Admin' };
         }
 
