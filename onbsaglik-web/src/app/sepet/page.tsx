@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
 import { useOrderStore } from "@/stores/orderStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { formatPrice } from "@/lib/products";
 import { calculateMultiBuyDiscount, applyCouponDiscount } from "@/lib/pricing";
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ChevronLeft, Gift, Printer, Calendar, RefreshCw, BookmarkPlus } from "lucide-react";
@@ -39,12 +40,19 @@ export default function SepetSayfasi() {
   
   const grandTotal = Math.max(0, total - multiBuyDiscount - discountAmount);
 
+  const { getActiveCampaigns } = useCampaignStore();
+  const activeCampaigns = getActiveCampaigns();
+
   useEffect(() => {
     fetch("/api/products")
       .then((res) => res.json())
-      .then((data) => setSpecialOffers(data.slice(0, 4)))
+      .then((data) => {
+        setSpecialOffers(data.slice(0, 4));
+        // Mevcut sepetteki ürünlerin fiyatlarını gerçek DB ve aktif kampanyalar ile senkronize et
+        useCartStore.getState().syncCartPrices(data, activeCampaigns);
+      })
       .catch(console.error);
-  }, []);
+  }, [activeCampaigns]);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();

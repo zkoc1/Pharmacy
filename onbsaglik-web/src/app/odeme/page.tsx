@@ -11,6 +11,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore, Address } from "@/stores/addressStore";
 import { useCardStore, SavedCard } from "@/stores/cardStore";
 import { useOrderStore } from "@/stores/orderStore";
+import { useCampaignStore } from "@/stores/campaignStore";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/products";
@@ -47,6 +48,18 @@ export default function OdemeSayfasi() {
       router.replace("/hesabim/giris?callbackUrl=/odeme");
     }
   }, [session, status, router]);
+
+  const { getActiveCampaigns } = useCampaignStore();
+  const activeCampaigns = getActiveCampaigns();
+
+  useEffect(() => {
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        useCartStore.getState().syncCartPrices(data, activeCampaigns);
+      })
+      .catch(console.error);
+  }, [activeCampaigns]);
 
   // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ
   const [activeStep, setActiveStep] = useState<1 | 2>(1);

@@ -36,6 +36,8 @@ interface CartStore {
   getTotalCount: () => number;
   /** Toplam tutar (TL) */
   getTotalPrice: () => number;
+  /** DB ve kampanya durumuna göre sepeti güncelle (geçersiz/bitmiş fiyatları düzeltir) */
+  syncCartPrices: (products: Product[], activeCampaigns: any[]) => void;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -169,6 +171,56 @@ export const useCartStore = create<CartStore>()(
         const currentEmail = state.userEmail || "guest";
         const currentItems = state.cartsByUser[currentEmail] || state.items || [];
         return currentItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
+      },
+
+      syncCartPrices: (allProducts, activeCampaigns) => {
+        set((state) => {
+          const currentEmail = state.userEmail || "guest";
+          const currentItems = state.cartsByUser[currentEmail] || state.items || [];
+          
+          let changed = false;
+          const newItems = currentItems.map(item => {
+            const realProduct = allProducts.find((p) => p.id === item.product.id);
+            if (!realProduct) return item;
+
+            let correctPrice = realProduct.price;
+
+            // Is there an active campaign?
+            const camp = activeCampaigns.find((c: any) => c.productId === realProduct.id || c.comboProductId === realProduct.id);
+            if (camp) {
+               if (camp.type !== "combo" && camp.productId === realProduct.id && camp.discountedPrice) {
+                 correctPrice = camp.discountedPrice;
+               } else if (camp.type === "combo" && camp.comboProductId === realProduct.id && camp.comboPrice) {
+                 correctPrice = camp.comboPrice;
+               }
+            }
+
+            if (item.product.price !== correctPrice || item.product.stock !== realProduct.stock) {
+               changed = true;
+               return {
+                 ...item,
+                 product: {
+                    ...item.product,
+                    price: correctPrice,
+                    stock: realProduct.stock,
+                    marketPrice: realProduct.marketPrice
+                 }
+               };
+            }
+            return item;
+          });
+
+          if (!changed) return state;
+
+          return {
+             ...state,
+             items: currentEmail === state.userEmail ? newItems : state.items,
+             cartsByUser: {
+               ...state.cartsByUser,
+               [currentEmail]: newItems
+             }
+          };
+        });
       },
     }),
     {
