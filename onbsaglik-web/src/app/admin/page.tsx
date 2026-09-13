@@ -129,9 +129,6 @@ export default function AdminPaneli() {
           <button onClick={() => setShowAdminModal(true)} className="bg-white/20 hover:bg-white/30 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
             <UserPlus size={14} /> Yeni Admin Ekle
           </button>
-          <button onClick={() => setShowCouponModal(true)} className="bg-amber-400 hover:bg-amber-300 text-emerald-950 font-bold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all">
-            <Gift size={14} /> Hediye Çeki Tanımla
-          </button>
           <a href="/admin/urunler" style={{ background: "#0284c7", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             🏷️ Ürünler ve Stok
           </a>
@@ -140,6 +137,9 @@ export default function AdminPaneli() {
           </a>
           <a href="/admin/kampanyalar" style={{ background: "#f59e0b", color: "#78350f", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             ⚡ Kampanya Yönetimi
+          </a>
+          <a href="/admin/ayarlar" style={{ background: "#0f172a", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            ⚙️ Ayarlar & Kuponlar
           </a>
           <a href="/admin/yorumlar" style={{ background: "#10b981", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
             ⭐ Yorum Yönetimi
