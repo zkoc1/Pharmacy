@@ -114,7 +114,8 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
             {/* Main Barcode */}
             <div className="barcode-container" style={{ textAlign: "center", marginBottom: "15px" }}>
               {/* TEC-IT Barcode API for real barcodes */}
-              <img src={\`https://barcode.tec-it.com/barcode.ashx?data=\${barcodeData}&code=Code128&dpi=96\`} alt="Barcode" style={{ height: "70px", maxWidth: "100%" }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`https://barcode.tec-it.com/barcode.ashx?data=${barcodeData}&code=Code128&dpi=96`} alt="Barcode" style={{ height: "70px", maxWidth: "100%" }} />
               <div className="tracking-text" style={{ fontSize: "18px", fontWeight: "bold", marginTop: "5px", letterSpacing: "2px" }}>{barcodeData}</div>
             </div>
 

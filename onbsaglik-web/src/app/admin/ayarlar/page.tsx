@@ -175,7 +175,7 @@ export default function AyarlarSayfasi() {
 
           {/* SAĞ: KUPONLAR */}
           <div>
-            <div style={{ display: "flex", justify-content: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#334155", display: "flex", alignItems: "center", gap: "6px" }}>
                 <Ticket size={20} /> İndirim Kuponları
               </h2>
