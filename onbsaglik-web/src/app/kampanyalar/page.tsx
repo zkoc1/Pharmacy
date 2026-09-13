@@ -102,7 +102,7 @@ export default function KampanyalarSayfasi() {
                   {/* Başlık Bandı */}
                   <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 text-white flex items-center justify-between">
                     <span className="font-extrabold text-sm flex items-center gap-2">
-                      <Zap size={16} className="fill-white" /> {camp.bannerTitle || "Özel Combo Teklif"}
+                      <Zap size={16} className="fill-white" /> {camp.bannerTitle || (camp.type === "combo" ? "Özel Combo Teklif" : "Günün Flaş İndirimi")}
                     </span>
                     {camp.endsAt && (
                       <span className="text-xs font-semibold bg-black/20 px-3 py-1 rounded-full flex items-center gap-1">
