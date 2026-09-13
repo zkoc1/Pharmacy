@@ -33,25 +33,62 @@ export default function KisiselBilgilerSayfasi() {
 
   const [saveMsg, setSaveMsg] = useState('');
 
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/hesabim/giris');
     } else if (session?.user) {
-      const parts = (session.user.name || '').split(' ');
-      setProfile((p) => ({
-        ...p,
-        firstName: parts[0] || 'Değerli',
-        lastName: parts.slice(1).join(' ') || 'Müşterimiz',
-        email: session.user?.email || '',
-        phone: '+90 (553) 272-38-58',
-      }));
+      // API'den gerçek veriyi çek
+      fetch('/api/auth/update-profile')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.metadata) {
+            setProfile(p => ({
+              ...p,
+              firstName: data.metadata.first_name || '',
+              lastName: data.metadata.last_name || '',
+              phone: data.metadata.phone || '',
+              email: session.user?.email || '',
+              tcNo: data.metadata.tc_no || '',
+              address: data.metadata.address || '',
+              gender: data.metadata.gender || 'Belirtmek istemiyorum'
+            }));
+          } else {
+            // Fallback
+            const parts = (session.user?.name || '').split(' ');
+            setProfile(p => ({
+              ...p,
+              firstName: parts[0] || '',
+              lastName: parts.slice(1).join(' ') || '',
+              email: session.user?.email || '',
+            }));
+          }
+          setLoadingProfile(false);
+        })
+        .catch(() => setLoadingProfile(false));
     }
   }, [session, status, router]);
 
-  const handleProfileSave = (e: React.FormEvent) => {
+  const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaveMsg('Kişisel bilgileriniz başarıyla güncellendi!');
-    setTimeout(() => setSaveMsg(''), 3000);
+    try {
+      const res = await fetch('/api/auth/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setSaveMsg('Kişisel bilgileriniz veritabanına başarıyla kaydedildi!');
+      } else {
+        alert(data.error || 'Güncelleme hatası!');
+      }
+    } catch (err) {
+      alert('Bağlantı hatası.');
+    }
+    setTimeout(() => setSaveMsg(''), 4000);
   };
 
   const handlePasswordSave = (e: React.FormEvent) => {
@@ -200,8 +237,8 @@ export default function KisiselBilgilerSayfasi() {
                     className="w-full px-3 py-2 bg-gray-50 border rounded-xl text-xs"
                   />
                 </div>
-                <button type="submit" className="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs">
-                  BİLGİLERİ BİLGİLERİ GÜNCELLE
+                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 transition-colors text-white font-bold py-2.5 rounded-xl text-xs">
+                  BİLGİLERİ GÜNCELLE
                 </button>
               </form>
             </div>
