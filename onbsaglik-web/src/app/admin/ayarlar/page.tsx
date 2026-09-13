@@ -20,6 +20,7 @@ export default function AyarlarSayfasi() {
     code: "",
     discount_amount: "",
     min_cart_amount: "",
+    usage_limit: "",
     is_first_order_only: false
   });
 
@@ -77,12 +78,13 @@ export default function AyarlarSayfasi() {
           code: couponForm.code,
           discount_amount: Number(couponForm.discount_amount),
           min_cart_amount: Number(couponForm.min_cart_amount),
+          usage_limit: couponForm.usage_limit ? Number(couponForm.usage_limit) : null,
           is_first_order_only: couponForm.is_first_order_only,
           is_active: true
         })
       });
       if (res.ok) {
-        setCouponForm({ code: "", discount_amount: "", min_cart_amount: "", is_first_order_only: false });
+        setCouponForm({ code: "", discount_amount: "", min_cart_amount: "", usage_limit: "", is_first_order_only: false });
         setShowCouponForm(false);
         fetchCoupons();
       } else {
@@ -173,7 +175,7 @@ export default function AyarlarSayfasi() {
 
           {/* SAĞ: KUPONLAR */}
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{ display: "flex", justify-content: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#334155", display: "flex", alignItems: "center", gap: "6px" }}>
                 <Ticket size={20} /> İndirim Kuponları
               </h2>
@@ -210,6 +212,15 @@ export default function AyarlarSayfasi() {
                       type="number" required value={couponForm.min_cart_amount}
                       onChange={(e) => setCouponForm({ ...couponForm, min_cart_amount: e.target.value })}
                       placeholder="Örn: 500"
+                      style={{ width: "100%", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "12px", fontWeight: 700, display: "block", marginBottom: "4px" }}>Kullanım Limiti (Adet)</label>
+                    <input
+                      type="number" value={couponForm.usage_limit}
+                      onChange={(e) => setCouponForm({ ...couponForm, usage_limit: e.target.value })}
+                      placeholder="Örn: 100 (Boş = Sınırsız)"
                       style={{ width: "100%", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px" }}
                     />
                   </div>
@@ -255,6 +266,9 @@ export default function AyarlarSayfasi() {
                       </div>
                       <p style={{ fontSize: "13px", color: "#475569", fontWeight: 600 }}>
                         {formatPrice(coupon.discount_amount)} İndirim (Min. Sepet: {formatPrice(coupon.min_cart_amount)})
+                      </p>
+                      <p style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+                        Kullanım: {coupon.used_count || 0} {coupon.usage_limit ? `/ ${coupon.usage_limit}` : "(Sınırsız)"}
                       </p>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>

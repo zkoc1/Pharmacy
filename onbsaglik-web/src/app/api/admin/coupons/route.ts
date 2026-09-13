@@ -22,6 +22,7 @@ export async function POST(req: Request) {
     code: body.code.toUpperCase(),
     discount_amount: body.discount_amount,
     min_cart_amount: body.min_cart_amount,
+    usage_limit: body.usage_limit,
     is_active: body.is_active,
     is_first_order_only: body.is_first_order_only
   }]).select().single();

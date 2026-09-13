@@ -426,6 +426,7 @@ export default function OdemeSayfasi() {
       deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
       billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
       status: orderStatus,
+      couponCode: discount > 0 ? couponCode.trim() : "",
     });
 
     clearCart();

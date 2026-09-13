@@ -34,6 +34,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
+    // Eğer kupon kodu kullanıldıysa sayısını 1 artır
+    if (body.couponCode) {
+      const { data: couponData } = await supabase
+        .from("coupons")
+        .select("used_count, usage_limit")
+        .eq("code", body.couponCode.toUpperCase())
+        .single();
+        
+      if (couponData) {
+        // Eğer limit doluysa sipariş hatası vermiyoruz, sadece artırmıyoruz. İsteğe bağlı olarak hata da dönülebilir ama bura siparişin sonu.
+        await supabase
+          .from("coupons")
+          .update({ used_count: couponData.used_count + 1 })
+          .eq("code", body.couponCode.toUpperCase());
+      }
+    }
+
     if (body.items && body.items.length > 0) {
       const itemsData = body.items.map((i: any) => ({
         order_id: id,

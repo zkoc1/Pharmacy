@@ -23,6 +23,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Geçersiz veya süresi dolmuş bir kupon kodu girdiniz." }, { status: 400 });
     }
 
+    // Limit kontrolü
+    if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) {
+      return NextResponse.json({ error: "Bu kupon kodunun kullanım limiti dolmuştur." }, { status: 400 });
+    }
+
     // Minimum sepet tutarı kontrolü
     if (cartTotal < coupon.min_cart_amount) {
       return NextResponse.json({ error: `Bu kupon minimum ${coupon.min_cart_amount} TL alışverişlerde geçerlidir.` }, { status: 400 });
