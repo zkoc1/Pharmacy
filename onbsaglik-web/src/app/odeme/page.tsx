@@ -688,9 +688,10 @@ export default function OdemeSayfasi() {
                           type="text"
                           required
                           value={addressForm.fullName}
-                          onChange={(e) =>
-                            setAddressForm({ ...addressForm, fullName: e.target.value })
-                          }
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[0-9]/g, '');
+                            setAddressForm({ ...addressForm, fullName: val });
+                          }}
                           placeholder="Ad Soyad"
                           className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                         />
@@ -708,10 +709,12 @@ export default function OdemeSayfasi() {
                           <input
                             type="tel"
                             required
+                            maxLength={10}
                             value={addressForm.phone}
-                            onChange={(e) =>
-                              setAddressForm({ ...addressForm, phone: e.target.value })
-                            }
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^0-9]/g, '');
+                              setAddressForm({ ...addressForm, phone: val });
+                            }}
                             placeholder="553 272 38 58"
                             className="w-full p-3 bg-gray-50 border rounded-r-xl text-xs font-semibold"
                           />

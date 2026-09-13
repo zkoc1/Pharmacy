@@ -171,7 +171,10 @@ export default function KisiselBilgilerSayfasi() {
                     type="text"
                     required
                     value={profile.firstName}
-                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[0-9]/g, '');
+                      setProfile({ ...profile, firstName: val });
+                    }}
                     className="w-full px-3 py-2 bg-gray-50 border rounded-xl text-xs"
                   />
                 </div>
@@ -181,7 +184,10 @@ export default function KisiselBilgilerSayfasi() {
                     type="text"
                     required
                     value={profile.lastName}
-                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[0-9]/g, '');
+                      setProfile({ ...profile, lastName: val });
+                    }}
                     className="w-full px-3 py-2 bg-gray-50 border rounded-xl text-xs"
                   />
                 </div>
@@ -200,10 +206,14 @@ export default function KisiselBilgilerSayfasi() {
                 <div>
                   <label className="block text-[11px] font-bold text-gray-600 mb-1">Cep Telefonu *</label>
                   <input
-                    type="text"
+                    type="tel"
                     required
+                    maxLength={10}
                     value={profile.phone}
-                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setProfile({ ...profile, phone: val });
+                    }}
                     className="w-full px-3 py-2 bg-gray-50 border rounded-xl text-xs"
                   />
                 </div>
