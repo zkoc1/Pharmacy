@@ -21,12 +21,8 @@ export default function GirisPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    if (cleanEmail === 'admin@onbsaglik.com.tr') {
-      localStorage.setItem('admin_session', JSON.stringify({ email: cleanEmail, role: 'super_admin' }));
-      localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: 'Sistem Yöneticisi', role: 'admin' }));
-    } else {
-      localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: cleanEmail.split('@')[0], role: 'customer' }));
-    }
+    // Sadece Next-Auth signIn metodunu çağırıyoruz, 
+    // arka planda Supabase kontrolü yapacak.
 
     const res = await signIn('credentials', {
       redirect: false,

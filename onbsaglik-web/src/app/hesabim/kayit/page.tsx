@@ -70,33 +70,39 @@ export default function KayitPage() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Aynı e-posta ile tekrar kayıt engeli
-    const registeredRaw = localStorage.getItem('onbsaglik_registered_emails');
-    let registered: string[] = [];
-    try { registered = registeredRaw ? JSON.parse(registeredRaw) : []; } catch {}
-    if (registered.includes(cleanEmail)) {
-      setError('Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın.');
+    // API üzerinden Supabase Auth'a kayıt ve e-posta doğrulama linki gönderimi
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          phone,
+          email: cleanEmail,
+          password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Kayıt oluşturulurken bir hata oluştu.');
+        setLoading(false);
+        return;
+      }
+
+      // Kayıt başarılı, emaile doğrulama linki gitti.
+      // Ekranda kullanıcıya bilgi ver.
+      setError('');
+      alert('Kayıt başarılı! Lütfen e-posta adresinize gelen doğrulama linkine tıklayın.');
+      
+      router.push('/hesabim/giris?registered=true');
+      
+    } catch (err) {
+      setError('Bağlantı hatası. Lütfen tekrar deneyin.');
+    } finally {
       setLoading(false);
-      return;
-    }
-    registered.push(cleanEmail);
-    localStorage.setItem('onbsaglik_registered_emails', JSON.stringify(registered));
-
-    localStorage.setItem('user_session', JSON.stringify({ email: cleanEmail, name: `${firstName} ${lastName}`, role: 'customer' }));
-
-    const res = await signIn('credentials', {
-      redirect: false,
-      email: cleanEmail,
-      password,
-    });
-
-    setLoading(false);
-
-    if (res?.error) {
-      setError('Kayıt oluşturulurken bir hata oluştu.');
-    } else {
-      router.push('/hesabim');
-      router.refresh();
     }
   };
 

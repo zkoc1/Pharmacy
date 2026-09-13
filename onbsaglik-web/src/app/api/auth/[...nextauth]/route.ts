@@ -19,14 +19,31 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         
-        if (credentials.password.length >= 6) {
-          return {
-            id: '1',
-            email: credentials.email,
-            name: credentials.email.split('@')[0],
-          };
+        // Admin credentials for testing
+        if (credentials.email === 'admin@onbsaglik.com.tr' && credentials.password === '123456') {
+          return { id: 'admin', email: credentials.email, name: 'Admin' };
         }
-        return null;
+
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+        if (error || !data.user) {
+          return null; // Login failed
+        }
+
+        return {
+          id: data.user.id,
+          email: data.user.email,
+          name: `${data.user.user_metadata?.first_name || ''} ${data.user.user_metadata?.last_name || ''}`.trim() || data.user.email?.split('@')[0],
+        };
       },
     }),
 
