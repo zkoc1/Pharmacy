@@ -59,6 +59,7 @@ export default function OdemeSayfasi() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [addressError, setAddressError] = useState("");
+  const [fetchedProfile, setFetchedProfile] = useState<any>(null);
 
   // Dinamik Konum State'leri
   const [cities, setCities] = useState<string[]>(ALL_81_PROVINCES);
@@ -175,8 +176,32 @@ export default function OdemeSayfasi() {
       });
   }, [addressForm.city, addressForm.district]);
 
-  // Kullanıcının Mevcut Kayıtlı Adreslerini Yükle
+  // Kullanıcının Mevcut Kayıtlı Adreslerini Yükle ve Kullanıcı Profilini Çek
   useEffect(() => {
+    // 1. Profil verisini çek (Her durumda)
+    if (status === "authenticated") {
+      fetch("/api/auth/update-profile")
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.metadata) {
+            const prof = {
+              fullName: (data.metadata.first_name ? `${data.metadata.first_name} ${data.metadata.last_name}` : session?.user?.name) || "",
+              phone: data.metadata.phone || "",
+              tcNo: data.metadata.tc_no || "",
+              fullAddress: data.metadata.address || ""
+            };
+            setFetchedProfile(prof);
+            
+            // Eğer kayıtlı adres yoksa hemen forma uygula
+            if (userAddresses.length === 0) {
+              setAddressForm(p => ({ ...p, ...prof }));
+            }
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 2. Kayıtlı adresleri forma bas
     if (userAddresses.length > 0) {
       const def = getDefaultAddress(currentUserEmail) || userAddresses[0];
       setSelectedAddressId(def.id);
@@ -196,11 +221,11 @@ export default function OdemeSayfasi() {
       });
     } else {
       setIsAddingNewAddress(true);
-      if (session?.user?.name) {
+      if (session?.user?.name && !fetchedProfile) {
         setAddressForm((p) => ({ ...p, fullName: session.user?.name || "" }));
       }
     }
-  }, [addresses, session, currentUserEmail, getDefaultAddress]);
+  }, [addresses, session, status, currentUserEmail, getDefaultAddress, userAddresses.length]);
 
   // Kayıtlı Kartları Yükle
   useEffect(() => {
@@ -383,6 +408,7 @@ export default function OdemeSayfasi() {
           ? "Havale / EFT"
           : "PayTR 3D Secure",
       deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
+      billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
       status: orderStatus,
     });
 
@@ -508,14 +534,14 @@ export default function OdemeSayfasi() {
                           setAddressForm({
                             invoiceType: "Bireysel Adres",
                             title: "Ev",
-                            fullName: session?.user?.name || "",
-                            tcNo: "",
+                            fullName: fetchedProfile?.fullName || session?.user?.name || "",
+                            tcNo: fetchedProfile?.tcNo || "",
                             country: "Türkiye",
                             city: "",
                             district: "",
                             neighborhood: "",
-                            fullAddress: "",
-                            phone: "",
+                            fullAddress: fetchedProfile?.fullAddress || "",
+                            phone: fetchedProfile?.phone || "",
                             differentInvoice: false,
                           });
                           setAddressError("");
