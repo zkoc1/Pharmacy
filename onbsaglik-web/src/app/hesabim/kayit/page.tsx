@@ -148,14 +148,14 @@ export default function KayitPage() {
                 <label className="block text-xs font-bold text-gray-700 mb-1">Ad *</label>
                 <input
                   type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Zehra" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Adınız" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Soyad *</label>
                 <input
                   type="text" required value={lastName} onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Koç" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Soyadınız" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -169,7 +169,7 @@ export default function KayitPage() {
                 </span>
                 <input
                   type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
-                  placeholder="553 272 38 58" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-r-xl text-sm focus:ring-2 focus:ring-emerald-500"
+                  placeholder="5XX XXX XX XX" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-r-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function KayitPage() {
               <label className="block text-xs font-bold text-gray-700 mb-1">E-posta Adresi *</label>
               <input
                 type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="fkoc899@gmail.com" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
+                placeholder="E-posta adresiniz" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 

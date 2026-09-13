@@ -100,7 +100,7 @@ export default function GirisPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="fkoc899@gmail.com (veya admin@onbsaglik.com.tr)"
+                placeholder="E-posta adresiniz"
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
               />
             </div>
