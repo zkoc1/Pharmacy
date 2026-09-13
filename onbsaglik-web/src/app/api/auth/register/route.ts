@@ -27,7 +27,11 @@ export async function POST(req: Request) {
 
     if (authError) {
       console.error('Kayıt hatası:', authError);
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+      let errorMessage = authError.message;
+      if (errorMessage.toLowerCase().includes('already been registered')) {
+        errorMessage = 'Bu e-posta adresi sistemde zaten kayıtlı.';
+      }
+      return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
     // 2. Özel E-posta Doğrulama Linki Oluştur

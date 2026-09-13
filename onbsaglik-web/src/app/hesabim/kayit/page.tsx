@@ -131,14 +131,26 @@ export default function KayitPage() {
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Ad *</label>
                 <input
-                  type="text" required value={firstName} onChange={(e) => setFirstName(e.target.value)}
+                  type="text" required value={firstName} 
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[0-9]/g, '');
+                    setFirstName(val);
+                  }}
+                  pattern="^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$"
+                  title="İsim sadece harflerden oluşmalıdır."
                   placeholder="Adınız" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Soyad *</label>
                 <input
-                  type="text" required value={lastName} onChange={(e) => setLastName(e.target.value)}
+                  type="text" required value={lastName} 
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[0-9]/g, '');
+                    setLastName(val);
+                  }}
+                  pattern="^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$"
+                  title="Soyisim sadece harflerden oluşmalıdır."
                   placeholder="Soyadınız" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -152,7 +164,15 @@ export default function KayitPage() {
                   🇹🇷 +90
                 </span>
                 <input
-                  type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
+                  type="tel" required value={phone} 
+                  onChange={(e) => {
+                    // Sadece rakamlara izin ver
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setPhone(val);
+                  }}
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  title="Başında 0 olmadan 10 haneli cep telefonu numaranızı giriniz (Örn: 5551234567)"
                   placeholder="5XX XXX XX XX" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-r-xl text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
