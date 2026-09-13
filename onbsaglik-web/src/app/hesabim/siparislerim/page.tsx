@@ -38,15 +38,17 @@ const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: Reac
 export default function SiparislerimSayfasi() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { orders } = useOrderStore();
+  const { orders, fetchUserOrders } = useOrderStore();
 
   const currentUserEmail = session?.user?.email || "";
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/hesabim/giris");
+    } else if (status === "authenticated") {
+      fetchUserOrders();
     }
-  }, [status, router]);
+  }, [status, router, fetchUserOrders]);
 
   if (status === "loading") {
     return (

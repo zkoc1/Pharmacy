@@ -1,5 +1,58 @@
 import { NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const email = session.user.email;
+  const supabase = getServiceSupabase();
+  const { data: ordersData, error: ordersError } = await supabase
+    .from("orders")
+    .select(`
+      *,
+      items:order_items(*)
+    `)
+    .eq("customer_email", email)
+    .order("created_at", { ascending: false });
+
+  if (ordersError) {
+    return NextResponse.json({ error: ordersError.message }, { status: 500 });
+  }
+
+  const mapped = ordersData.map((o) => ({
+    id: o.id,
+    invoiceNo: o.invoice_no,
+    date: new Date(o.created_at).toLocaleString("tr-TR"),
+    customerEmail: o.customer_email,
+    customerName: o.customer_name,
+    customerPhone: o.customer_phone,
+    total: Number(o.total),
+    carrier: o.carrier,
+    paymentMethod: o.payment_method,
+    status: o.status,
+    deliveryAddress: o.delivery_address,
+    billingAddress: o.billing_address,
+    trackingNumber: o.tracking_number,
+    adminNote: o.admin_note,
+    customerNote: o.customer_note,
+    items: o.items.map((i: any) => ({
+      id: i.product_id,
+      slug: i.slug,
+      name: i.name,
+      brand: i.brand,
+      price: Number(i.price),
+      quantity: i.quantity,
+      image: i.image
+    }))
+  }));
+
+  return NextResponse.json(mapped);
+}
 
 // Herkes sipariş oluşturabilir (müşteri / misafir).
 export async function POST(req: Request) {

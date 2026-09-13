@@ -8,7 +8,9 @@ import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import AppleProvider from 'next-auth/providers/apple';
 
-const handler = NextAuth({
+import { AuthOptions } from 'next-auth';
+
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -91,5 +93,7 @@ const handler = NextAuth({
     },
   },
 });
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

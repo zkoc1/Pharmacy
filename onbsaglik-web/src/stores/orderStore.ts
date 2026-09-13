@@ -55,6 +55,7 @@ export interface OrderRecord {
 interface OrderStore {
   orders: OrderRecord[];
   fetchOrders: () => Promise<void>;
+  fetchUserOrders: () => Promise<void>;
   addOrder: (order: any) => Promise<string>;
   updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => Promise<void>;
   bulkUpdateStatus: (orderIds: string[], status: OrderStatus) => Promise<void>;
@@ -77,6 +78,18 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
       }
     } catch (error) {
       console.error("fetchOrders error:", error);
+    }
+  },
+
+  fetchUserOrders: async () => {
+    try {
+      const res = await fetch("/api/orders");
+      if (res.ok) {
+        const data = await res.json();
+        set({ orders: data });
+      }
+    } catch (error) {
+      console.error("fetchUserOrders error:", error);
     }
   },
 
