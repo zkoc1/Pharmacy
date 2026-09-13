@@ -40,32 +40,6 @@ export default function GirisPage() {
     }
   };
 
-  const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple') => {
-    try {
-      if (provider === 'google') {
-        const popup = window.open(
-          'https://accounts.google.com/o/oauth2/v2/auth?client_id=824105571389-dummy.apps.googleusercontent.com&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/google&response_type=code&scope=openid%20email%20profile',
-          'GoogleSignIn',
-          'width=500,height=600'
-        );
-        if (!popup) {
-          await signIn('google', { callbackUrl: '/hesabim' });
-        }
-      } else if (provider === 'facebook') {
-        window.open('https://www.facebook.com/v18.0/dialog/oauth?client_id=dummy_app_id&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/facebook', 'FacebookSignIn', 'width=600,height=700');
-      } else if (provider === 'apple') {
-        window.open('https://appleid.apple.com/auth/authorize?client_id=com.onbsaglik.web&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/apple&response_type=code', 'AppleSignIn', 'width=600,height=700');
-      }
-
-      // Demo Giriş Fallback Oturumu
-      localStorage.setItem('user_session', JSON.stringify({ email: `${provider}_user@onbsaglik.com.tr`, name: `${provider.toUpperCase()} Kullanıcısı`, role: 'customer' }));
-      await signIn('credentials', { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: 'demoPassword123' });
-      setTimeout(() => router.push('/hesabim'), 1500);
-    } catch {
-      await signIn('credentials', { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: 'demoPassword123' });
-      router.push('/hesabim');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -141,32 +115,31 @@ export default function GirisPage() {
               </button>
             </div>
 
-            {/* Ve Ya Sepatörü & Sosyal Giriş Butonları (Görsel 1, 2, 3 Birebir OAuth Pencereleri) */}
+            {/* Sosyal Giriş Butonları */}
             <div className="pt-6 text-center">
               <div className="relative flex py-2 items-center">
                 <div className="flex-grow border-t border-gray-200" />
                 <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">veya</span>
                 <div className="flex-grow border-t border-gray-200" />
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={() => handleSocialSignIn('facebook')}
+                  onClick={() => signIn('facebook', { callbackUrl: '/hesabim' })}
                   className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
                 >
                   f ile bağlan
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSocialSignIn('google')}
+                  onClick={() => signIn('google', { callbackUrl: '/hesabim' })}
                   className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-blue-500 font-black">G</span> ile bağlan
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSocialSignIn('apple')}
+                  onClick={() => signIn('apple', { callbackUrl: '/hesabim' })}
                   className="flex items-center justify-center gap-2 bg-black text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
                 >
                    ile bağlan
