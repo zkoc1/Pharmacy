@@ -1074,11 +1074,12 @@ export default function OdemeSayfasi() {
                               type="text"
                               required
                               value={cardForm.cardName}
-                              onChange={(e) =>
-                                setCardForm({ ...cardForm, cardName: e.target.value })
-                              }
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/[0-9]/g, '');
+                                setCardForm({ ...cardForm, cardName: val });
+                              }}
                               placeholder="Kart Üzerindeki İsim"
-                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
+                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold uppercase"
                             />
                           </div>
 
@@ -1087,15 +1088,17 @@ export default function OdemeSayfasi() {
                               Kart Numarası *
                             </label>
                             <input
-                              type="text"
+                              type="tel"
                               required
                               maxLength={19}
                               value={cardForm.cardNumber}
-                              onChange={(e) =>
-                                setCardForm({ ...cardForm, cardNumber: e.target.value })
-                              }
+                              onChange={(e) => {
+                                let val = e.target.value.replace(/[^0-9]/g, '');
+                                val = val.match(/.{1,4}/g)?.join(' ') || val;
+                                setCardForm({ ...cardForm, cardNumber: val });
+                              }}
                               placeholder="XXXX XXXX XXXX XXXX"
-                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold font-mono"
+                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold font-mono tracking-wider"
                             />
                           </div>
 
@@ -1143,15 +1146,16 @@ export default function OdemeSayfasi() {
                                 CVC / CVV *
                               </label>
                               <input
-                                type="text"
+                                type="tel"
                                 required
-                                maxLength={4}
-                                placeholder="CVC"
+                                maxLength={3}
                                 value={cardForm.cvc}
-                                onChange={(e) =>
-                                  setCardForm({ ...cardForm, cvc: e.target.value })
-                                }
-                                className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold font-mono"
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/[^0-9]/g, '');
+                                  setCardForm({ ...cardForm, cvc: val });
+                                }}
+                                placeholder="CVC"
+                                className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                               />
                             </div>
                           </div>
