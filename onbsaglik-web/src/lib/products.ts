@@ -30,7 +30,7 @@ export async function getAllProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("status", "active")
+    .or("status.eq.active,status.is.null")
     .order("id", { ascending: false });
     
   if (error || !data) return [];
@@ -43,7 +43,7 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
     .from("products")
     .select("*")
     .eq("slug", slug)
-    .eq("status", "active")
+    .or("status.eq.active,status.is.null")
     .single();
     
   if (error || !data) return undefined;
@@ -56,7 +56,7 @@ export async function getProductsByCategory(categorySlug: string): Promise<Produ
     .from("products")
     .select("*")
     .eq("category_slug", categorySlug)
-    .eq("status", "active");
+    .or("status.eq.active,status.is.null");
     
   if (error || !data) return [];
   return data.map(mapProduct);
@@ -68,7 +68,7 @@ export async function getProductsByBrand(brandSlug: string): Promise<Product[]> 
     .from("products")
     .select("*")
     .eq("brand_slug", brandSlug)
-    .eq("status", "active");
+    .or("status.eq.active,status.is.null");
     
   if (error || !data) return [];
   return data.map(mapProduct);
@@ -94,7 +94,7 @@ export async function filterProducts(filter: ProductFilter): Promise<{
   products: Product[];
   total: number;
 }> {
-  let query = supabase.from("products").select("*").eq("status", "active");
+  let query = supabase.from("products").select("*").or("status.eq.active,status.is.null");
 
   // Kategori filtresi
   if (filter.categorySlug) {
@@ -230,7 +230,7 @@ export async function getAllBrands(): Promise<Brand[]> {
   const { data, error } = await supabase
     .from("products")
     .select("brand, brand_slug")
-    .eq("status", "active");
+    .or("status.eq.active,status.is.null");
 
   if (error || !data) return [];
 
@@ -260,7 +260,7 @@ export async function getAllCategories(): Promise<Category[]> {
   const { data, error } = await supabase
     .from("products")
     .select("category, category_slug")
-    .eq("status", "active");
+    .or("status.eq.active,status.is.null");
 
   if (error || !data) return [];
 
