@@ -33,8 +33,15 @@ export default function KampanyalarSayfasi() {
     const mainProd = products.find((p) => p.id === camp.productId);
     const comboProd = products.find((p) => p.id === camp.comboProductId);
 
-    if (mainProd && mainProd.stock > 0) addItem(mainProd, 1);
-    if (comboProd && comboProd.stock > 0) {
+    if (mainProd && mainProd.stock > 0) {
+      if (camp.type !== "combo" && camp.discountedPrice) {
+        addItem({ ...mainProd, price: camp.discountedPrice }, 1);
+      } else {
+        addItem(mainProd, 1);
+      }
+    }
+    
+    if (camp.type === "combo" && comboProd && comboProd.stock > 0) {
       const discountedComboProd = {
         ...comboProd,
         price: camp.comboPrice ? camp.comboPrice : comboProd.price,
@@ -225,11 +232,11 @@ export default function KampanyalarSayfasi() {
                         "Stokta Yok - Kampanya Tükendi"
                       ) : addedItems[camp.id] ? (
                         <>
-                          <Check size={18} /> İki Ürün Sepete Eklendi!
+                          <Check size={18} /> {camp.type === "combo" ? "İki Ürün Sepete Eklendi!" : "Sepete Eklendi!"}
                         </>
                       ) : (
                         <>
-                          <ShoppingCart size={18} /> Birlikte Sepete Ekle & Fırsatı Yakala
+                          <ShoppingCart size={18} /> {camp.type === "combo" ? "Birlikte Sepete Ekle" : "Sepete Ekle"} & Fırsatı Yakala
                         </>
                       )}
                     </button>
