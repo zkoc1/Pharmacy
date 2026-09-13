@@ -33,10 +33,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     (await getCategoryBySlug(slug)) ||
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
-  if (!cat) return {};
+  const catName = cat ? cat.name : slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   return {
-    title: `${cat.name} | OnbSağlık`,
-    description: `${cat.name} kategorisindeki ürünleri inceleyin. En uygun fiyatlar OnbSağlık'ta.`,
+    title: `${catName} | OnbSağlık`,
+    description: `${catName} kategorisindeki ürünleri inceleyin. En uygun fiyatlar OnbSağlık'ta.`,
   };
 }
 
@@ -45,11 +45,18 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
   const sp = await searchParams;
 
   const categories = await getAllCategories();
-  const category =
+  let category =
     (await getCategoryBySlug(slug)) ||
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
-  if (!category) notFound();
+  if (!category) {
+    // Veritabanında tam eşleşen slug yoksa, sayfayı çökertmemek için geçici bir kategori oluştur
+    category = {
+      id: 9999,
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      slug: slug
+    };
+  }
 
   // URL parametrelerinden filtre oluştur
   const filter: ProductFilter = {

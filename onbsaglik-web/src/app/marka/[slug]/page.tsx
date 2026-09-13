@@ -22,11 +22,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const brand = await getBrandBySlug(slug);
+  const brandName = brand ? brand.name : slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-  if (!brand) return {};
   return {
-    title: `${brand.name} Ürünleri | OnbSağlık`,
-    description: `${brand.name} marka tüm sağlık ve dermokozmetik ürünleri OnbSağlık'ta.`,
+    title: `${brandName} Ürünleri | OnbSağlık`,
+    description: `${brandName} marka tüm sağlık ve dermokozmetik ürünleri OnbSağlık'ta.`,
   };
 }
 
@@ -34,8 +34,14 @@ export default async function MarkaSayfasi({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
 
-  const brand = await getBrandBySlug(slug);
-  if (!brand) notFound();
+  let brand = await getBrandBySlug(slug);
+  if (!brand) {
+    brand = {
+      id: 9999,
+      name: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      slug: slug
+    };
+  }
 
   const products = await getProductsByBrand(slug);
 
