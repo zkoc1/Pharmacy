@@ -10,25 +10,31 @@ import ProductGrid from "@/components/product/ProductGrid";
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+// Tüm marka slug'larını statik olarak üret
 export async function generateStaticParams() {
-  return getAllBrands().map((b) => ({ slug: b.slug }));
+  const brands = await getAllBrands();
+  return brands.map((b) => ({ slug: b.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const brand = getBrandBySlug(slug);
+  const brand = await getBrandBySlug(slug);
+
   if (!brand) return {};
   return {
     title: `${brand.name} Ürünleri | OnbSağlık`,
-    description: `${brand.name} markasına ait tüm ürünler. OnbSağlık'ta en uygun fiyatlarla.`,
+    description: `${brand.name} marka tüm sağlık ve dermokozmetik ürünleri OnbSağlık'ta.`,
   };
 }
 
-export default async function MarkaSayfasi({ params }: Props) {
+export default async function MarkaSayfasi({ params, searchParams }: Props) {
   const { slug } = await params;
-  const brand = getBrandBySlug(slug);
+  const sp = await searchParams;
+
+  const brand = await getBrandBySlug(slug);
   if (!brand) notFound();
 
   const products = await getProductsByBrand(slug);

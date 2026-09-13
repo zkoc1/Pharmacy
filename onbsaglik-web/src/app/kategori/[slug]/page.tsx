@@ -17,7 +17,7 @@ interface Props {
 
 // Tüm kategori slug'larını statik olarak üret
 export async function generateStaticParams() {
-  const categories = getAllCategories();
+  const categories = await getAllCategories();
   const slugs: { slug: string }[] = [];
   categories.forEach((cat) => {
     slugs.push({ slug: cat.slug });
@@ -28,9 +28,9 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const categories = getAllCategories();
+  const categories = await getAllCategories();
   const cat =
-    getCategoryBySlug(slug) ||
+    (await getCategoryBySlug(slug)) ||
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
   if (!cat) return {};
@@ -44,9 +44,9 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
 
-  const categories = getAllCategories();
+  const categories = await getAllCategories();
   const category =
-    getCategoryBySlug(slug) ||
+    (await getCategoryBySlug(slug)) ||
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
   if (!category) notFound();

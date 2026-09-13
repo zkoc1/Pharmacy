@@ -27,7 +27,7 @@ export default async function AnaSayfa() {
   const featuredProducts = await getFeaturedProducts(12);
   const discountedProducts = await getDiscountedProducts(8);
   const newProducts = await getNewProducts(8);
-  const brands = getAllBrands();
+  const brands = await getAllBrands();
 
   return (
     <>

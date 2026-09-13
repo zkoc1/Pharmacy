@@ -225,20 +225,61 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
-// Marka işlemleri
-export function getAllBrands(): Brand[] {
-  return ALL_BRANDS;
+// Marka işlemleri - Dinamik (Veritabanından)
+export async function getAllBrands(): Promise<Brand[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("brand, brand_slug")
+    .eq("status", "active");
+
+  if (error || !data) return [];
+
+  // Tekilleştirme (Unique)
+  const brandMap = new Map<string, Brand>();
+  let idCounter = 1;
+  data.forEach((p) => {
+    if (p.brand_slug && !brandMap.has(p.brand_slug)) {
+      brandMap.set(p.brand_slug, {
+        id: idCounter++,
+        name: p.brand || p.brand_slug,
+        slug: p.brand_slug,
+      });
+    }
+  });
+
+  return Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name, "tr"));
 }
 
-export function getBrandBySlug(slug: string): Brand | undefined {
-  return ALL_BRANDS.find((b) => b.slug === slug);
+export async function getBrandBySlug(slug: string): Promise<Brand | undefined> {
+  const brands = await getAllBrands();
+  return brands.find((b) => b.slug === slug);
 }
 
-// Kategori işlemleri
-export function getAllCategories(): Category[] {
-  return ALL_CATEGORIES;
+// Kategori işlemleri - Dinamik (Veritabanından)
+export async function getAllCategories(): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("category, category_slug")
+    .eq("status", "active");
+
+  if (error || !data) return [];
+
+  const catMap = new Map<string, Category>();
+  let idCounter = 1;
+  data.forEach((p) => {
+    if (p.category_slug && !catMap.has(p.category_slug)) {
+      catMap.set(p.category_slug, {
+        id: idCounter++,
+        name: p.category || p.category_slug,
+        slug: p.category_slug,
+      });
+    }
+  });
+
+  return Array.from(catMap.values()).sort((a, b) => a.name.localeCompare(b.name, "tr"));
 }
 
-export function getCategoryBySlug(slug: string): Category | undefined {
-  return ALL_CATEGORIES.find((c) => c.slug === slug);
+export async function getCategoryBySlug(slug: string): Promise<Category | undefined> {
+  const categories = await getAllCategories();
+  return categories.find((c) => c.slug === slug);
 }

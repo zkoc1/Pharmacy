@@ -11,8 +11,8 @@ const BASE_URL = "https://onbsaglik.com.tr";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getAllProducts();
-  const categories = getAllCategories();
-  const brands = getAllBrands();
+  const categories = await getAllCategories();
+  const brands = await getAllBrands();
 
   // Statik sayfalar
   const staticPages: MetadataRoute.Sitemap = [
