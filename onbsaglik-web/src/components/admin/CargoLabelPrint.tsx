@@ -78,8 +78,8 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 overflow-y-auto pt-10 pb-10">
-      <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col relative">
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 p-4 sm:p-8 overflow-y-auto pt-12 pb-12">
+      <div className="bg-gray-100 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col relative mt-10 mb-auto">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 border-b bg-white">
           <h2 className="text-lg font-bold text-gray-800">Kargo Etiketi (A5 Formatı)</h2>
@@ -94,7 +94,7 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
         </div>
 
         {/* Modal Body / Print Preview Area */}
-        <div className="p-4 sm:p-8 overflow-y-auto flex-1 flex justify-center items-start">
+        <div className="p-4 sm:p-8 flex justify-center items-start">
           
           {/* A5 Container Preview (Scaled down visually to fit screen better without scrolling horizontally) */}
           <div style={{ transform: "scale(0.85)", transformOrigin: "top center", marginBottom: "-15%" }}>
