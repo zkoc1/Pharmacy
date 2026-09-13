@@ -66,7 +66,7 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
     maxPrice: sp.max ? Number(sp.max) : undefined,
     page: sp.sayfa ? Number(sp.sayfa) : 1,
     limit: 24,
-    search: typeof sp.sub === 'string' ? sp.sub : undefined,
+    search: typeof sp.sub === 'string' && sp.sub !== 'Tüm Ürünler' ? sp.sub : undefined,
   };
 
   const { products, total } = await filterProducts(filter);
