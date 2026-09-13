@@ -310,12 +310,9 @@ export default function AdminSiparislerTrendyol() {
                       <td className="p-3 align-top space-y-2">
                         <button 
                           onClick={() => setCargoLabelOrder(ord)}
-                          className="w-full border border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] py-1.5 rounded transition-colors"
+                          className="w-full border border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] py-1.5 rounded transition-colors mb-2"
                         >
-                          Kargo Etiketini A4 Yazdır
-                        </button>
-                        <button className="w-full border border-orange-200 text-orange-600 hover:bg-orange-50 font-bold text-[10px] py-1.5 rounded transition-colors">
-                          Kargo Etiketini Sticker Yazdır
+                          Kargo Etiketini Yazdır
                         </button>
                         
                         <div className="relative group">
