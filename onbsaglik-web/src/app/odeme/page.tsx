@@ -111,6 +111,12 @@ export default function OdemeSayfasi() {
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [mailOrderConsent, setMailOrderConsent] = useState(true);
 
+  // Dinamik Ayarlar (Kargo Limiti vs)
+  const [checkoutSettings, setCheckoutSettings] = useState({
+    freeShippingThreshold: 3000,
+    shippingCost: 49.90
+  });
+
   // Kupon İndirimi
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -120,19 +126,29 @@ export default function OdemeSayfasi() {
   
   const carrierObj = carriers.find((c) => c.name === selectedCarrier);
   const defaultShippingCost = carrierObj ? carrierObj.price : 0;
-  // Sadece ücretli kargolar için ücretsiz kargo barajını uygula (zaten 0 ise elleme)
-  const shippingCost = defaultShippingCost > 0 ? calculateShipping(total - multiBuyDiscount - discount) : 0;
+  
+  // Dinamik kargo hesaplama
+  const subTotalForShipping = total - multiBuyDiscount - discount;
+  const calculatedShippingCost = subTotalForShipping > checkoutSettings.freeShippingThreshold ? 0 : checkoutSettings.shippingCost;
+  const shippingCost = defaultShippingCost > 0 ? calculatedShippingCost : 0;
   
   let tempGrandTotal = Math.max(0, total - multiBuyDiscount - discount + shippingCost);
   const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
   const grandTotal = Math.max(0, tempGrandTotal - eftDiscount);
 
-  // 1. API'den Şehir İsimlerini Çek
+  // 1. API'den Şehir İsimlerini Çek ve Kargo Ayarlarını Al
   useEffect(() => {
     fetch("/api/locations")
       .then((r) => r.json())
       .then((data) => {
         if (data.cities && data.cities.length > 0) setCities(data.cities);
+      })
+      .catch(() => {});
+
+    fetch("/api/checkout/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data) setCheckoutSettings(data);
       })
       .catch(() => {});
   }, []);
@@ -1289,15 +1305,31 @@ export default function OdemeSayfasi() {
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const userEmail = session?.user?.email;
                     const isFirstOrder = userEmail ? useOrderStore.getState().getOrdersByEmail(userEmail).length === 0 : true;
+                    
                     try {
-                        const discountVal = applyCouponDiscount(couponCode.trim().toUpperCase(), total, isFirstOrder);
-                        setDiscount(discountVal);
-                    } catch (e: any) {
-                        alert(e.message);
+                      const res = await fetch("/api/checkout/coupon", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          code: couponCode.trim(),
+                          cartTotal: total,
+                          isFirstOrder
+                        })
+                      });
+                      
+                      const data = await res.json();
+                      if (data.success) {
+                        setDiscount(data.discountAmount);
+                      } else {
+                        alert(data.error || "Kupon uygulanamadı.");
                         setDiscount(0);
+                      }
+                    } catch (e: any) {
+                      alert("Sunucuyla iletişim kurulamadı.");
+                      setDiscount(0);
                     }
                   }}
                   className="bg-gray-400 hover:bg-gray-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer"
