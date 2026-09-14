@@ -107,7 +107,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* E-posta */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1">
+            <label className="block text-xs font-bold text-gray-700 mb-1">
               E-posta adresinizi giriniz
             </label>
             <input
@@ -122,7 +122,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
           {/* Şifre */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 mb-1">
+            <label className="block text-xs font-bold text-gray-700 mb-1">
               Şifrenizi giriniz
             </label>
             <div className="relative">
