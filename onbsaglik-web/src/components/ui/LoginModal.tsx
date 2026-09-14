@@ -108,14 +108,14 @@ export default function LoginModal({ isOpen, onClose }: Props) {
           {/* E-posta */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
-              E-posta adresinizi giriniz
+              E-posta
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="fkoc899@gmail.com"
+              placeholder="E-posta adresinizi giriniz"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
             />
           </div>
@@ -123,7 +123,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
           {/* Şifre */}
           <div>
             <label className="block text-xs font-bold text-gray-700 mb-1">
-              Şifrenizi giriniz
+              Şifre
             </label>
             <div className="relative">
               <input
@@ -131,7 +131,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Şifrenizi giriniz"
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400 pr-10"
               />
               <button
