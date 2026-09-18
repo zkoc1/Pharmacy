@@ -20,6 +20,7 @@ import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
 import CargoLabelPrint from "@/components/admin/CargoLabelPrint";
 import InvoiceModal from "@/components/admin/InvoiceModal";
+import BillingInfoModal from "@/components/admin/BillingInfoModal";
 
 const TABS = [
   { id: "all", label: "Tüm Siparişler" },
@@ -44,6 +45,7 @@ export default function AdminSiparislerTrendyol() {
   // Modals
   const [cargoLabelOrder, setCargoLabelOrder] = useState<OrderRecord | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<OrderRecord | null>(null);
+  const [billingInfoOrder, setBillingInfoOrder] = useState<OrderRecord | null>(null);
 
   // Filters
   const [activeTab, setActiveTab] = useState("all");
@@ -123,6 +125,9 @@ export default function AdminSiparislerTrendyol() {
             setInvoiceOrder(null);
           }} 
         />
+      )}
+      {billingInfoOrder && (
+        <BillingInfoModal order={billingInfoOrder} onClose={() => setBillingInfoOrder(null)} />
       )}
 
       {/* TABS (Trendyol Style) */}
@@ -298,11 +303,16 @@ export default function AdminSiparislerTrendyol() {
                           <div className="text-red-500 font-bold text-[10px] flex justify-center items-center gap-1"><AlertCircle size={12}/> Fatura Bekleniyor</div>
                         )}
                         <select 
-                          onChange={(e) => { if(e.target.value === "fatura") setInvoiceOrder(ord); e.target.value = ""; }}
+                          onChange={(e) => { 
+                            if(e.target.value === "fatura") setInvoiceOrder(ord); 
+                            else if(e.target.value === "bilgiler") setBillingInfoOrder(ord);
+                            e.target.value = ""; 
+                          }}
                           className="w-full border border-gray-300 rounded p-1 text-[10px] text-gray-700 outline-none hover:border-gray-400 cursor-pointer"
                         >
                           <option value="">Fatura İşlemleri ▾</option>
-                          <option value="fatura">Fatura Oluştur</option>
+                          <option value="bilgiler">Fatura Bilgilerini Görüntüle</option>
+                          <option value="fatura">Hızlı Fatura Oluştur (EDM)</option>
                         </select>
                       </td>
                       
@@ -331,7 +341,9 @@ export default function AdminSiparislerTrendyol() {
                             {ord.status === "Kargoda" && (
                               <button onClick={() => updateOrderStatus(ord.id, "Teslim Edildi")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b text-emerald-600 font-bold">Teslim Edildi İşaretle</button>
                             )}
-                            <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması İle Gönder</button>
+                            {ord.carrier !== "HepsiJet" && (
+                              <button onClick={() => useOrderStore.getState().updateCarrier(ord.id, "HepsiJet")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">HepsiJet'e Ata</button>
+                            )}
                             <button onClick={() => updateOrderStatus(ord.id, "İptal Edildi")} className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600 border-b">İptal Et</button>
                             <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mesafeli Satış Sözleşmesi</button>
                             <button className="w-full text-left px-3 py-2 hover:bg-gray-50">Ön Bilgilendirme Formu</button>

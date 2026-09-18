@@ -60,6 +60,7 @@ interface OrderStore {
   updateOrderStatus: (orderId: string, status: OrderStatus, note?: string) => Promise<void>;
   bulkUpdateStatus: (orderIds: string[], status: OrderStatus) => Promise<void>;
   updateTrackingNumber: (orderId: string, trackingNumber: string) => Promise<void>;
+  updateCarrier: (orderId: string, carrier: string) => Promise<void>;
   updateAdminNote: (orderId: string, note: string) => Promise<void>;
   deleteOrder: (orderId: string) => Promise<void>;
   getOrdersByEmail: (email: string) => OrderRecord[];
@@ -154,6 +155,21 @@ export const useOrderStore = create<OrderStore>()((set, get) => ({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingNumber })
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  },
+
+  updateCarrier: async (orderId, carrier) => {
+    try {
+      set((s) => ({
+        orders: s.orders.map((o) => (o.id === orderId ? { ...o, carrier } : o))
+      }));
+      await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ carrier })
       });
     } catch (error) {
       console.error(error);

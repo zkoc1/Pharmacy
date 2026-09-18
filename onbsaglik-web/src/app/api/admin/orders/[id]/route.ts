@@ -26,6 +26,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.status !== undefined) updates.status = body.status;
   if (body.trackingNumber !== undefined) updates.tracking_number = body.trackingNumber;
   if (body.adminNote !== undefined) updates.admin_note = body.adminNote;
+  if (body.carrier !== undefined) updates.carrier = body.carrier;
   
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ success: true });
