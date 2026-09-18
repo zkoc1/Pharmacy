@@ -23,6 +23,8 @@ export async function GET(req: Request) {
       marketPrice: data.market_price,
       vatRate: data.vat_rate,
       trendyolLink: data.trendyol_link,
+      longDescription: data.long_description,
+      ingredients: data.ingredients,
       images: typeof data.images === 'string' ? (data.images.startsWith('[') ? JSON.parse(data.images) : data.images.split(',')) : (data.images || []),
     });
   }
@@ -44,6 +46,8 @@ export async function GET(req: Request) {
     marketPrice: p.market_price,
     vatRate: p.vat_rate,
     trendyolLink: p.trendyol_link,
+    longDescription: p.long_description,
+    ingredients: p.ingredients,
     images: typeof p.images === 'string' ? (p.images.startsWith('[') ? JSON.parse(p.images) : p.images.split(',')) : (p.images || []),
   }));
 

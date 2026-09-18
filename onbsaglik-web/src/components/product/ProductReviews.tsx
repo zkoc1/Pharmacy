@@ -1,12 +1,7 @@
-/**
- * Müşteri Yorum Sistemi Bileşeni — ProductReviews
- * Ürün için mevcut müşteri yorumlarını listeler ve yeni yorum ekleme formu sunar.
- */
 "use client";
 
 import { useState, useEffect } from "react";
 import { Star, MessageSquare, CheckCircle2, User, Send, ThumbsUp } from "lucide-react";
-import { useReviewStore, Review } from "@/stores/reviewStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useAccountExtrasStore } from "@/stores/accountExtrasStore";
@@ -14,6 +9,14 @@ import { useAccountExtrasStore } from "@/stores/accountExtrasStore";
 interface Props {
   productSlug: string;
   productId?: number;
+}
+
+interface DbReview {
+  id: string;
+  user_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
 }
 
 const RATING_LABELS: Record<number, string> = {
@@ -36,8 +39,8 @@ export default function ProductReviews({ productSlug, productId }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const [rewardMsg, setRewardMsg] = useState("");
 
-  const reviews = useReviewStore((s) => s.reviews);
-  const addReview = useReviewStore((s) => s.addReview);
+  const [productReviews, setProductReviews] = useState<DbReview[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const userEmail = useCartStore((s) => s.userEmail);
   const getOrdersByEmail = useOrderStore((s) => s.getOrdersByEmail);
@@ -45,9 +48,19 @@ export default function ProductReviews({ productSlug, productId }: Props) {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (productId) {
+      fetch(`/api/reviews?productId=${productId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.reviews) setProductReviews(data.reviews);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [productId]);
 
-  const productReviews = mounted ? reviews.filter((r) => r.productSlug === productSlug) : [];
   const reviewCount = productReviews.length;
   const averageRating =
     reviewCount > 0
@@ -57,7 +70,7 @@ export default function ProductReviews({ productSlug, productId }: Props) {
   const userOrders = mounted && userEmail !== "guest" ? getOrdersByEmail(userEmail) : [];
   const hasPurchased = mounted && productId ? userOrders.some((o) => o.status === "Teslim Edildi" && o.items.some((i) => i.id === productId)) : false;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setRewardMsg("");
@@ -67,165 +80,123 @@ export default function ProductReviews({ productSlug, productId }: Props) {
       return;
     }
 
-    if (!authorName.trim()) {
-      setErrorMsg("Lütfen adınızı ve soyadınızı giriniz.");
+    if (!authorName.trim() || !comment.trim() || rating < 1 || rating > 5) {
+      setErrorMsg("Lütfen tüm alanları geçerli şekilde doldurunuz.");
       return;
     }
 
-    if (!comment.trim()) {
-      setErrorMsg("Lütfen ürün hakkındaki yorumunuzu yazınız.");
-      return;
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: productId,
+          user_email: email.trim() || userEmail || "anon",
+          user_name: authorName.trim(),
+          rating,
+          comment: comment.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsSuccess(true);
+        if (userEmail && userEmail !== "guest") {
+          const rewardCode = grantReviewReward(userEmail);
+          setRewardMsg(`Tebrikler! Yorumunuz onaylandığında 5 TL hediye çekiniz tanımlanacaktır. Referans Kodunuz: ${rewardCode}`);
+        }
+        setAuthorName("");
+        setEmail("");
+        setComment("");
+        setRating(5);
+        setTimeout(() => {
+          setIsSuccess(false);
+          setIsFormOpen(false);
+          setRewardMsg("");
+        }, 5000);
+      } else {
+        setErrorMsg(data.error || "Yorum gönderilirken bir hata oluştu.");
+      }
+    } catch (err) {
+      setErrorMsg("Sunucuya bağlanılamadı.");
     }
-
-    if (rating < 1 || rating > 5) {
-      setErrorMsg("Lütfen 1 ile 5 arasında bir puan veriniz.");
-      return;
-    }
-
-    addReview({
-      productSlug,
-      productId,
-      authorName: authorName.trim(),
-      email: email.trim() || undefined,
-      rating,
-      comment: comment.trim(),
-    });
-
-    if (userEmail && userEmail !== "guest") {
-      const rewardCode = grantReviewReward(userEmail);
-      setRewardMsg(`Tebrikler! Yorumunuz onaylandı ve 5 TL hediye çekiniz tanımlandı. Kodunuz: ${rewardCode}`);
-    }
-
-    setAuthorName("");
-    setEmail("");
-    setComment("");
-    setRating(5);
-    setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      setIsFormOpen(false);
-      setRewardMsg("");
-    }, 5000);
   };
 
   const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return new Intl.DateTimeFormat("tr-TR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(date);
-    } catch {
-      return dateString;
-    }
+    return new Date(dateString).toLocaleDateString("tr-TR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
+  if (!mounted || loading) return <div className="py-8 text-center text-sm text-gray-500">Yorumlar yükleniyor...</div>;
+
   return (
-    <div className="card mt-8" style={{ padding: "32px" }}>
-      {/* Başlık ve Özet Alanı */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 gap-6" style={{ borderBottom: "1px solid var(--color-border)" }}>
+    <div className="mt-12 bg-white rounded-3xl border border-slate-100 shadow-sm p-6 md:p-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <MessageSquare size={22} style={{ color: "var(--color-primary)" }} />
-              Müşteri Değerlendirmeleri
-            </h2>
-            <span
-              className="badge"
-              style={{
-                background: "var(--color-bg)",
-                color: "var(--color-text)",
-                border: "1px solid var(--color-border)",
-                fontWeight: 600,
-              }}
-            >
-              {reviewCount} Yorum
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Müşteri Yorumları</h2>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center text-amber-500">
+              <Star size={20} fill="#f59e0b" stroke="#f59e0b" />
+              <span className="ml-1.5 text-lg font-bold text-slate-900">
+                {averageRating > 0 ? averageRating.toFixed(1) : "0.0"}
+              </span>
+            </div>
+            <span className="text-sm font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+              {reviewCount} Değerlendirme
             </span>
           </div>
-          <p style={{ fontSize: "14px", color: "var(--color-text-muted)", margin: 0 }}>
-            Bu ürünü satın alan müşterilerimizin gerçek deneyimleri ve puanları.
-          </p>
         </div>
 
-        {/* Puan ve Yorum Yap Butonu */}
-        <div className="flex flex-wrap items-center gap-4">
-          {reviewCount > 0 ? (
-            <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-              <div className="text-3xl font-extrabold" style={{ color: "var(--color-primary)" }}>
-                {averageRating}
-              </div>
-              <div>
-                <div className="flex text-amber-400">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      size={16}
-                      fill={star <= Math.round(averageRating) ? "#f59e0b" : "none"}
-                      stroke="#f59e0b"
-                    />
-                  ))}
-                </div>
-                <div style={{ fontSize: "12px", color: "var(--color-text-muted)" }}>
-                  5 üzerinden ortalama
-                </div>
-              </div>
-            </div>
-          ) : null}
-
+        {!isFormOpen && (
           <button
-            onClick={() => setIsFormOpen(!isFormOpen)}
+            onClick={() => setIsFormOpen(true)}
             className="btn-primary"
             style={{ fontSize: "14px", padding: "10px 20px" }}
           >
-            {isFormOpen ? "Formu Kapat" : "Yorum Yap"}
+            Yorum Yap
           </button>
-        </div>
+        )}
       </div>
 
-      {/* Yorum Ekleme Formu */}
       {isFormOpen && (
-        <div
-          className="mb-10 p-6 rounded-2xl transition-all"
-          style={{
-            background: "var(--gradient-card)",
-            border: "2px solid rgba(16, 185, 129, 0.2)",
-          }}
-        >
-          <h3 className="text-base font-bold mb-4 flex items-center gap-2">
-            ✍️ Ürünü Değerlendirin
-          </h3>
+        <div className="mb-10 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <User size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800">Ürünü Değerlendir</h3>
+              <p className="text-xs text-slate-500">Deneyiminizi diğer müşterilerle paylaşın.</p>
+            </div>
+          </div>
 
           {isSuccess ? (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex flex-col gap-2 text-sm">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 size={20} className="text-emerald-600 flex-shrink-0" />
-                <span>Yorumunuz başarıyla kaydedildi! Teşekkür ederiz.</span>
-              </div>
+            <div className="bg-emerald-50 text-emerald-800 p-4 rounded-xl border border-emerald-200 text-center animate-in fade-in zoom-in duration-300">
+              <CheckCircle2 size={32} className="mx-auto mb-2 text-emerald-600" />
+              <h4 className="font-bold mb-1">Teşekkürler!</h4>
+              <p className="text-sm">Yorumunuz başarıyla alındı ve yönetici onayına gönderildi.</p>
               {rewardMsg && (
-                <div className="font-semibold text-emerald-700 pl-8">
-                  🎁 {rewardMsg}
+                <div className="mt-3 bg-white p-3 rounded-lg border border-emerald-100 text-xs font-semibold text-emerald-700">
+                  {rewardMsg}
                 </div>
               )}
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {errorMsg && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-lg">
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg border border-red-100 text-sm font-medium">
                   {errorMsg}
                 </div>
               )}
 
-              {/* Yıldız Puanlama */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  Puanınız *
-                </label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <label className="text-sm font-bold text-slate-700 w-32">Puanınız</label>
                 <div className="flex items-center gap-3">
-                  <div className="flex gap-1">
+                  <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => {
-                      const activeStar = hoverRating > 0 ? hoverRating : rating;
-                      const isFilled = star <= activeStar;
+                      const isFilled = (hoverRating || rating) >= star;
                       return (
                         <button
                           key={star}
@@ -234,189 +205,75 @@ export default function ProductReviews({ productSlug, productId }: Props) {
                           onMouseEnter={() => setHoverRating(star)}
                           onMouseLeave={() => setHoverRating(0)}
                           className="p-1 text-slate-300 hover:scale-110 transition-transform focus:outline-none"
-                          aria-label={`${star} yıldız`}
                         >
-                          <Star
-                            size={28}
-                            fill={isFilled ? "#f59e0b" : "none"}
-                            stroke={isFilled ? "#f59e0b" : "#cbd5e1"}
-                          />
+                          <Star size={28} fill={isFilled ? "#f59e0b" : "none"} stroke={isFilled ? "#f59e0b" : "#cbd5e1"} />
                         </button>
                       );
                     })}
                   </div>
-                  <span className="text-sm font-semibold text-amber-600">
-                    {RATING_LABELS[hoverRating || rating]}
-                  </span>
+                  <span className="text-sm font-semibold text-amber-600">{RATING_LABELS[hoverRating || rating]}</span>
                 </div>
               </div>
 
-              {/* İsim & E-posta */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Adınız Soyadınız *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Örn: Ahmet Yılmaz"
-                    value={authorName}
-                    onChange={(e) => setAuthorName(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      background: "white",
-                      fontSize: "14px",
-                      outline: "none",
-                    }}
-                  />
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Adınız Soyadınız *</label>
+                  <input type="text" required value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    E-posta Adresiniz <span className="text-slate-400 font-normal">(Yayınlanmaz, opsiyonel)</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="ahmet@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px 14px",
-                      border: "1px solid var(--color-border)",
-                      borderRadius: "var(--radius-md)",
-                      background: "white",
-                      fontSize: "14px",
-                      outline: "none",
-                    }}
-                  />
+                  <label className="block text-xs font-bold text-slate-500 mb-1">E-posta Adresiniz (Opsiyonel)</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
                 </div>
               </div>
 
-              {/* Yorum Metni */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  Yorumunuz *
-                </label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="Ürünün etkisi, kargo hızı ve paketlemesi hakkındaki deneyimlerinizi paylaşın..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "10px 14px",
-                    border: "1px solid var(--color-border)",
-                    borderRadius: "var(--radius-md)",
-                    background: "white",
-                    fontSize: "14px",
-                    outline: "none",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                  }}
-                />
+                <label className="block text-xs font-bold text-slate-500 mb-1">Yorumunuz *</label>
+                <textarea rows={4} required value={comment} onChange={(e) => setComment(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="btn-outline"
-                  style={{ fontSize: "14px", padding: "10px 18px" }}
-                >
-                  Vazgeç
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ fontSize: "14px", padding: "10px 22px" }}
-                >
-                  <Send size={15} />
-                  Yorumu Gönder
-                </button>
+                <button type="button" onClick={() => setIsFormOpen(false)} className="btn-outline px-4 py-2 text-sm">Vazgeç</button>
+                <button type="submit" className="btn-primary px-5 py-2 text-sm flex items-center gap-1"><Send size={15} /> Gönder</button>
               </div>
             </form>
           )}
         </div>
       )}
 
-      {/* Yorumlar Listesi */}
       {productReviews.length === 0 ? (
         <div className="text-center py-12 px-4 rounded-xl bg-slate-50 border border-dashed border-slate-200">
           <MessageSquare size={44} className="mx-auto text-slate-300 mb-3" />
-          <h3 className="text-base font-semibold text-slate-700 mb-1">
-            Henüz yorum yok. İlk yorumu siz yapın!
-          </h3>
-          <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">
-            Bu ürün hakkında henüz bir değerlendirme yapılmamış. Deneyiminizi ilk siz paylaşın.
-          </p>
-          {!isFormOpen && (
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="btn-primary"
-              style={{ fontSize: "13px", padding: "8px 18px" }}
-            >
-              İlk Yorumu Yaz
-            </button>
-          )}
+          <h3 className="text-base font-semibold text-slate-700 mb-1">Henüz yorum yok. İlk yorumu siz yapın!</h3>
         </div>
       ) : (
         <div className="space-y-4">
-          {productReviews.map((item: Review) => (
-            <div
-              key={item.id}
-              className="p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          {productReviews.map((item: DbReview) => (
+            <div key={item.id} className="p-5 rounded-xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
-                    style={{
-                      background: "rgba(16, 185, 129, 0.12)",
-                      color: "var(--color-primary-dark)",
-                    }}
-                  >
-                    {item.authorName.charAt(0).toUpperCase()}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-emerald-50 text-emerald-700">
+                    {item.user_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <div className="font-semibold text-sm text-slate-900 flex items-center gap-2">
-                      {item.authorName}
+                      {item.user_name}
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                         <CheckCircle2 size={12} className="text-emerald-600" /> Onaylı Alıcı
                       </span>
                     </div>
-                    <div className="text-xs text-slate-400">
-                      {formatDate(item.createdAt)}
-                    </div>
+                    <div className="text-xs text-slate-400">{formatDate(item.created_at)}</div>
                   </div>
                 </div>
-
-                {/* Yıldız Gösterimi */}
                 <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">
                   <div className="flex text-amber-500">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        size={14}
-                        fill={star <= item.rating ? "#f59e0b" : "none"}
-                        stroke="#f59e0b"
-                      />
+                      <Star key={star} size={14} fill={star <= item.rating ? "#f59e0b" : "none"} stroke="#f59e0b" />
                     ))}
                   </div>
-                  <span className="text-xs font-bold text-amber-800 ml-1">
-                    {item.rating}/5
-                  </span>
+                  <span className="text-xs font-bold text-amber-800 ml-1">{item.rating}/5</span>
                 </div>
               </div>
-
-              {/* Yorum Metni */}
-              <p className="text-sm text-slate-700 leading-relaxed pl-13">
-                {item.comment}
-              </p>
+              <p className="text-sm text-slate-700 leading-relaxed pl-13">{item.comment}</p>
             </div>
           ))}
         </div>

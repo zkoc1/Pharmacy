@@ -43,6 +43,8 @@ export async function GET() {
     marketPrice: p.market_price,
     vatRate: p.vat_rate,
     trendyolLink: p.trendyol_link,
+    longDescription: p.long_description,
+    ingredients: p.ingredients,
     images: typeof p.images === 'string' ? (p.images.startsWith('[') ? JSON.parse(p.images) : p.images.split(',')) : (p.images || []),
   }));
 
@@ -64,14 +66,18 @@ export async function POST(req: Request) {
     market_price: body.marketPrice,
     vat_rate: body.vatRate,
     trendyol_link: body.trendyolLink,
+    long_description: body.longDescription,
+    ingredients: body.ingredients,
   };
   delete insertData.brandSlug;
   delete insertData.categorySlug;
   delete insertData.marketPrice;
   delete insertData.vatRate;
   delete insertData.trendyolLink;
-  delete insertData.description; // We didn't add description to table yet
-  delete insertData.desi; // We didn't add desi to table yet
+  delete insertData.longDescription;
+  delete insertData.ingredients;
+  delete insertData.description;
+  delete insertData.desi;
 
   const { data, error } = await supabase
     .from("products")

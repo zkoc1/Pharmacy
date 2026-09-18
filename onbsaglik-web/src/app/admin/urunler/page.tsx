@@ -36,13 +36,17 @@ export default function AdminUrunlerPage() {
     marketPrice: "",
     stock: "100",
     image: "",
-    barcode: ""
+    barcode: "",
+    longDescription: "",
+    ingredients: ""
   });
 
   // Edit Form State
   const [editPrice, setEditPrice] = useState("");
   const [editStock, setEditStock] = useState("");
   const [editMarketPrice, setEditMarketPrice] = useState("");
+  const [editLongDescription, setEditLongDescription] = useState("");
+  const [editIngredients, setEditIngredients] = useState("");
 
   // Notification
   const [toastMsg, setToastMsg] = useState("");
@@ -134,7 +138,8 @@ export default function AdminUrunlerPage() {
       images: newProd.image ? [newProd.image] : [],
       barcode: newProd.barcode,
       status: "active",
-      description: "Yeni eklenen ürün açıklaması.",
+      longDescription: newProd.longDescription,
+      ingredients: newProd.ingredients,
       desi: 1,
       trendyolLink: ""
     };
@@ -150,7 +155,7 @@ export default function AdminUrunlerPage() {
         addProduct(data.product);
         setShowAddModal(false);
         showToast("✅ Ürün başarıyla eklendi!");
-        setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", image: "", barcode: "" });
+        setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", image: "", barcode: "", longDescription: "", ingredients: "" });
       } else {
         alert("Hata: " + data.error);
       }
@@ -166,7 +171,9 @@ export default function AdminUrunlerPage() {
     const updates = {
       price: parseFloat(editPrice) || editingProduct.price,
       marketPrice: parseFloat(editMarketPrice) || editingProduct.marketPrice,
-      stock: parseInt(editStock) || editingProduct.stock
+      stock: parseInt(editStock) || editingProduct.stock,
+      longDescription: editLongDescription || editingProduct.longDescription,
+      ingredients: editIngredients || editingProduct.ingredients,
     };
 
     try {
@@ -390,6 +397,8 @@ export default function AdminUrunlerPage() {
                               setEditPrice(String(p.price));
                               setEditMarketPrice(String(p.marketPrice || ""));
                               setEditStock(String(p.stock));
+                              setEditLongDescription(p.longDescription || "");
+                              setEditIngredients(p.ingredients || "");
                             }}
                             className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
                             title="Düzenle"
@@ -472,6 +481,16 @@ export default function AdminUrunlerPage() {
                 </div>
 
                 <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Açıklaması</label>
+                  <textarea rows={3} value={newProd.longDescription} onChange={e => setNewProd({...newProd, longDescription: e.target.value})} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Ürün detaylı açıklaması..." />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Öne Çıkan Özellikler / İçindekiler</label>
+                  <textarea rows={3} value={newProd.ingredients} onChange={e => setNewProd({...newProd, ingredients: e.target.value})} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Özellik 1&#10;Özellik 2&#10;Gibi alt alta yazabilirsiniz..." />
+                </div>
+
+                <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Görseli (Dosya Seçin)</label>
                   <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
                   {uploading && <p className="text-xs text-sky-600 mt-1 font-bold animate-pulse">Resim yükleniyor, lütfen bekleyin...</p>}
@@ -517,8 +536,18 @@ export default function AdminUrunlerPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-gray-700 mb-1">Stok Miktarı</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Stok Miktarı</label>
                 <input required type="number" value={editStock} onChange={e => setEditStock(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-sky-500 outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Açıklaması</label>
+                <textarea rows={3} value={editLongDescription} onChange={e => setEditLongDescription(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Öne Çıkan Özellikler</label>
+                <textarea rows={3} value={editIngredients} onChange={e => setEditIngredients(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
               </div>
 
               <div className="pt-2 flex gap-2">

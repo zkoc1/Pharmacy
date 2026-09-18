@@ -53,8 +53,15 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     updateData.trendyol_link = updateData.trendyolLink;
     delete updateData.trendyolLink;
   }
-  delete updateData.description; // We didn't add description to table yet
-  delete updateData.desi; // We didn't add desi to table yet
+  if (updateData.longDescription !== undefined) {
+    updateData.long_description = updateData.longDescription;
+    delete updateData.longDescription;
+  }
+  if (updateData.ingredients !== undefined) {
+    updateData.ingredients = updateData.ingredients;
+  }
+  delete updateData.description;
+  delete updateData.desi;
 
   // Önce ürünün eski fiyatını alalım
   const { data: oldProduct } = await supabase.from("products").select("name, price, slug").eq("id", id).single();
