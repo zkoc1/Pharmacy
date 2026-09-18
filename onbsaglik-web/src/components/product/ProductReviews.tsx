@@ -5,6 +5,7 @@ import { Star, MessageSquare, CheckCircle2, User, Send, ThumbsUp } from "lucide-
 import { useCartStore } from "@/stores/cartStore";
 import { useOrderStore } from "@/stores/orderStore";
 import { useAccountExtrasStore } from "@/stores/accountExtrasStore";
+import { useSession } from "next-auth/react";
 
 interface Props {
   productSlug: string;
@@ -28,6 +29,7 @@ const RATING_LABELS: Record<number, string> = {
 };
 
 export default function ProductReviews({ productSlug, productId }: Props) {
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [authorName, setAuthorName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,6 +38,7 @@ export default function ProductReviews({ productSlug, productId }: Props) {
   const [comment, setComment] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [rewardMsg, setRewardMsg] = useState("");
 
@@ -60,6 +63,13 @@ export default function ProductReviews({ productSlug, productId }: Props) {
       setLoading(false);
     }
   }, [productId]);
+
+  useEffect(() => {
+    if (session?.user && !authorName) {
+      setAuthorName(session.user.name || "");
+      setEmail(session.user.email || "");
+    }
+  }, [session, authorName]);
 
   const reviewCount = productReviews.length;
   const averageRating =
@@ -86,13 +96,19 @@ export default function ProductReviews({ productSlug, productId }: Props) {
     }
 
     try {
+      let finalName = authorName.trim();
+      if (isAnonymous) {
+        const parts = finalName.split(" ");
+        finalName = parts.map(p => p.charAt(0) + "*".repeat(p.length > 1 ? p.length - 1 : 3)).join(" ");
+      }
+
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product_id: productId,
           user_email: email.trim() || userEmail || "anon",
-          user_name: authorName.trim(),
+          user_name: finalName,
           rating,
           comment: comment.trim(),
         }),
@@ -219,6 +235,10 @@ export default function ProductReviews({ productSlug, productId }: Props) {
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">Adınız Soyadınız *</label>
                   <input type="text" required value={authorName} onChange={(e) => setAuthorName(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                    <input type="checkbox" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} className="w-4 h-4 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500" />
+                    <span className="text-xs text-slate-600 font-medium">İsmim gizli kalsın (Örn: A*** Y***)</span>
+                  </label>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 mb-1">E-posta Adresiniz (Opsiyonel)</label>

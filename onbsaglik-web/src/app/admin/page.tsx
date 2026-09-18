@@ -142,7 +142,10 @@ export default function AdminPaneli() {
             ⚙️ Ayarlar & Kuponlar
           </a>
           <a href="/admin/yorumlar" style={{ background: "#10b981", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
-            ⭐ Yorum Yönetimi
+            💬 Yorum Yönetimi
+          </a>
+          <a href="/admin/sorular" style={{ background: "#ec4899", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, textDecoration: "none" }}>
+            ❓ Soru & Cevap Yönetimi
           </a>
           <a href="/" style={{ background: "rgba(255,255,255,0.15)", color: "white", padding: "8px 16px", borderRadius: "999px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
             Siteye Dön &rarr;

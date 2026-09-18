@@ -20,9 +20,7 @@ export default function ProductTabs({ product }: Props) {
     { id: "description", label: "Ürün Açıklaması" },
     { id: "reviews", label: "Kullanıcı Yorumları" }, // Sayıyı apiden alabilirsek güzel olur, ama şimdilik statik text
     { id: "questions", label: "Soru ve Cevap" },
-    { id: "recommend", label: "Tavsiye Et" },
     { id: "returns", label: "İade Koşulları" },
-    { id: "callme", label: "Beni Ara" },
   ] as const;
 
   const scrollToContainer = () => {

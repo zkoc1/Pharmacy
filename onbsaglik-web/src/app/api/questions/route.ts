@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Eksik bilgi" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("product_questions")
     .insert({
       product_id,
@@ -41,13 +41,11 @@ export async function POST(req: Request) {
       user_name,
       question,
       is_approved: false
-    })
-    .select()
-    .single();
+    });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, question: data });
+  return NextResponse.json({ success: true });
 }

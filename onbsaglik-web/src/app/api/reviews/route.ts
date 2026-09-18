@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Eksik bilgi" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("product_reviews")
     .insert({
       product_id,
@@ -42,13 +42,11 @@ export async function POST(req: Request) {
       rating,
       comment,
       is_approved: false // Admin onayına düşmesi için varsayılan olarak false kaydediyoruz.
-    })
-    .select()
-    .single();
+    });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, review: data });
+  return NextResponse.json({ success: true });
 }
