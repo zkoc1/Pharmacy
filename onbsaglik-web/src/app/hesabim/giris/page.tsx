@@ -115,37 +115,7 @@ export default function GirisPage() {
               </button>
             </div>
 
-            {/* Sosyal Giriş Butonları */}
-            <div className="pt-6 text-center">
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-gray-200" />
-                <span className="flex-shrink mx-4 text-xs font-bold text-gray-400">veya</span>
-                <div className="flex-grow border-t border-gray-200" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                <button
-                  type="button"
-                  onClick={() => signIn('facebook', { callbackUrl: '/hesabim' })}
-                  className="flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
-                >
-                  f ile bağlan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => signIn('google', { callbackUrl: '/hesabim' })}
-                  className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-blue-500 font-black">G</span> ile bağlan
-                </button>
-                <button
-                  type="button"
-                  onClick={() => signIn('apple', { callbackUrl: '/hesabim' })}
-                  className="flex items-center justify-center gap-2 bg-black text-white py-2.5 px-3 rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
-                >
-                   ile bağlan
-                </button>
-              </div>
-            </div>
+            {/* Sosyal Giriş Butonları geçici olarak kaldırıldı */}
 
           </form>
         </div>

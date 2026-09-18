@@ -185,32 +185,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
             </a>
           </div>
 
-          {/* Sosyal Girişler (Görsel 1 Birebir: f ile bağlan | G ile bağlan |  ile bağlan) */}
-          <div className="grid grid-cols-3 gap-2 pt-4">
-            <button
-              type="button"
-              onClick={() => handleSocialSignIn("facebook")}
-              className="flex items-center justify-center gap-1.5 bg-[#4267B2] text-white font-extrabold py-2.5 px-2 rounded-xl text-xs hover:opacity-90 transition-opacity"
-            >
-              <span className="text-sm font-black">f</span> ile bağlan
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSocialSignIn("google")}
-              className="flex items-center justify-center gap-1.5 bg-white border border-blue-400 text-gray-700 font-extrabold py-2.5 px-2 rounded-xl text-xs hover:bg-gray-50 transition-colors"
-            >
-              <span className="text-blue-500 font-black text-sm">G</span> ile bağlan
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleSocialSignIn("apple")}
-              className="flex items-center justify-center gap-1.5 bg-black text-white font-extrabold py-2.5 px-2 rounded-xl text-xs hover:bg-gray-900 transition-colors"
-            >
-              <span className="text-sm"></span> ile bağlan
-            </button>
-          </div>
+          {/* Sosyal Girişler geçici olarak kaldırıldı */}
 
         </form>
 
