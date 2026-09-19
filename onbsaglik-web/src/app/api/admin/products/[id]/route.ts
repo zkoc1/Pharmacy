@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getServiceSupabase } from "@/lib/supabase";
 
 async function getAdminEmail(): Promise<string | null> {
@@ -63,7 +64,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   delete updateData.description;
   delete updateData.desi;
 
-  // Önce ürünün eski fiyatını alalım
   const { data: oldProduct } = await supabase.from("products").select("name, price, slug").eq("id", id).single();
 
   const { data, error } = await supabase
@@ -77,7 +77,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Fiyat Düşüşü Bildirimi (Favorilere Ekleyenlere)
   if (oldProduct && updateData.price && updateData.price < oldProduct.price) {
     const { data: favorites } = await supabase.from("favorites").select("user_email").eq("product_id", id);
     if (favorites && favorites.length > 0) {
@@ -88,7 +87,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       for (const fav of favorites) {
         if (fav.user_email) {
           const mailHtml = `
-            <h2>Müjde! Favorinizdeki Ürünün Fiyatı Düştü 🎉</h2>
+            <h2>Müjde! Favorinizdeki Ürünün Fiyatı Düştü 🥳</h2>
             <p>Merhaba,</p>
             <p>Favorilerinize eklediğiniz <strong>${oldProduct.name}</strong> ürününün fiyatı düştü!</p>
             <p>Eski Fiyat: <s>${oldProduct.price} TL</s></p>
@@ -109,6 +108,12 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   }
 
   await logAction(adminEmail, "ÜRÜN GÜNCELLENDİ", `Ürün #${id} güncellendi.`);
+
+  if (oldProduct?.slug) {
+    revalidatePath("/urun/" + oldProduct.slug);
+  }
+  revalidatePath("/");
+  revalidatePath("/urunler");
 
   return NextResponse.json({ success: true, product: data });
 }
