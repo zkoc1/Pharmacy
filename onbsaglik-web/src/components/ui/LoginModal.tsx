@@ -1,6 +1,5 @@
 /**
- * Ãœye GiriÅŸi & Ãœye KayÄ±t Pop-up Modal BileÅŸeni (GÃ¶rsel 1 Birebir)
- * Header'daki HesabÄ±m ikonuna tÄ±klandÄ±ÄŸÄ±nda ekran ortasÄ±nda aÃ§Ä±lÄ±r.
+ * Üye Girişi, Üye Kayıt ve Şifremi Unuttum Pop-up Modal Bileşeni
  */
 
 "use client";
@@ -8,7 +7,8 @@
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   isOpen: boolean;
@@ -17,30 +17,46 @@ interface Props {
 
 export default function LoginModal({ isOpen, onClose }: Props) {
   const router = useRouter();
-  const [isRegisterTab, setIsRegisterTab] = useState(false);
+  
+  // 0: Login, 1: Register, 2: Forgot Password (Email), 3: Forgot Password (OTP), 4: Forgot Password (New Password)
+  const [mode, setMode] = useState<0 | 1 | 2 | 3 | 4>(0);
 
   // Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  
   const [showPass, setShowPass] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const resetStates = () => {
     setError("");
+    setSuccessMsg("");
+    setLoading(false);
+  };
+
+  const handleClose = () => {
+    setMode(0);
+    resetStates();
+    onClose();
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    resetStates();
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // Mock admin logic
     if (cleanEmail === "admin@onbsaglik.com.tr") {
       localStorage.setItem("admin_session", JSON.stringify({ email: cleanEmail, role: "super_admin" }));
-      localStorage.setItem("user_session", JSON.stringify({ email: cleanEmail, name: "Sistem YÃ¶neticisi", role: "admin" }));
-    } else {
-      localStorage.setItem("user_session", JSON.stringify({ email: cleanEmail, name: cleanEmail.split("@")[0], role: "customer" }));
     }
 
     const res = await signIn("credentials", {
@@ -52,36 +68,82 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(false);
 
     if (res?.error) {
-      setError("E-posta adresi veya ÅŸifre hatalÄ±.");
+      setError("E-posta adresi veya şifre hatalı.");
     } else {
-      onClose();
+      handleClose();
       router.push("/hesabim");
       router.refresh();
     }
   };
 
-  const handleSocialSignIn = async (provider: "google" | "facebook" | "apple") => {
-    try {
-      if (provider === "google") {
-        window.open(
-          "https://accounts.google.com/o/oauth2/v2/auth?client_id=824105571389-dummy.apps.googleusercontent.com&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/google&response_type=code&scope=openid%20email%20profile",
-          "GoogleSignIn",
-          "width=500,height=600"
-        );
-      } else if (provider === "facebook") {
-        window.open("https://www.facebook.com/v18.0/dialog/oauth?client_id=dummy_app_id&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/facebook", "FacebookSignIn", "width=600,height=700");
-      } else if (provider === "apple") {
-        window.open("https://appleid.apple.com/auth/authorize?client_id=com.onbsaglik.web&redirect_uri=https://onbsaglik.com.tr/api/auth/callback/apple&response_type=code", "AppleSignIn", "width=600,height=700");
-      }
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    resetStates();
+    setLoading(true);
+    
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+    
+    setLoading(false);
+    
+    if (error) {
+      setError("Şifre sıfırlama e-postası gönderilirken bir hata oluştu: " + error.message);
+    } else {
+      setSuccessMsg("Şifre sıfırlama kodunuz e-posta adresinize gönderildi.");
+      setMode(3); // OTP step
+    }
+  };
 
-      localStorage.setItem("user_session", JSON.stringify({ email: `${provider}_user@onbsaglik.com.tr`, name: `${provider.toUpperCase()} KullanÄ±cÄ±sÄ±`, role: "customer" }));
-      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: "demoPassword123" });
-      onClose();
-      setTimeout(() => router.push("/hesabim"), 1000);
-    } catch {
-      await signIn("credentials", { redirect: false, email: `${provider}_user@onbsaglik.com.tr`, password: "demoPassword123" });
-      onClose();
-      router.push("/hesabim");
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    resetStates();
+    setLoading(true);
+    
+    const cleanEmail = email.trim().toLowerCase();
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: cleanEmail,
+      token: otpCode.trim(),
+      type: "recovery"
+    });
+    
+    setLoading(false);
+    
+    if (error) {
+      setError("Girdiğiniz kod hatalı veya süresi dolmuş.");
+    } else {
+      setSuccessMsg("Kod doğrulandı! Lütfen yeni şifrenizi belirleyin.");
+      setMode(4); // New Password step
+    }
+  };
+
+  const handleSetNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    resetStates();
+    setLoading(true);
+    
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    
+    setLoading(false);
+    
+    if (error) {
+      setError("Şifre güncellenirken bir hata oluştu: " + error.message);
+    } else {
+      setSuccessMsg("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.");
+      // Automatically log them in with next-auth now that supabase session is active
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: email.trim().toLowerCase(),
+        password: newPassword,
+      });
+      if (!res?.error) {
+         handleClose();
+         router.push("/hesabim");
+         router.refresh();
+      } else {
+         setMode(0); // Back to login just in case
+      }
     }
   };
 
@@ -89,107 +151,206 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl overflow-hidden">
         
-        {/* Kapat Butonu (GÃ¶rsel 1 Birebir) */}
+        {/* Kapat Butonu */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full bg-gray-100 transition-colors"
         >
           <X size={20} />
         </button>
 
-        {/* Tab BaÅŸlÄ±ÄŸÄ± */}
-        <div className="border-b pb-3 mb-6">
+        {/* Tab Başlığı */}
+        <div className="border-b pb-3 mb-6 flex items-center gap-3">
+          {mode >= 2 && (
+            <button onClick={() => { resetStates(); setMode(0); }} className="text-gray-500 hover:text-rose-500 transition-colors">
+              <ArrowLeft size={20} />
+            </button>
+          )}
           <h2 className="text-base font-extrabold text-rose-500 uppercase tracking-wider">
-            {isRegisterTab ? "ÃœYE KAYIT" : "ÃœYE GÄ°RÄ°ÅÄ°"}
+            {mode === 0 ? "ÜYE GİRİŞİ" : mode === 1 ? "ÜYE KAYIT" : "ŞİFREMİ UNUTTUM"}
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* E-posta */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">
-              E-posta
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="E-posta adresinizi giriniz"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
-            />
+        {error && (
+          <div className="p-3 mb-4 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-200">
+            ? {error}
           </div>
+        )}
+        {successMsg && (
+          <div className="p-3 mb-4 bg-green-50 text-green-700 text-xs font-bold rounded-xl border border-green-200">
+            ? {successMsg}
+          </div>
+        )}
 
-          {/* Åifre */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1">
-              Åifre
-            </label>
-            <div className="relative">
+        {/* ============================== */}
+        {/* MODE 0: LOGIN */}
+        {/* ============================== */}
+        {mode === 0 && (
+          <form onSubmit={handleLoginSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">E-posta</label>
               <input
-                type={showPass ? "text" : "password"}
+                type="email"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Åifrenizi giriniz"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400 pr-10"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-posta adresinizi giriniz"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
               />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Şifre</label>
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Şifrenizi giriniz"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-xs pt-1">
+              <label className="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded text-rose-500"
+                />
+                <span>Beni Hatırla</span>
+              </label>
+              <button type="button" onClick={() => { resetStates(); setMode(2); }} className="font-bold text-gray-700 hover:text-rose-500">
+                Şifremi Unuttum
               </button>
             </div>
-          </div>
-
-          {/* Beni HatÄ±rla & Åifremi Unuttum (GÃ¶rsel 1 Birebir) */}
-          <div className="flex items-center justify-between text-xs pt-1">
-            <label className="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded text-rose-500"
-              />
-              <span>Beni HatÄ±rla</span>
-            </label>
-            <a href="/hesabim/giris" onClick={onClose} className="font-bold text-gray-700 hover:text-rose-500">
-              Åifremi Unuttum
-            </a>
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-200">
-              âš ï¸ {error}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors"
+              >
+                {loading ? "YÜKLENİYOR..." : "GİRİŞ YAP"}
+              </button>
+              <a
+                href="/hesabim/kayit"
+                onClick={handleClose}
+                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider text-center border border-gray-200 transition-colors flex items-center justify-center"
+              >
+                ÜYE KAYIT &gt;
+              </a>
             </div>
-          )}
+          </form>
+        )}
 
-          {/* 2 Ana Buton: GÄ°RÄ°Å YAP | ÃœYE KAYIT > (GÃ¶rsel 1 Birebir) */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
+        {/* ============================== */}
+        {/* MODE 2: FORGOT PASSWORD (EMAIL) */}
+        {/* ============================== */}
+        {mode === 2 && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              Kayıtlı e-posta adresinizi girin. Size şifrenizi sıfırlamanız için 6 haneli bir kod göndereceğiz.
+            </p>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">E-posta</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-posta adresinizi giriniz"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
+              />
+            </div>
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors"
+              disabled={loading || !email}
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
             >
-              {loading ? "YÃœKLENÄ°YOR..." : "GÄ°RÄ°Å YAP"}
+              {loading ? "GÖNDERİLİYOR..." : "KOD GÖNDER"}
             </button>
+          </form>
+        )}
 
-            <a
-              href="/hesabim/kayit"
-              onClick={onClose}
-              className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider text-center border border-gray-200 transition-colors flex items-center justify-center"
+        {/* ============================== */}
+        {/* MODE 3: FORGOT PASSWORD (OTP) */}
+        {/* ============================== */}
+        {mode === 3 && (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              <strong className="text-gray-900">{email}</strong> adresine 6 haneli bir doğrulama kodu gönderdik. Lütfen kodu aşağıya girin.
+            </p>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Doğrulama Kodu</label>
+              <input
+                type="text"
+                required
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
+                placeholder="000000"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-center text-xl tracking-[0.5em] font-extrabold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading || otpCode.length < 6}
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
             >
-              ÃœYE KAYIT &gt;
-            </a>
-          </div>
+              {loading ? "DOĞRULANIYOR..." : "KODU DOĞRULA"}
+            </button>
+          </form>
+        )}
 
-          {/* Sosyal GiriÅŸler geÃ§ici olarak kaldÄ±rÄ±ldÄ± */}
-
-        </form>
+        {/* ============================== */}
+        {/* MODE 4: FORGOT PASSWORD (NEW PASS) */}
+        {/* ============================== */}
+        {mode === 4 && (
+          <form onSubmit={handleSetNewPassword} className="space-y-4">
+            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+              Lütfen yeni şifrenizi belirleyin.
+            </p>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="En az 6 karakter"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={loading || newPassword.length < 6}
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
+            >
+              {loading ? "KAYDEDİLİYOR..." : "ŞİFREYİ GÜNCELLE"}
+            </button>
+          </form>
+        )}
 
       </div>
     </div>
   );
 }
+
