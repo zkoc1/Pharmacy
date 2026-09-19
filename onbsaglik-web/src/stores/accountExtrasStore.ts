@@ -63,6 +63,11 @@ interface AccountExtrasState {
   transferNotifications: TransferNotification[];
   coupons: UserCoupon[];
 
+  // Yeni Backend Metotları
+  syncAlarms: () => Promise<void>;
+  removeStockAlertAsync: (id: string) => Promise<void>;
+  removePriceAlertAsync: (id: string) => Promise<void>;
+
   // Stok Alarmı Eylemleri
   addStockAlert: (alert: Omit<StockAlertItem, "id" | "createdAt">) => void;
   removeStockAlert: (id: string) => void;
@@ -87,35 +92,63 @@ interface AccountExtrasState {
 export const useAccountExtrasStore = create<AccountExtrasState>()(
   persist(
     (set, get) => ({
-      stockAlerts: [
-        {
-          id: "stock-1",
-          userEmail: "saglikonb@gmail.com",
-          productId: 540,
-          productSlug: "la-roche-posay-anthelios-uv-air-serum-spf50-50ml",
-          productName: "La Roche Posay Anthelios UV Air Serum SPF50+ 50 ml",
-          productImage: "/products/la-roche-posay-anthelios-uv-air-serum-50ml.png",
-          price: 549.5,
-          email: "saglikonb@gmail.com",
-          createdAt: "2026-08-27T10:00:00.000Z",
-        },
-      ],
-
-      priceAlerts: [
-        {
-          id: "price-1",
-          userEmail: "saglikonb@gmail.com",
-          productId: 546,
-          productSlug: "la-roche-posay-effaclar-duo-m-cilt-kusurlari-karsiti-bakim-kremi-40ml",
-          productName: "La Roche Posay Effaclar Duo+ M Cilt Kusurları Karşıtı Bakım Kremi 40 ml",
-          productImage: "/products/la-roche-posay-effaclar-duo-m-40ml.png",
-          currentPrice: 630,
-          targetPrice: 550,
-          createdAt: "2026-08-27T14:30:00.000Z",
-        },
-      ],
-
+      stockAlerts: [],
+      priceAlerts: [],
       transferNotifications: [],
+      coupons: [],
+
+      syncAlarms: async () => {
+        try {
+          const resPrice = await fetch("/api/user/alarms?type=price");
+          if (resPrice.ok) {
+            const data = await resPrice.json();
+            const mappedPrice = data.alarms.map((a: any) => ({
+              id: a.id,
+              userEmail: a.user_email,
+              productId: a.product_id,
+              productSlug: a.products?.slug,
+              productName: a.products?.name,
+              productImage: a.products?.images?.[0] || "/placeholder.png",
+              currentPrice: a.products?.price,
+              targetPrice: a.target_price,
+              createdAt: a.created_at,
+            }));
+            set({ priceAlerts: mappedPrice });
+          }
+
+          const resStock = await fetch("/api/user/alarms?type=stock");
+          if (resStock.ok) {
+            const data = await resStock.json();
+            const mappedStock = data.alarms.map((a: any) => ({
+              id: a.id,
+              userEmail: a.user_email,
+              productId: a.product_id,
+              productSlug: a.products?.slug,
+              productName: a.products?.name,
+              productImage: a.products?.images?.[0] || "/placeholder.png",
+              price: a.products?.price || 0,
+              createdAt: a.created_at,
+            }));
+            set({ stockAlerts: mappedStock });
+          }
+        } catch (error) {
+          console.error("Alarmlar eşitlenemedi", error);
+        }
+      },
+
+      removeStockAlertAsync: async (id) => {
+        try {
+          const res = await fetch(`/api/user/alarms?type=stock&id=${id}`, { method: "DELETE" });
+          if (res.ok) await get().syncAlarms();
+        } catch (e) {}
+      },
+
+      removePriceAlertAsync: async (id) => {
+        try {
+          const res = await fetch(`/api/user/alarms?type=price&id=${id}`, { method: "DELETE" });
+          if (res.ok) await get().syncAlarms();
+        } catch (e) {}
+      },
 
       coupons: [
         {

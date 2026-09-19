@@ -77,10 +77,10 @@ export default function HesabimPage() {
   const { items: favoriteItems } = useFavoritesStore();
   const {
     stockAlerts,
-    removeStockAlert,
+    removeStockAlertAsync,
     getUserStockAlerts,
     priceAlerts,
-    removePriceAlert,
+    removePriceAlertAsync,
     getUserPriceAlerts,
     transferNotifications,
     addTransferNotification,
@@ -88,13 +88,15 @@ export default function HesabimPage() {
     coupons,
     addCoupon,
     getUserCoupons,
+    syncAlarms
   } = useAccountExtrasStore();
 
   useEffect(() => {
     if (session?.user) {
       syncAddresses();
+      syncAlarms();
     }
-  }, [session, syncAddresses]);
+  }, [session, syncAddresses, syncAlarms]);
 
   // KULLANICIYA ÖZEL İZOLE EDİLMİŞ VERİLER
   const userOrders =
@@ -1175,7 +1177,7 @@ export default function HesabimPage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => removeStockAlert(item.id)}
+                      onClick={() => removeStockAlertAsync(item.id)}
                       className="text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       title="Alarmı Sil"
                     >
@@ -1417,7 +1419,7 @@ export default function HesabimPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => removePriceAlert(item.id)}
+                      onClick={() => removePriceAlertAsync(item.id)}
                       className="text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       title="Alarmı Sil"
                     >

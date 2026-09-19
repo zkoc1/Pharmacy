@@ -8,7 +8,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package, Gift, Zap, Check } from "lucide-react";
+import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package, Gift, Zap, Check, Bell } from "lucide-react";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 import { useCartStore } from "@/stores/cartStore";
@@ -34,6 +34,11 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAddCartModal, setShowAddCartModal] = useState(false);
+
+  // Alarms
+  const [priceAlarmTarget, setPriceAlarmTarget] = useState("");
+  const [showPriceAlarmInput, setShowPriceAlarmInput] = useState(false);
+  const [alarmMessage, setAlarmMessage] = useState("");
 
   const { addItem } = useCartStore();
   const { getProductCampaign } = useCampaignStore();
@@ -230,6 +235,53 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                 >
                   {comboAdded ? <Check size={16} /> : <Gift size={16} />} Birlikte Sepete Ekle ({formatPrice(comboTotal)})
                 </button>
+              </div>
+            )}
+
+            {/* ALARMS UI */}
+            <div className="flex items-center gap-3 mb-6">
+              {!isOutOfStock && (
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowPriceAlarmInput(!showPriceAlarmInput)}
+                    className="flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-emerald-600 border border-gray-200 px-4 py-2.5 rounded-xl transition-colors bg-white shadow-sm"
+                  >
+                    <Bell size={16} /> Fiyat Düşünce Haber Ver
+                  </button>
+                  {showPriceAlarmInput && (
+                    <div className="absolute top-full left-0 mt-2 p-3 bg-white border border-gray-200 rounded-xl shadow-lg z-20 w-64 flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-gray-700">Hedef Fiyat (TL)</label>
+                      <input 
+                        type="number" 
+                        value={priceAlarmTarget}
+                        onChange={(e) => setPriceAlarmTarget(e.target.value)}
+                        placeholder="Örn: 150"
+                        className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                      />
+                      <button 
+                        onClick={handleSetPriceAlarm}
+                        className="w-full bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-emerald-700"
+                      >
+                        Alarmı Kur
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {isOutOfStock && (
+                <button 
+                  onClick={handleSetStockAlarm}
+                  className="flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-emerald-600 border border-gray-200 px-4 py-2.5 rounded-xl transition-colors bg-white shadow-sm"
+                >
+                  <Bell size={16} /> Stok Gelince Haber Ver
+                </button>
+              )}
+            </div>
+
+            {alarmMessage && (
+              <div className="mb-6 p-3 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl text-xs font-bold flex items-center gap-2">
+                <Check size={16} /> {alarmMessage}
               </div>
             )}
 
