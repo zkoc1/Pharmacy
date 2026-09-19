@@ -70,7 +70,7 @@ export default function HesabimPage() {
   const userName = session?.user?.name || (isAdminUser ? 'Sistem Yöneticisi' : 'Değerli Müşterimiz');
 
   // Store'lar
-  const { addresses, addAddress, removeAddress, getUserAddresses } = useAddressStore();
+  const { addresses, addAddress, removeAddress, getUserAddresses, syncAddresses } = useAddressStore();
   const { cards, removeCard, getUserCards } = useCardStore();
   const { orders } = useOrderStore();
   const { reviews } = useReviewStore();
@@ -89,6 +89,12 @@ export default function HesabimPage() {
     addCoupon,
     getUserCoupons,
   } = useAccountExtrasStore();
+
+  useEffect(() => {
+    if (session?.user) {
+      syncAddresses();
+    }
+  }, [session, syncAddresses]);
 
   // KULLANICIYA ÖZEL İZOLE EDİLMİŞ VERİLER
   const userOrders =

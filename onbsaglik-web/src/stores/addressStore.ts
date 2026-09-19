@@ -1,79 +1,135 @@
-/**
- * Zustand ile mÃ¼ÅŸteri teslimat adresleri yÃ¶netimi â€” addressStore.ts
- * KullanÄ±cÄ± kimliÄŸine (userEmail) gÃ¶re kiÅŸiye Ã¶zel saklanÄ±r.
- * LocalStorage'a kalÄ±cÄ± kaydedilir.
- */
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export interface Address {
   id: string;
   userEmail?: string;
-  title: string; // Ev, Ä°ÅŸ, YazlÄ±k vb.
+  title: string;
   fullName: string;
   phone: string;
   city: string;
   district: string;
   neighborhood?: string;
-  fullAddress: string;
+  fullAddress: string; // db: address_line
   isDefault?: boolean;
 }
 
 interface AddressStore {
   addresses: Address[];
-  addAddress: (addr: Omit<Address, "id">) => Address;
+  loading: boolean;
+  setAddresses: (addresses: Address[]) => void;
+  syncAddresses: () => Promise<void>;
+  addAddressAsync: (addr: Omit<Address, "id">) => Promise<void>;
+  removeAddressAsync: (id: string) => Promise<void>;
+  updateAddressAsync: (id: string, updates: Partial<Address>) => Promise<void>;
+  // Geriye dönük uyumluluk için eski metotlar (mock olarak kalsın ama API cagırsın)
+  addAddress: (addr: Omit<Address, "id">) => void;
   removeAddress: (id: string) => void;
-  updateAddress: (id: string, addr: Partial<Address>) => void;
-  getDefaultAddress: (userEmail?: string) => Address | undefined;
   getUserAddresses: (userEmail?: string) => Address[];
 }
 
-export const useAddressStore = create<AddressStore>()(
-  persist(
-    (set, get) => ({
-      addresses: [],
+export const useAddressStore = create<AddressStore>()((set, get) => ({
+  addresses: [],
+  loading: false,
 
-      addAddress: (addr) => {
-        const newId = `addr-${Date.now()}`;
-        const userList = addr.userEmail
-          ? get().addresses.filter((a) => a.userEmail === addr.userEmail)
-          : get().addresses;
-        const isFirst = userList.length === 0;
-        const newAddr = { ...addr, id: newId, isDefault: isFirst || addr.isDefault };
-        set((s) => ({
-          addresses: [...s.addresses, newAddr],
+  setAddresses: (addresses) => set({ addresses }),
+
+  syncAddresses: async () => {
+    set({ loading: true });
+    try {
+      const res = await fetch("/api/user/addresses");
+      if (res.ok) {
+        const data = await res.json();
+        // Veritabanı yapısını store yapısına çevir
+        const mapped = data.addresses.map((a: any) => ({
+          id: a.id,
+          userEmail: a.user_email,
+          title: a.title,
+          fullName: a.full_name,
+          phone: a.phone,
+          city: a.city,
+          district: a.district,
+          fullAddress: a.address_line,
+          isDefault: a.is_default
         }));
-        return newAddr;
-      },
+        set({ addresses: mapped });
+      }
+    } catch (error) {
+      console.error("Adresler senkronize edilemedi:", error);
+    } finally {
+      set({ loading: false });
+    }
+  },
 
-      removeAddress: (id) =>
-        set((s) => ({
-          addresses: s.addresses.filter((a) => a.id !== id),
-        })),
+  addAddressAsync: async (addr) => {
+    try {
+      const res = await fetch("/api/user/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: addr.title,
+          full_name: addr.fullName,
+          phone: addr.phone,
+          city: addr.city,
+          district: addr.district,
+          address_line: addr.fullAddress,
+          is_default: addr.isDefault
+        }),
+      });
+      if (res.ok) {
+        await get().syncAddresses();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  },
 
-      updateAddress: (id, updates) =>
-        set((s) => ({
-          addresses: s.addresses.map((a) => (a.id === id ? { ...a, ...updates } : a)),
-        })),
+  removeAddressAsync: async (id) => {
+    try {
+      const res = await fetch(`/api/user/addresses/${id}`, { method: "DELETE" });
+      if (res.ok) await get().syncAddresses();
+    } catch (err) {
+      console.error(err);
+    }
+  },
 
-      getDefaultAddress: (userEmail?: string) => {
-        const list = userEmail
-          ? get().addresses.filter(
-              (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
-            )
-          : get().addresses;
-        return list.find((a) => a.isDefault) || list[0];
-      },
+  updateAddressAsync: async (id, updates) => {
+    try {
+      const res = await fetch(`/api/user/addresses/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: updates.title,
+          full_name: updates.fullName,
+          phone: updates.phone,
+          city: updates.city,
+          district: updates.district,
+          address_line: updates.fullAddress,
+          is_default: updates.isDefault
+        }),
+      });
+      if (res.ok) await get().syncAddresses();
+    } catch (err) {
+      console.error(err);
+    }
+  },
 
-      getUserAddresses: (userEmail?: string) => {
-        if (!userEmail) return get().addresses;
-        return get().addresses.filter(
-          (a) => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase()
-        );
-      },
-    }),
-    { name: "onbsaglik-addresses" }
-  )
-);
+  // Geriye dönük uyumluluk
+  addAddress: (addr) => {
+    get().addAddressAsync(addr);
+    // Hemen UI güncellensin diye geçici ekle
+    set((s) => ({ addresses: [...s.addresses, { ...addr, id: "temp-" + Date.now() }] }));
+  },
+  
+  removeAddress: (id) => {
+    get().removeAddressAsync(id);
+    set((s) => ({ addresses: s.addresses.filter(a => a.id !== id) }));
+  },
+
+  getUserAddresses: (userEmail) => {
+    if (!userEmail) return get().addresses;
+    return get().addresses.filter(a => !a.userEmail || a.userEmail.toLowerCase() === userEmail.toLowerCase());
+  }
+}));
+
