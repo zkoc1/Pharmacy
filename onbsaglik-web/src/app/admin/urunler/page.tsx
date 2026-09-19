@@ -28,14 +28,17 @@ export default function AdminUrunlerPage() {
   const [uploading, setUploading] = useState(false);
 
   // Add Form State
-  const [newProd, setNewProd] = useState({
+  const [newProd, setNewProd] = useState<{
+    name: string; brand: string; category: string; price: string; marketPrice: string;
+    stock: string; images: string[]; barcode: string; longDescription: string; ingredients: string;
+  }>({
     name: "",
     brand: "",
     category: "",
     price: "",
     marketPrice: "",
     stock: "100",
-    image: "",
+    images: [],
     barcode: "",
     longDescription: "",
     ingredients: ""
