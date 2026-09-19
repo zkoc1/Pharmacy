@@ -68,6 +68,9 @@ interface AccountExtrasState {
   removeStockAlertAsync: (id: string) => Promise<void>;
   removePriceAlertAsync: (id: string) => Promise<void>;
 
+  syncTransferNotifications: () => Promise<void>;
+  addTransferNotificationAsync: (notif: Omit<TransferNotification, "id" | "status" | "createdAt">) => Promise<void>;
+
   // Stok Alarmı Eylemleri
   addStockAlert: (alert: Omit<StockAlertItem, "id" | "createdAt">) => void;
   removeStockAlert: (id: string) => void;
@@ -150,6 +153,44 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         } catch (e) {}
       },
 
+      syncTransferNotifications: async () => {
+        try {
+          const res = await fetch("/api/user/transfer-notifications");
+          if (res.ok) {
+            const data = await res.json();
+            const mapped = data.notifications.map((n: any) => ({
+              id: n.id,
+              userEmail: n.user_email,
+              bankName: n.bank_name,
+              senderName: n.sender_name,
+              amount: n.amount,
+              transferDate: n.transfer_date,
+              status: n.status,
+              createdAt: new Date(n.created_at).toLocaleDateString("tr-TR"),
+            }));
+            set({ transferNotifications: mapped });
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      },
+
+      addTransferNotificationAsync: async (notif) => {
+        try {
+          const res = await fetch("/api/user/transfer-notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bank_name: notif.bankName,
+              sender_name: notif.senderName,
+              amount: notif.amount,
+              transfer_date: notif.transferDate
+            })
+          });
+          if (res.ok) await get().syncTransferNotifications();
+        } catch (e) {}
+      },
+
       coupons: [
         {
           id: "cp-1",
@@ -219,18 +260,9 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         );
       },
 
-      addTransferNotification: (notif) =>
-        set((s) => ({
-          transferNotifications: [
-            {
-              ...notif,
-              id: `HV-${Date.now().toString().slice(-6)}`,
-              status: "İnceleniyor",
-              createdAt: new Date().toLocaleDateString("tr-TR"),
-            },
-            ...s.transferNotifications,
-          ],
-        })),
+      addTransferNotification: (notif) => {
+        get().addTransferNotificationAsync(notif);
+      },
 
       getUserTransferNotifications: (userEmail?: string) => {
         if (!userEmail) return get().transferNotifications;

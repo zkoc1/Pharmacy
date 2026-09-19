@@ -72,7 +72,7 @@ export default function HesabimPage() {
 
   // Store'lar
   const { addresses, addAddress, removeAddress, getUserAddresses, syncAddresses } = useAddressStore();
-  const { cards, removeCard, getUserCards } = useCardStore();
+  const { cards, removeCard, getUserCards, syncCards } = useCardStore();
   const { orders } = useOrderStore();
   const { reviews } = useReviewStore();
   const { items: favoriteItems, syncWithServer: syncFavorites } = useFavoritesStore();
@@ -90,7 +90,8 @@ export default function HesabimPage() {
     coupons,
     addCoupon,
     getUserCoupons,
-    syncAlarms
+    syncAlarms,
+    syncTransferNotifications
   } = useAccountExtrasStore();
 
   useEffect(() => {
@@ -99,8 +100,10 @@ export default function HesabimPage() {
       syncAlarms();
       syncFavorites();
       syncCart();
+      syncCards();
+      syncTransferNotifications();
     }
-  }, [session, syncAddresses, syncAlarms, syncFavorites, syncCart]);
+  }, [session, syncAddresses, syncAlarms, syncFavorites, syncCart, syncCards, syncTransferNotifications]);
 
   // KULLANICIYA ÖZEL İZOLE EDİLMİŞ VERİLER
   const userOrders =
