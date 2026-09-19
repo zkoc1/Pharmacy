@@ -38,7 +38,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
   const resetStates = () => {
     setError("");
     setSuccessMsg("");
-    setLoading(false);
+    */ setLoading(false);
   };
 
   const handleClose = () => {
@@ -63,9 +63,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
       redirect: false,
       email: cleanEmail,
       password: password || "123456",
-    });
+    /*
 
-    setLoading(false);
+    */ setLoading(false);
 
     if (res?.error) {
       setError("E-posta adresi veya şifre hatalı.");
@@ -82,29 +82,30 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(true);
     
     const cleanEmail = email.trim().toLowerCase();
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+    const res = await fetch("/api/auth/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: cleanEmail }) /* const { error } = await res.json();
     
-    setLoading(false);
+    */ setLoading(false);
     
     if (error) {
-      setError("Şifre sıfırlama e-postası gönderilirken bir hata oluştu: " + error.message);
+      setError("Şifre sıfırlama e-postası gönderilirken bir hata oluştu: " + (typeof error === "string" ? error : (error as any)?.message || "Bilinmeyen hata"));
     } else {
       setSuccessMsg("Şifre sıfırlama kodunuz e-posta adresinize gönderildi.");
       setMode(3); // OTP step
     }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+    const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     resetStates();
     setLoading(true);
     
     const cleanEmail = email.trim().toLowerCase();
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: cleanEmail,
-      token: otpCode.trim(),
-      type: "recovery"
+    const res = await fetch("/api/auth/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail, token: otpCode.trim() })
     });
+    const { error } = await res.json();
     
     setLoading(false);
     
@@ -112,7 +113,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
       setError("Girdiğiniz kod hatalı veya süresi dolmuş.");
     } else {
       setSuccessMsg("Kod doğrulandı! Lütfen yeni şifrenizi belirleyin.");
-      setMode(4); // New Password step
+      setMode(4);
     }
   };
 
@@ -121,28 +122,31 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     resetStates();
     setLoading(true);
     
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
+    const cleanEmail = email.trim().toLowerCase();
+    const res = await fetch("/api/auth/update-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: cleanEmail, password: newPassword })
     });
+    const { error } = await res.json();
     
     setLoading(false);
     
     if (error) {
-      setError("Şifre güncellenirken bir hata oluştu: " + error.message);
+      setError("Şifre güncellenirken bir hata oluştu: " + (typeof error === "string" ? error : error?.message || "Bilinmeyen hata"));
     } else {
       setSuccessMsg("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.");
-      // Automatically log them in with next-auth now that supabase session is active
-      const res = await signIn("credentials", {
+      const loginRes = await signIn("credentials", {
         redirect: false,
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password: newPassword,
       });
-      if (!res?.error) {
+      if (!loginRes?.error) {
          handleClose();
          router.push("/hesabim");
          router.refresh();
       } else {
-         setMode(0); // Back to login just in case
+         setMode(0);
       }
     }
   };
@@ -353,4 +357,5 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     </div>
   );
 }
+
 
