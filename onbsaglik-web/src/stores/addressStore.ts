@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 
 import { create } from "zustand";
 
@@ -23,8 +23,8 @@ interface AddressStore {
   addAddressAsync: (addr: Omit<Address, "id">) => Promise<void>;
   removeAddressAsync: (id: string) => Promise<void>;
   updateAddressAsync: (id: string, updates: Partial<Address>) => Promise<void>;
-  // Geriye dönük uyumluluk için eski metotlar (mock olarak kalsın ama API cagırsın)
-  addAddress: (addr: Omit<Address, "id">) => void;
+  // Geriye dÃ¶nÃ¼k uyumluluk iÃ§in eski metotlar (mock olarak kalsÄ±n ama API cagÄ±rsÄ±n)
+  addAddress: (addr: Omit<Address, "id">) => Address;
   removeAddress: (id: string) => void;
   getUserAddresses: (userEmail?: string) => Address[];
 }
@@ -41,7 +41,7 @@ export const useAddressStore = create<AddressStore>()((set, get) => ({
       const res = await fetch("/api/user/addresses");
       if (res.ok) {
         const data = await res.json();
-        // Veritabanı yapısını store yapısına çevir
+        // VeritabanÄ± yapÄ±sÄ±nÄ± store yapÄ±sÄ±na Ã§evir
         const mapped = data.addresses.map((a: any) => ({
           id: a.id,
           userEmail: a.user_email,
@@ -115,11 +115,11 @@ export const useAddressStore = create<AddressStore>()((set, get) => ({
     }
   },
 
-  // Geriye dönük uyumluluk
+  // Geriye dÃ¶nÃ¼k uyumluluk
   addAddress: (addr) => {
     get().addAddressAsync(addr);
-    // Hemen UI güncellensin diye geçici ekle
-    set((s) => ({ addresses: [...s.addresses, { ...addr, id: "temp-" + Date.now() }] }));
+    // Hemen UI gÃ¼ncellensin diye geÃ§ici ekle
+    const newAddr = { ...addr, id: "temp-" + Date.now() }; set((s) => ({ addresses: [...s.addresses, newAddr] })); return newAddr;
   },
   
   removeAddress: (id) => {

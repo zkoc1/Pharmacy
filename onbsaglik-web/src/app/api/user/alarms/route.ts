@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+ï»¿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabase } from "@/lib/supabase";
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ alarms: data });
   }
 
-  return NextResponse.json({ error: "Geçersiz alarm tipi" }, { status: 400 });
+  return NextResponse.json({ error: "GeÃ§ersiz alarm tipi" }, { status: 400 });
 }
 
 export async function POST(req: Request) {
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, alarm: data[0] });
   }
 
-  return NextResponse.json({ error: "Geçersiz alarm tipi" }, { status: 400 });
+  return NextResponse.json({ error: "GeÃ§ersiz alarm tipi" }, { status: 400 });
 }
 
 export async function DELETE(req: Request) {

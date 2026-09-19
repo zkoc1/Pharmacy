@@ -1,7 +1,7 @@
-/**
- * Zustand ile Stok Alarmları, Fiyat Alarmları, Havale Bildirimleri ve Hediye Çekleri Yönetimi.
- * Kullanıcı kimliğine (userEmail) göre kişiye özel saklanır.
- * LocalStorage'a kalıcı kaydedilir (persist).
+﻿/**
+ * Zustand ile Stok AlarmlarÄ±, Fiyat AlarmlarÄ±, Havale Bildirimleri ve Hediye Ã‡ekleri YÃ¶netimi.
+ * KullanÄ±cÄ± kimliÄŸine (userEmail) gÃ¶re kiÅŸiye Ã¶zel saklanÄ±r.
+ * LocalStorage'a kalÄ±cÄ± kaydedilir (persist).
  */
 
 "use client";
@@ -42,7 +42,7 @@ export interface TransferNotification {
   amount: number;
   transferDate: string;
   note?: string;
-  status: "İnceleniyor" | "Onaylandı" | "Reddedildi";
+  status: "Ä°nceleniyor" | "OnaylandÄ±" | "Reddedildi";
   createdAt: string;
 }
 
@@ -63,7 +63,7 @@ interface AccountExtrasState {
   transferNotifications: TransferNotification[];
   coupons: UserCoupon[];
 
-  // Yeni Backend Metotları
+  // Yeni Backend MetotlarÄ±
   syncAlarms: () => Promise<void>;
   removeStockAlertAsync: (id: string) => Promise<void>;
   removePriceAlertAsync: (id: string) => Promise<void>;
@@ -71,12 +71,12 @@ interface AccountExtrasState {
   syncTransferNotifications: () => Promise<void>;
   addTransferNotificationAsync: (notif: Omit<TransferNotification, "id" | "status" | "createdAt">) => Promise<void>;
 
-  // Stok Alarmı Eylemleri
+  // Stok AlarmÄ± Eylemleri
   addStockAlert: (alert: Omit<StockAlertItem, "id" | "createdAt">) => void;
   removeStockAlert: (id: string) => void;
   getUserStockAlerts: (userEmail?: string) => StockAlertItem[];
 
-  // Fiyat Alarmı Eylemleri
+  // Fiyat AlarmÄ± Eylemleri
   addPriceAlert: (alert: Omit<PriceAlertItem, "id" | "createdAt">) => void;
   removePriceAlert: (id: string) => void;
   getUserPriceAlerts: (userEmail?: string) => PriceAlertItem[];
@@ -85,7 +85,7 @@ interface AccountExtrasState {
   addTransferNotification: (notif: Omit<TransferNotification, "id" | "status" | "createdAt">) => void;
   getUserTransferNotifications: (userEmail?: string) => TransferNotification[];
 
-  // Kupon / Hediye Çeki Eylemleri
+  // Kupon / Hediye Ã‡eki Eylemleri
   addCoupon: (code: string, userEmail?: string) => { success: boolean; message: string; coupon?: UserCoupon };
   useCoupon: (code: string) => void;
   getUserCoupons: (userEmail?: string) => UserCoupon[];
@@ -98,7 +98,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
       stockAlerts: [],
       priceAlerts: [],
       transferNotifications: [],
-      coupons: [],
+
 
       syncAlarms: async () => {
         try {
@@ -135,7 +135,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
             set({ stockAlerts: mappedStock });
           }
         } catch (error) {
-          console.error("Alarmlar eşitlenemedi", error);
+          console.error("Alarmlar eÅŸitlenemedi", error);
         }
       },
 
@@ -197,7 +197,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           code: "HOSGELDIN50",
           discountAmount: 50,
           minSpend: 250,
-          description: "Yeni üyelere özel 250 TL üzeri alışverişlerde 50 TL indirim",
+          description: "Yeni Ã¼yelere Ã¶zel 250 TL Ã¼zeri alÄ±ÅŸveriÅŸlerde 50 TL indirim",
           expireDate: "31.12.2026",
           isUsed: false,
         },
@@ -206,7 +206,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           code: "ONB100",
           discountAmount: 100,
           minSpend: 500,
-          description: "500 TL üzeri tüm siparişlerde 100 TL süper indirim",
+          description: "500 TL Ã¼zeri tÃ¼m sipariÅŸlerde 100 TL sÃ¼per indirim",
           expireDate: "30.09.2026",
           isUsed: false,
         },
@@ -277,16 +277,16 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           (c) => c.code === clean && (!userEmail || !c.userEmail || c.userEmail === userEmail)
         );
         if (existing) {
-          return { success: false, message: `"${clean}" kuponu zaten hesabınızda tanımlı.` };
+          return { success: false, message: `"${clean}" kuponu zaten hesabÄ±nÄ±zda tanÄ±mlÄ±.` };
         }
 
         const validCoupons: Record<string, { amount: number; min: number; desc: string }> = {
-          ONB100: { amount: 100, min: 500, desc: "500 TL üzeri 100 TL İndirim Kuponu" },
-          HOSGELDIN50: { amount: 50, min: 250, desc: "Hoş Geldin 50 TL İndirim Kuponu" },
-          SAGLIK20: { amount: 20, min: 100, desc: "Tüm Ürünlerde Geçerli 20 TL İndirim Kuponu" },
-          ECZANE150: { amount: 150, min: 750, desc: "Bahar Kampanyası 150 TL İndirim Kuponu" },
-          ILK100: { amount: 100, min: 500, desc: "İlk Siparişe Özel 100 TL İndirim" },
-          YORUM5: { amount: 5, min: 0, desc: "Yorum Ödülü 5 TL Hediye Çeki" },
+          ONB100: { amount: 100, min: 500, desc: "500 TL Ã¼zeri 100 TL Ä°ndirim Kuponu" },
+          HOSGELDIN50: { amount: 50, min: 250, desc: "HoÅŸ Geldin 50 TL Ä°ndirim Kuponu" },
+          SAGLIK20: { amount: 20, min: 100, desc: "TÃ¼m ÃœrÃ¼nlerde GeÃ§erli 20 TL Ä°ndirim Kuponu" },
+          ECZANE150: { amount: 150, min: 750, desc: "Bahar KampanyasÄ± 150 TL Ä°ndirim Kuponu" },
+          ILK100: { amount: 100, min: 500, desc: "Ä°lk SipariÅŸe Ã–zel 100 TL Ä°ndirim" },
+          YORUM5: { amount: 5, min: 0, desc: "Yorum Ã–dÃ¼lÃ¼ 5 TL Hediye Ã‡eki" },
         };
 
         if (validCoupons[clean]) {
@@ -302,10 +302,10 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
             isUsed: false,
           };
           set((s) => ({ coupons: [newCoupon, ...s.coupons] }));
-          return { success: true, message: `"${clean}" hediye çeki başarıyla hesabınıza eklendi! 🎉`, coupon: newCoupon };
+          return { success: true, message: `"${clean}" hediye Ã§eki baÅŸarÄ±yla hesabÄ±nÄ±za eklendi! ğŸ‰`, coupon: newCoupon };
         }
 
-        return { success: false, message: "Geçersiz veya süresi dolmuş bir kupon kodu girdiniz." };
+        return { success: false, message: "GeÃ§ersiz veya sÃ¼resi dolmuÅŸ bir kupon kodu girdiniz." };
       },
 
       grantReviewReward: (userEmail: string) => {
@@ -316,7 +316,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
           code: rewardCode,
           discountAmount: 5,
           minSpend: 0,
-          description: "Yorum Ödülü 5 TL Hediye Çeki",
+          description: "Yorum Ã–dÃ¼lÃ¼ 5 TL Hediye Ã‡eki",
           expireDate: "31.12.2026",
           isUsed: false,
         };

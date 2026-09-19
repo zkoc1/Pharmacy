@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabase } from "@/lib/supabase";
@@ -10,7 +10,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("cart_items")
     .select("*, products(*)")
-    .eq("user_email", session.user.email);
+    .eq("user_email", session.user!.email!);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -25,15 +25,15 @@ export async function POST(req: Request) {
   const { items } = body; // Array of { product_id, quantity }
 
   if (!Array.isArray(items)) {
-    return NextResponse.json({ error: "Ge�ersiz format" }, { status: 400 });
+    return NextResponse.json({ error: "Geçersiz format" }, { status: 400 });
   }
 
   // WIPE AND INSERT (Basit Senkronizasyon)
-  await supabase.from("cart_items").delete().eq("user_email", session.user.email);
+  await supabase.from("cart_items").delete().eq("user_email", session.user!.email!);
 
   if (items.length > 0) {
     const insertData = items.map((item: any) => ({
-      user_email: session.user.email,
+      user_email: session.user!.email!,
       product_id: item.product_id,
       quantity: item.quantity
     }));

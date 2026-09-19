@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       sender_name,
       amount,
       transfer_date,
-      status: "�nceleniyor"
+      status: "İnceleniyor"
     }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
