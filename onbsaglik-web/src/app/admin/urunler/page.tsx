@@ -95,30 +95,29 @@ export default function AdminUrunlerPage() {
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    let uploadedUrls: string[] = [];
 
-    try {
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setNewProd({ ...newProd, image: data.url });
-        showToast("✅ Resim başarıyla yüklendi!");
-      } else {
-        alert("Resim yükleme hatası: " + data.error);
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          uploadedUrls.push(data.url);
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      alert("Yükleme sırasında hata oluştu.");
-    } finally {
-      setUploading(false);
     }
+
+    setNewProd(prev => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
+    setUploading(false);
+    showToast(`✅ ${uploadedUrls.length} resim başarıyla yüklendi!`);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -135,7 +134,7 @@ export default function AdminUrunlerPage() {
       marketPrice: parseFloat(newProd.marketPrice) || 0,
       stock: parseInt(newProd.stock) || 0,
       vatRate: 10,
-      images: newProd.image ? [newProd.image] : [],
+      images: newProd.images,
       barcode: newProd.barcode,
       status: "active",
       longDescription: newProd.longDescription,
@@ -151,11 +150,11 @@ export default function AdminUrunlerPage() {
         body: JSON.stringify(productData),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok) {
         addProduct(data.product);
         setShowAddModal(false);
         showToast("✅ Ürün başarıyla eklendi!");
-        setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", image: "", barcode: "", longDescription: "", ingredients: "" });
+        setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", images: [], barcode: "", longDescription: "", ingredients: "" });
       } else {
         alert("Hata: " + data.error);
       }
@@ -491,12 +490,16 @@ export default function AdminUrunlerPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Görseli (Dosya Seçin)</label>
-                  <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
-                  {uploading && <p className="text-xs text-sky-600 mt-1 font-bold animate-pulse">Resim yükleniyor, lütfen bekleyin...</p>}
-                  {newProd.image && (
-                    <div className="mt-2 w-16 h-16 border rounded-xl overflow-hidden relative">
-                      <img src={newProd.image} alt="Önizleme" className="object-cover w-full h-full" />
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Ürün Görseli (Çoklu Seçebilirsiniz)</label>
+                  <input type="file" accept="image/*" multiple onChange={handleFileUpload} disabled={uploading} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-sky-500 outline-none" />
+                  {uploading && <p className="text-xs text-sky-600 mt-1 font-bold animate-pulse">Resimler yükleniyor, lütfen bekleyin...</p>}
+                  {newProd.images && newProd.images.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {newProd.images.map((img, idx) => (
+                        <div key={idx} className="w-16 h-16 border rounded-xl overflow-hidden relative">
+                          <img src={img} alt={`Önizleme ${idx + 1}`} className="object-cover w-full h-full" />
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>

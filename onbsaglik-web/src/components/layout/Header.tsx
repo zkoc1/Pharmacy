@@ -435,20 +435,7 @@ export default function Header() {
               <span className="icon-label-desktop">Sepet</span>
             </button>
 
-            {/* Mobil Menü Butonu */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="mobile-menu-btn"
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--color-text)",
-                padding: "4px",
-              }}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            {/* Mobil Menü Butonu (Kullanıcı istemediği için gizlendi/kaldırıldı) */}
           </div>
         </div>
 
