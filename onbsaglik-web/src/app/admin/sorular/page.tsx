@@ -22,20 +22,26 @@ export default function AdminQuestionsPage() {
   const [answeringId, setAnsweringId] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const res = await fetch(`/api/admin/questions?t=${Date.now()}`);
+        const data = await res.json();
+        if (res.ok) {
+          setQuestions(data.questions || data);
+        } else {
+          console.error("API Hatası:", data.error);
+          if (res.status === 401) {
+            alert("Oturum süreniz dolmuş olabilir. Lütfen Admin sayfasına tekrar giriş yapın.");
+          }
+        }
+      } catch (err) {
+        console.error("Fetch hatası", err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchQuestions();
   }, []);
-
-  const fetchQuestions = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/admin/questions");
-      const data = await res.json();
-      if (data.questions) setQuestions(data.questions);
-    } catch (err) {
-      console.error(err);
-    }
-    setLoading(false);
-  };
 
   const handleToggleApproval = async (id: string, currentStatus: boolean) => {
     try {
