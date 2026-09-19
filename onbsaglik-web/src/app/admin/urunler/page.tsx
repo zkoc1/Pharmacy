@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -120,7 +120,7 @@ export default function AdminUrunlerPage() {
 
     setNewProd(prev => ({ ...prev, images: [...prev.images, ...uploadedUrls] }));
     setUploading(false);
-    showToast(`✅ ${uploadedUrls.length} resim başarıyla yüklendi!`);
+    showToast(`âœ… ${uploadedUrls.length} resim başarıyla yüklendi!`);
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -156,7 +156,7 @@ export default function AdminUrunlerPage() {
       if (res.ok) {
         addProduct(data.product);
         setShowAddModal(false);
-        showToast("✅ Ürün başarıyla eklendi!");
+        showToast("âœ… Ürün başarıyla eklendi!");
         setNewProd({ name: "", brand: "", category: "", price: "", marketPrice: "", stock: "100", images: [], barcode: "", longDescription: "", ingredients: "" });
       } else {
         alert("Hata: " + data.error);
@@ -170,12 +170,16 @@ export default function AdminUrunlerPage() {
     e.preventDefault();
     if (!editingProduct) return;
     
+        const parsedStock = parseInt(editStock);
+    const parsedPrice = parseFloat(editPrice);
+    const parsedMarket = parseFloat(editMarketPrice);
+
     const updates = {
-      price: parseFloat(editPrice) || editingProduct.price,
-      marketPrice: parseFloat(editMarketPrice) || editingProduct.marketPrice,
-      stock: parseInt(editStock) || editingProduct.stock,
-      longDescription: editLongDescription || editingProduct.longDescription,
-      ingredients: editIngredients || editingProduct.ingredients,
+      price: isNaN(parsedPrice) ? editingProduct.price : parsedPrice,
+      marketPrice: isNaN(parsedMarket) ? editingProduct.marketPrice : parsedMarket,
+      stock: isNaN(parsedStock) ? editingProduct.stock : parsedStock,
+      longDescription: editLongDescription,
+      ingredients: editIngredients,
     };
 
     try {
@@ -187,7 +191,7 @@ export default function AdminUrunlerPage() {
       if (res.ok) {
         updateProduct(editingProduct.id, updates);
         setEditingProduct(null);
-        showToast("✅ Ürün güncellendi!");
+        showToast("âœ… Ürün güncellendi!");
       }
     } catch (err) {
       alert("Güncelleme hatası.");
@@ -200,7 +204,7 @@ export default function AdminUrunlerPage() {
         const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
         if (res.ok) {
           deleteProduct(id);
-          showToast("🗑️ Ürün veritabanından silindi.");
+          showToast("ğŸ—‘ï¸ Ürün veritabanından silindi.");
         }
       } catch {
         alert("Silme hatası.");
@@ -571,3 +575,4 @@ export default function AdminUrunlerPage() {
     </div>
   );
 }
+

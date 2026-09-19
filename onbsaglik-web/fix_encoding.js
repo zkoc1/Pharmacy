@@ -32,3 +32,4 @@ fixFile("src/app/odeme/page.tsx");
 fixFile("src/components/product/ProductDetailClient.tsx");
 fixFile("src/stores/accountExtrasStore.ts");
 
+fixFile("src/app/admin/urunler/page.tsx");
