@@ -1,4 +1,7 @@
-/**
+﻿
+const fs = require("fs");
+
+const content = `/**
  * Üye Girişi, Üye Kayıt ve Şifremi Unuttum Pop-up Modal Bileşeni
  */
 
@@ -362,3 +365,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     </div>
   );
 }
+`;
+
+fs.writeFileSync("src/components/ui/LoginModal.tsx", content, "utf8");
+
