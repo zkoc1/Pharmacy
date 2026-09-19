@@ -1,5 +1,5 @@
-/**
- * Üye Girişi, Üye Kayıt ve Şifremi Unuttum Pop-up Modal Bileşeni
+﻿/**
+ * Ãœye GiriÅŸi, Ãœye KayÄ±t ve Åifremi Unuttum Pop-up Modal BileÅŸeni
  */
 
 "use client";
@@ -68,7 +68,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(false);
 
     if (res?.error) {
-      setError("E-posta adresi veya şifre hatalı.");
+      setError("E-posta adresi veya ÅŸifre hatalÄ±.");
     } else {
       handleClose();
       router.push("/hesabim");
@@ -92,9 +92,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(false);
     
     if (error) {
-      setError("Şifre sıfırlama e-postası gönderilirken bir hata oluştu: " + (typeof error === "string" ? error : error?.message || "Bilinmeyen hata"));
+      setError("Åifre sÄ±fÄ±rlama e-postasÄ± gÃ¶nderilirken bir hata oluÅŸtu: " + (typeof error === "string" ? error : error?.message || "Bilinmeyen hata"));
     } else {
-      setSuccessMsg("Şifre sıfırlama kodunuz e-posta adresinize gönderildi.");
+      setSuccessMsg("Åifre sÄ±fÄ±rlama kodunuz e-posta adresinize gÃ¶nderildi.");
       setMode(3); // OTP step
     }
   };
@@ -115,9 +115,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(false);
     
     if (error) {
-      setError("Girdiğiniz kod hatalı veya süresi dolmuş.");
+      setError("GirdiÄŸiniz kod hatalÄ± veya sÃ¼resi dolmuÅŸ.");
     } else {
-      setSuccessMsg("Kod doğrulandı! Lütfen yeni şifrenizi belirleyin.");
+      setSuccessMsg("Kod doÄŸrulandÄ±! LÃ¼tfen yeni ÅŸifrenizi belirleyin.");
       setMode(4);
     }
   };
@@ -138,9 +138,9 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     setLoading(false);
     
     if (error) {
-      setError("Şifre güncellenirken bir hata oluştu: " + (typeof error === "string" ? error : error?.message || "Bilinmeyen hata"));
+      setError("Åifre gÃ¼ncellenirken bir hata oluÅŸtu: " + (typeof error === "string" ? error : error?.message || "Bilinmeyen hata"));
     } else {
-      setSuccessMsg("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.");
+      setSuccessMsg("Åifreniz baÅŸarÄ±yla gÃ¼ncellendi! GiriÅŸ yapabilirsiniz.");
       const loginRes = await signIn("credentials", {
         redirect: false,
         email: cleanEmail,
@@ -168,7 +168,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
           <X size={20} />
         </button>
 
-        {/* Tab Başlığı */}
+        {/* Tab BaÅŸlÄ±ÄŸÄ± */}
         <div className="border-b pb-3 mb-6 flex items-center gap-3">
           {mode >= 2 && (
             <button type="button" onClick={() => { resetStates(); setMode(0); }} className="text-gray-500 hover:text-rose-500 transition-colors">
@@ -176,18 +176,18 @@ export default function LoginModal({ isOpen, onClose }: Props) {
             </button>
           )}
           <h2 className="text-base font-extrabold text-rose-500 uppercase tracking-wider">
-            {mode === 0 ? "ÜYE GİRİŞİ" : mode === 1 ? "ÜYE KAYIT" : "ŞİFREMİ UNUTTUM"}
+            {mode === 0 ? "ÃœYE GÄ°RÄ°ÅÄ°" : mode === 1 ? "ÃœYE KAYIT" : "ÅÄ°FREMÄ° UNUTTUM"}
           </h2>
         </div>
 
         {error && (
           <div className="p-3 mb-4 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-200">
-            ⚠ {error}
+            âš  {error}
           </div>
         )}
         {successMsg && (
           <div className="p-3 mb-4 bg-green-50 text-green-700 text-xs font-bold rounded-xl border border-green-200">
-            ✓ {successMsg}
+            âœ“ {successMsg}
           </div>
         )}
 
@@ -208,14 +208,14 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Şifre</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Åifre</label>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Şifrenizi giriniz"
+                  placeholder="Åifrenizi giriniz"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400 pr-10"
                 />
                 <button
@@ -235,10 +235,10 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded text-rose-500"
                 />
-                <span>Beni Hatırla</span>
+                <span>Beni HatÄ±rla</span>
               </label>
               <button type="button" onClick={() => { resetStates(); setMode(2); }} className="font-bold text-gray-700 hover:text-rose-500">
-                Şifremi Unuttum
+                Åifremi Unuttum
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3 pt-2">
@@ -247,14 +247,14 @@ export default function LoginModal({ isOpen, onClose }: Props) {
                 disabled={loading}
                 className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors"
               >
-                {loading ? "YÜKLENİYOR..." : "GİRİŞ YAP"}
+                {loading ? "YÃœKLENÄ°YOR..." : "GÄ°RÄ°Å YAP"}
               </button>
               <a
                 href="/hesabim/kayit"
                 onClick={handleClose}
                 className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider text-center border border-gray-200 transition-colors flex items-center justify-center"
               >
-                ÜYE KAYIT &gt;
+                ÃœYE KAYIT &gt;
               </a>
             </div>
           </form>
@@ -266,7 +266,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         {mode === 2 && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-              Kayıtlı e-posta adresinizi girin. Size şifrenizi sıfırlamanız için 6 haneli bir kod göndereceğiz.
+              KayÄ±tlÄ± e-posta adresinizi girin. Size ÅŸifrenizi sÄ±fÄ±rlamanÄ±z iÃ§in bir kod gÃ¶ndereceÄŸiz.
             </p>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">E-posta</label>
@@ -284,7 +284,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               disabled={loading || !email}
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
             >
-              {loading ? "GÖNDERİLİYOR..." : "KOD GÖNDER"}
+              {loading ? "GÃ–NDERÄ°LÄ°YOR..." : "KOD GÃ–NDER"}
             </button>
           </form>
         )}
@@ -295,17 +295,17 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         {mode === 3 && (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-              <strong className="text-gray-900">{email}</strong> adresine 6 haneli bir doğrulama kodu gönderdik. Lütfen kodu aşağıya girin.
+              <strong className="text-gray-900">{email}</strong> adresine bir doÄŸrulama kodu gÃ¶nderdik. LÃ¼tfen kodu aÅŸaÄŸÄ±ya girin.
             </p>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Doğrulama Kodu</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">DoÄŸrulama Kodu</label>
               <input
                 type="text"
                 required
-                maxLength={6}
+                maxLength={8}
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ""))}
-                placeholder="000000"
+                placeholder="000000..."
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-center text-xl tracking-[0.5em] font-extrabold text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
               />
             </div>
@@ -314,7 +314,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               disabled={loading || otpCode.length < 6}
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
             >
-              {loading ? "DOĞRULANIYOR..." : "KODU DOĞRULA"}
+              {loading ? "DOÄRULANIYOR..." : "KODU DOÄRULA"}
             </button>
           </form>
         )}
@@ -325,10 +325,10 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         {mode === 4 && (
           <form onSubmit={handleSetNewPassword} className="space-y-4">
             <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-              Lütfen yeni şifrenizi belirleyin.
+              LÃ¼tfen yeni ÅŸifrenizi belirleyin.
             </p>
             <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">Yeni Şifre</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Yeni Åifre</label>
               <div className="relative">
                 <input
                   type={showPass ? "text" : "password"}
@@ -353,7 +353,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
               disabled={loading || newPassword.length < 6}
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-extrabold py-3.5 px-4 rounded-2xl text-xs uppercase tracking-wider shadow-md transition-colors disabled:opacity-70"
             >
-              {loading ? "KAYDEDİLİYOR..." : "ŞİFREYİ GÜNCELLE"}
+              {loading ? "KAYDEDÄ°LÄ°YOR..." : "ÅÄ°FREYÄ° GÃœNCELLE"}
             </button>
           </form>
         )}
