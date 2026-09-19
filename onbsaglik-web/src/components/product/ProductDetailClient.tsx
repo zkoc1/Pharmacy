@@ -1,6 +1,6 @@
 ﻿/**
- * ÃœrÃ¼n detay istemci bileÅŸeni.
- * Galeri, sepete ekle, miktar seÃ§imi ve OnbSaÄŸlÄ±k Combo Teklif kutusunu yÃ¶netir.
+ * Ürün detay istemci bileşeni.
+ * Galeri, sepete ekle, miktar seçimi ve OnbSağlık Combo Teklif kutusunu yönetir.
  */
 
 "use client";
@@ -144,12 +144,12 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-        {/* Sol: GÃ¶rsel Galerisi */}
+        {/* Sol: Görsel Galerisi */}
         <div className="space-y-4">
           <div className="relative aspect-square w-full bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center">
             {discountRate > 0 && (
               <span className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-xs font-extrabold px-2.5 py-1 rounded-md shadow-sm">
-                %{discountRate} Ä°ndirim
+                %{discountRate} İndirim
               </span>
             )}
             <button
@@ -176,7 +176,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
             )}
           </div>
 
-          {/* KÃ¼Ã§Ã¼k Resimler (Thumbnails) */}
+          {/* Küçük Resimler (Thumbnails) */}
           {product.images && product.images.length > 1 && (
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
               {product.images.map((img, idx) => (
@@ -194,7 +194,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
           )}
         </div>
 
-        {/* SaÄŸ: ÃœrÃ¼n Bilgileri ve Ä°ÅŸlemler */}
+        {/* Sağ: Ürün Bilgileri ve İşlemler */}
         <div className="flex flex-col justify-between space-y-6">
           <div>
             <span className="text-xs font-bold text-emerald-600 tracking-wider uppercase mb-1 block">
@@ -204,7 +204,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
               {product.name}
             </h1>
 
-            {/* Fiyat AlanÄ± */}
+            {/* Fiyat Alanı */}
             <div className="flex items-baseline gap-3 mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
               <span className="text-3xl font-extrabold text-emerald-600">{formatPrice(product.price)}</span>
               {product.marketPrice && product.marketPrice > product.price && (
@@ -212,7 +212,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
               )}
             </div>
 
-            {/* Miktar SeÃ§ici & Sepete Ekle */}
+            {/* Miktar Seçici & Sepete Ekle */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center border border-gray-300 rounded-2xl overflow-hidden bg-gray-50">
                 <button onClick={decreaseQty} className="p-3 text-gray-600 hover:bg-gray-200 transition-colors">
@@ -253,7 +253,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
             {activeCampaign && activeCampaign.type === "combo" && comboProd && (
               <div className="bg-amber-50/70 border-2 border-amber-300 rounded-3xl p-5 mb-6 space-y-4">
                 <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs uppercase tracking-wide">
-                  <Zap className="fill-amber-500 text-amber-500" size={18} /> Ã–zel Combo FÄ±rsat Paketi
+                  <Zap className="fill-amber-500 text-amber-500" size={18} /> Özel Combo Fırsat Paketi
                 </div>
                 <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-amber-200">
                   <div className="relative w-16 h-16 flex-shrink-0 bg-gray-50 rounded-xl p-1 border">
@@ -262,7 +262,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                   <div className="flex-grow min-w-0">
                     <span className="text-[10px] font-bold text-amber-700 block uppercase">{comboProd.brand}</span>
                     <h4 className="text-xs font-bold text-gray-800 truncate">{comboProd.name}</h4>
-                    <span className="text-xs font-extrabold text-red-600 mt-0.5 block">Ä°kinci ÃœrÃ¼n FiyatÄ±: {formatPrice(comboPrice)}</span>
+                    <span className="text-xs font-extrabold text-red-600 mt-0.5 block">İkinci Ürün Fiyatı: {formatPrice(comboPrice)}</span>
                   </div>
                 </div>
                 <button
@@ -282,7 +282,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                     onClick={() => setShowPriceAlarmInput(!showPriceAlarmInput)}
                     className="flex items-center gap-2 text-xs font-bold text-gray-600 hover:text-emerald-600 border border-gray-200 px-4 py-2.5 rounded-xl transition-colors bg-white shadow-sm"
                   >
-                    <Bell size={16} /> Fiyat DÃ¼ÅŸÃ¼nce Haber Ver
+                    <Bell size={16} /> Fiyat Düşünce Haber Ver
                   </button>
                   {showPriceAlarmInput && (
                     <div className="absolute top-full left-0 mt-2 p-3 bg-white border border-gray-200 rounded-xl shadow-lg z-20 w-64 flex flex-col gap-2">
@@ -291,14 +291,14 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                         type="number" 
                         value={priceAlarmTarget}
                         onChange={(e) => setPriceAlarmTarget(e.target.value)}
-                        placeholder="Ã–rn: 150"
+                        placeholder="Örn: 150"
                         className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
                       />
                       <button 
                         onClick={handleSetPriceAlarm}
                         className="w-full bg-emerald-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-emerald-700"
                       >
-                        AlarmÄ± Kur
+                        Alarmı Kur
                       </button>
                     </div>
                   )}
@@ -324,10 +324,10 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
             {/* Rozetler */}
             <div className="grid grid-cols-2 gap-3 text-xs font-bold text-gray-600 pt-4 border-t border-gray-100">
               <div className="flex items-center gap-2">
-                <Shield size={16} className="text-emerald-600" /> %100 Orijinal ÃœrÃ¼n
+                <Shield size={16} className="text-emerald-600" /> %100 Orijinal Ürün
               </div>
               <div className="flex items-center gap-2">
-                <Truck size={16} className="text-emerald-600" /> 500 TL Ãœzeri Ãœcretsiz Kargo
+                <Truck size={16} className="text-emerald-600" /> 500 TL Üzeri Ücretsiz Kargo
               </div>
             </div>
           </div>

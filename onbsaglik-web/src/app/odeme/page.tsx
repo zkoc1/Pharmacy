@@ -1,7 +1,7 @@
 ﻿/**
- * Ã–deme & Teslimat SayfasÄ± â€” /odeme
- * KullanÄ±cÄ±ya Ã–zel KayÄ±tlÄ± Adres & Kart SeÃ§imi (userEmail Scoped),
- * Form ValidasyonlarÄ±, ÃœrÃ¼n Slug DesteÄŸi, PayTR 3D Secure, Mail Order & Havale/EFT.
+ * Ödeme & Teslimat Sayfası â€” /odeme
+ * Kullanıcıya Özel Kayıtlı Adres & Kart Seçimi (userEmail Scoped),
+ * Form Validasyonları, Ürün Slug Desteği, PayTR 3D Secure, Mail Order & Havale/EFT.
  */
 
 "use client";
@@ -42,7 +42,7 @@ export default function OdemeSayfasi() {
 
   const currentUserEmail = session?.user?.email || "";
 
-  // Oturum Guard: KullanÄ±cÄ± giriÅŸ yapmamÄ±ÅŸsa doÄŸrudan giriÅŸ sayfasÄ±na yÃ¶nlendir
+  // Oturum Guard: Kullanıcı giriş yapmamışsa doğrudan giriş sayfasına yönlendir
   useEffect(() => {
     if (status !== "loading" && !isUserLoggedIn(session?.user)) {
       router.replace("/hesabim/giris?callbackUrl=/odeme");
@@ -61,14 +61,14 @@ export default function OdemeSayfasi() {
       .catch(console.error);
   }, [activeCampaigns]);
 
-  // AdÄ±m State: 1 = ADRES BÄ°LGÄ°LERÄ°, 2 = Ã–DEME BÄ°LGÄ°LERÄ°
+  // Adım State: 1 = ADRES BİLGİLERİ, 2 = ÖDEME BİLGİLERİ
   const [activeStep, setActiveStep] = useState<1 | 2>(1);
 
-  // KullanÄ±cÄ±ya Ã–zel Adresler ve Kartlar
+  // Kullanıcıya Özel Adresler ve Kartlar
   const userAddresses = getUserAddresses(currentUserEmail);
   const userCards = getUserCards(currentUserEmail);
 
-  // KayÄ±tlÄ± Adres & Yeni Adres Modu
+  // Kayıtlı Adres & Yeni Adres Modu
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [addressError, setAddressError] = useState("");
@@ -79,13 +79,13 @@ export default function OdemeSayfasi() {
   const [districts, setDistricts] = useState<string[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
 
-  // Adres Formu State (SeÃ§ili Gelmez â€” Temiz BaÅŸlar)
+  // Adres Formu State (Seçili Gelmez â€” Temiz Başlar)
   const [addressForm, setAddressForm] = useState({
     invoiceType: "Bireysel Adres",
     title: "Ev",
     fullName: "",
     tcNo: "",
-    country: "TÃ¼rkiye",
+    country: "Türkiye",
     city: "",
     district: "",
     neighborhood: "",
@@ -94,7 +94,7 @@ export default function OdemeSayfasi() {
     differentInvoice: false,
   });
 
-  // Kargo SeÃ§enekleri
+  // Kargo Seçenekleri
   const [selectedCarrier, setSelectedCarrier] = useState("Kolay Gelsin");
 
   const carriers = [
@@ -102,15 +102,15 @@ export default function OdemeSayfasi() {
     { name: "HepsiJet", price: 0, label: "BEDAVA" },
     { name: "PTT Kargo", price: 0, label: "BEDAVA" },
     { name: "DHL Kargo", price: 149.9, label: "149,90 TL" },
-    { name: "SÃ¼rat Kargo", price: 129.9, label: "129,90 TL" },
+    { name: "Sürat Kargo", price: 129.9, label: "129,90 TL" },
     { name: "Aras Kargo", price: 149.9, label: "149,90 TL" },
-    { name: "YurtiÃ§i Kargo", price: 149.9, label: "149,90 TL" },
+    { name: "Yurtiçi Kargo", price: 149.9, label: "149,90 TL" },
   ];
 
-  // Ã–deme SeÃ§eneÄŸi Tab (Kredi KartÄ± | Havale / EFT | PayTR ile Ã–de)
+  // Ödeme Seçeneği Tab (Kredi Kartı | Havale / EFT | PayTR ile Öde)
   const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
 
-  // KayÄ±tlÄ± Kartlar & Yeni Kart State
+  // Kayıtlı Kartlar & Yeni Kart State
   const [selectedCardId, setSelectedCardId] = useState<string | "new">("new");
   const [saveCardCheckbox, setSaveCardCheckbox] = useState(true);
   const [cardForm, setCardForm] = useState({
@@ -130,7 +130,7 @@ export default function OdemeSayfasi() {
     shippingCost: 49.90
   });
 
-  // Kupon Ä°ndirimi
+  // Kupon İndirimi
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
@@ -149,7 +149,7 @@ export default function OdemeSayfasi() {
   const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
   const grandTotal = Math.max(0, tempGrandTotal - eftDiscount);
 
-  // 1. API'den Åehir Ä°simlerini Ã‡ek ve Kargo AyarlarÄ±nÄ± Al
+  // 1. API'den Åehir İsimlerini Çek ve Kargo Ayarlarını Al
   useEffect(() => {
     fetch("/api/locations")
       .then((r) => r.json())
@@ -166,7 +166,7 @@ export default function OdemeSayfasi() {
       .catch(() => {});
   }, []);
 
-  // 2. SeÃ§ilen Åehrin TÃ¼m Ä°lÃ§elerini Ã‡ek
+  // 2. Seçilen Åehrin Tüm İlçelerini Çek
   useEffect(() => {
     if (!addressForm.city) {
       setDistricts([]);
@@ -184,7 +184,7 @@ export default function OdemeSayfasi() {
       });
   }, [addressForm.city]);
 
-  // 3. SeÃ§ilen Ä°lÃ§enin TÃ¼m Mahallelerini Ã‡ek
+  // 3. Seçilen İlçenin Tüm Mahallelerini Çek
   useEffect(() => {
     if (!addressForm.city || !addressForm.district) {
       setNeighborhoods([]);
@@ -200,14 +200,14 @@ export default function OdemeSayfasi() {
         if (data.neighborhoods && data.neighborhoods.length > 0) {
           setNeighborhoods(data.neighborhoods);
         } else {
-          setNeighborhoods(["MERKEZ MAH", "CUMHURÄ°YET MAH", "YENÄ° MAH"]);
+          setNeighborhoods(["MERKEZ MAH", "CUMHURİYET MAH", "YENİ MAH"]);
         }
       });
   }, [addressForm.city, addressForm.district]);
 
-  // KullanÄ±cÄ±nÄ±n Mevcut KayÄ±tlÄ± Adreslerini YÃ¼kle ve KullanÄ±cÄ± Profilini Ã‡ek
+  // Kullanıcının Mevcut Kayıtlı Adreslerini Yükle ve Kullanıcı Profilini Çek
   useEffect(() => {
-    // 1. Profil verisini Ã§ek (Her durumda)
+    // 1. Profil verisini çek (Her durumda)
     if (status === "authenticated") {
       fetch("/api/auth/update-profile")
         .then(res => res.json())
@@ -221,7 +221,7 @@ export default function OdemeSayfasi() {
             };
             setFetchedProfile(prof);
             
-            // EÄŸer kayÄ±tlÄ± adres yoksa hemen forma uygula
+            // Eğer kayıtlı adres yoksa hemen forma uygula
             if (userAddresses.length === 0) {
               setAddressForm(p => ({ ...p, ...prof }));
             }
@@ -230,7 +230,7 @@ export default function OdemeSayfasi() {
         .catch(() => {});
     }
 
-    // 2. KayÄ±tlÄ± adresleri forma bas
+    // 2. Kayıtlı adresleri forma bas
     if (userAddresses.length > 0) {
       const def = userAddresses.find((a) => a.isDefault) || userAddresses[0];
       setSelectedAddressId(def.id);
@@ -240,7 +240,7 @@ export default function OdemeSayfasi() {
         title: def.title || "Ev",
         fullName: def.fullName || session?.user?.name || "",
         tcNo: "",
-        country: "TÃ¼rkiye",
+        country: "Türkiye",
         city: def.city || "",
         district: def.district || "",
         neighborhood: def.neighborhood || "",
@@ -256,7 +256,7 @@ export default function OdemeSayfasi() {
     }
   }, [addresses, session, status, currentUserEmail, userAddresses.length]);
 
-  // KayÄ±tlÄ± KartlarÄ± YÃ¼kle
+  // Kayıtlı Kartları Yükle
   useEffect(() => {
     if (userCards.length > 0) {
       const defCard = userCards.find((c) => c.isDefault) || userCards[0];
@@ -266,7 +266,7 @@ export default function OdemeSayfasi() {
     }
   }, [cards, currentUserEmail]);
 
-  // Adres SeÃ§imi DeÄŸiÅŸtirildiÄŸinde Formu GÃ¼ncelle
+  // Adres Seçimi Değiştirildiğinde Formu Güncelle
   const handleSelectSavedAddress = (addr: Address) => {
     setSelectedAddressId(addr.id);
     setAddressForm((prev) => ({
@@ -282,12 +282,12 @@ export default function OdemeSayfasi() {
     setAddressError("");
   };
 
-  // 1. AdÄ±m Adres Kaydetme & DoÄŸrulama
+  // 1. Adım Adres Kaydetme & Doğrulama
   const handleSaveAndProceedAddress = (e: React.FormEvent) => {
     e.preventDefault();
     setAddressError("");
 
-    // KayÄ±tlÄ± Adres SeÃ§ildiyse
+    // Kayıtlı Adres Seçildiyse
     if (!isAddingNewAddress && selectedAddressId) {
       const chosen = userAddresses.find((a) => a.id === selectedAddressId);
       if (chosen) {
@@ -296,33 +296,33 @@ export default function OdemeSayfasi() {
       }
     }
 
-    // Yeni Adres GiriÅŸi ValidasyonlarÄ±
+    // Yeni Adres Girişi Validasyonları
     if (!addressForm.fullName.trim()) {
-      setAddressError("LÃ¼tfen Ad Soyad alanÄ±nÄ± doldurunuz.");
+      setAddressError("Lütfen Ad Soyad alanını doldurunuz.");
       return;
     }
     if (!addressForm.phone.trim() || addressForm.phone.replace(/\D/g, "").length < 10) {
-      setAddressError("LÃ¼tfen 10 haneli geÃ§erli bir Cep Telefonu giriniz (Ã¶rn: 5XX XXX XX XX).");
+      setAddressError("Lütfen 10 haneli geçerli bir Cep Telefonu giriniz (örn: 5XX XXX XX XX).");
       return;
     }
     if (!addressForm.city) {
-      setAddressError("LÃ¼tfen bir Ä°l seÃ§iniz.");
+      setAddressError("Lütfen bir İl seçiniz.");
       return;
     }
     if (!addressForm.district) {
-      setAddressError("LÃ¼tfen bir Ä°lÃ§e seÃ§iniz.");
+      setAddressError("Lütfen bir İlçe seçiniz.");
       return;
     }
     if (!addressForm.neighborhood) {
-      setAddressError("LÃ¼tfen bir Mahalle/Semt seÃ§iniz.");
+      setAddressError("Lütfen bir Mahalle/Semt seçiniz.");
       return;
     }
     if (!addressForm.fullAddress.trim() || addressForm.fullAddress.trim().length < 8) {
-      setAddressError("LÃ¼tfen AÃ§Ä±k Adres (Cadde, Sokak, No, Daire) alanÄ±nÄ± eksiksiz doldurunuz.");
+      setAddressError("Lütfen Açık Adres (Cadde, Sokak, No, Daire) alanını eksiksiz doldurunuz.");
       return;
     }
 
-    // Adresi KullanÄ±cÄ±ya Ã–zel Olarak Sisteme Kaydet
+    // Adresi Kullanıcıya Özel Olarak Sisteme Kaydet
     const saved = addAddress({
       userEmail: currentUserEmail,
       title: addressForm.title || "Evim",
@@ -340,38 +340,38 @@ export default function OdemeSayfasi() {
     setActiveStep(2);
   };
 
-  // 2. AdÄ±m SipariÅŸi Tamamlama
+  // 2. Adım Siparişi Tamamlama
   const handleCompleteOrder = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setCardError("");
 
     if (!termsAccepted) {
-      alert("LÃ¼tfen Ã–n Bilgilendirme ve Mesafeli SatÄ±ÅŸ SÃ¶zleÅŸmesini onaylayÄ±nÄ±z.");
+      alert("Lütfen Ön Bilgilendirme ve Mesafeli Satış Sözleşmesini onaylayınız.");
       return;
     }
 
-    // Kredi KartÄ± Validasyonu
+    // Kredi Kartı Validasyonu
     if (paymentMethod === "cc") {
       if (selectedCardId === "new") {
         const cleanCardNum = cardForm.cardNumber.replace(/\s+/g, "");
         if (!cardForm.cardName.trim()) {
-          setCardError("LÃ¼tfen kart Ã¼zerindeki Ad Soyad bilgisini giriniz.");
+          setCardError("Lütfen kart üzerindeki Ad Soyad bilgisini giriniz.");
           return;
         }
         if (cleanCardNum.length < 15 || isNaN(Number(cleanCardNum))) {
-          setCardError("LÃ¼tfen 16 haneli geÃ§erli bir kart numarasÄ± giriniz.");
+          setCardError("Lütfen 16 haneli geçerli bir kart numarası giriniz.");
           return;
         }
         if (!cardForm.expireMonth || !cardForm.expireYear) {
-          setCardError("LÃ¼tfen kartÄ±nÄ±zÄ±n son kullanma ay ve yÄ±lÄ±nÄ± seÃ§iniz.");
+          setCardError("Lütfen kartınızın son kullanma ay ve yılını seçiniz.");
           return;
         }
         if (cardForm.cvc.trim().length < 3 || isNaN(Number(cardForm.cvc))) {
-          setCardError("LÃ¼tfen 3 haneli CVC gÃ¼venlik kodunu giriniz.");
+          setCardError("Lütfen 3 haneli CVC güvenlik kodunu giriniz.");
           return;
         }
 
-        // KartÄ± KullanÄ±cÄ±ya Ã–zel GÃ¼venle Kaydet
+        // Kartı Kullanıcıya Özel Güvenle Kaydet
         if (saveCardCheckbox) {
           const type = cleanCardNum.startsWith("4")
             ? "Visa"
@@ -393,27 +393,27 @@ export default function OdemeSayfasi() {
           });
         }
       } else {
-        // KayÄ±tlÄ± Kart ile Ã–deme â€” CVC KontrolÃ¼
+        // Kayıtlı Kart ile Ödeme â€” CVC Kontrolü
         if (cardForm.cvc.trim().length < 3 || isNaN(Number(cardForm.cvc))) {
-          setCardError("LÃ¼tfen seÃ§ili kartÄ±nÄ±zÄ±n 3 haneli CVC gÃ¼venlik kodunu giriniz.");
+          setCardError("Lütfen seçili kartınızın 3 haneli CVC güvenlik kodunu giriniz.");
           return;
         }
       }
 
       if (!mailOrderConsent) {
-        setCardError("LÃ¼tfen Mail Order / Kart Tahsilat OnayÄ±nÄ± iÅŸaretleyiniz.");
+        setCardError("Lütfen Mail Order / Kart Tahsilat Onayını işaretleyiniz.");
         return;
       }
     }
 
-    // SÄ°PARÄ°ÅÄ° MERKEZÄ° SÄ°PARÄ°Å STORE'UNA KAYDET (SLUG DAHÄ°L)
+    // SİPARİÅİ MERKEZİ SİPARİÅ STORE'UNA KAYDET (SLUG DAHİL)
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
     const orderStatus =
       paymentMethod === "cc"
         ? "Mail Order Bekliyor"
         : paymentMethod === "paytr"
-        ? "PayTR Ã–deme Bekliyor"
-        : "Ã–deme Bekliyor";
+        ? "PayTR Ödeme Bekliyor"
+        : "Ödeme Bekliyor";
 
     const newOrderId = await addOrder({
       items: items.map((i) => ({
@@ -428,16 +428,16 @@ export default function OdemeSayfasi() {
       total: grandTotal,
       carrier: selectedCarrier,
       customerEmail: currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr",
-      customerName: addressForm.fullName || userSession.name || "DeÄŸerli MÃ¼ÅŸterimiz",
+      customerName: addressForm.fullName || userSession.name || "Değerli Müşterimiz",
       customerPhone: addressForm.phone || "",
       paymentMethod:
         paymentMethod === "cc"
-          ? "Kredi KartÄ± / Mail Order"
+          ? "Kredi Kartı / Mail Order"
           : paymentMethod === "eft"
           ? "Havale / EFT"
           : "PayTR 3D Secure",
       deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
-      billingAddress: `Fatura TÃ¼rÃ¼: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
+      billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
       status: orderStatus,
       couponCode: discount > 0 ? couponCode.trim() : "",
     });
@@ -461,11 +461,11 @@ export default function OdemeSayfasi() {
           window.location.href = data.iframeUrl; // Redirect to PayTR
           return;
         } else {
-          alert("PayTR token alÄ±namadÄ±, lÃ¼tfen tekrar deneyin.");
+          alert("PayTR token alınamadı, lütfen tekrar deneyin.");
           return;
         }
       } catch (err) {
-        alert("Ã–deme baÅŸlatÄ±lamadÄ±.");
+        alert("Ödeme başlatılamadı.");
         return;
       }
     }
@@ -479,10 +479,10 @@ export default function OdemeSayfasi() {
   if (items.length === 0) {
     return (
       <div className="container-custom py-20 text-center">
-        <h1 className="text-2xl font-bold mb-4">Sepetiniz BoÅŸ</h1>
-        <p className="text-gray-500 mb-6">Ã–deme yapmak iÃ§in sepetinize Ã¼rÃ¼n ekleyiniz.</p>
+        <h1 className="text-2xl font-bold mb-4">Sepetiniz Boş</h1>
+        <p className="text-gray-500 mb-6">Ödeme yapmak için sepetinize ürün ekleyiniz.</p>
         <Link href="/urunler" className="btn-primary">
-          AlÄ±ÅŸveriÅŸe Devam Et
+          Alışverişe Devam Et
         </Link>
       </div>
     );
@@ -491,7 +491,7 @@ export default function OdemeSayfasi() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container-custom">
-        {/* Ãœst AdÄ±m Ã‡ubuÄŸu */}
+        {/* Üst Adım Çubuğu */}
         <div className="flex gap-4 mb-8">
           <button
             onClick={() => setActiveStep(1)}
@@ -504,7 +504,7 @@ export default function OdemeSayfasi() {
             <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">
               1
             </span>
-            ADRES BÄ°LGÄ°LERÄ°
+            ADRES BİLGİLERİ
           </button>
 
           <button
@@ -514,7 +514,7 @@ export default function OdemeSayfasi() {
               } else if (userAddresses.length > 0) {
                 setActiveStep(2);
               } else {
-                setAddressError("LÃ¼tfen Ã¶nce teslimat adresi bilgilerinizi tamamlayÄ±nÄ±z.");
+                setAddressError("Lütfen önce teslimat adresi bilgilerinizi tamamlayınız.");
               }
             }}
             className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 border-2 transition-all cursor-pointer ${
@@ -526,17 +526,17 @@ export default function OdemeSayfasi() {
             <span className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">
               2
             </span>
-            Ã–DEME BÄ°LGÄ°LERÄ°
+            ÖDEME BİLGİLERİ
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Sol Ana Alan */}
           <div className="lg:col-span-2 space-y-6">
-            {/* ADIM 1: ADRES BÄ°LGÄ°LERÄ° */}
+            {/* ADIM 1: ADRES BİLGİLERİ */}
             {activeStep === 1 && (
               <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
-                {/* Hata UyarÄ±sÄ± */}
+                {/* Hata Uyarısı */}
                 {addressError && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-700 font-bold text-xs">
                     <AlertCircle size={18} className="flex-shrink-0" />
@@ -544,16 +544,16 @@ export default function OdemeSayfasi() {
                   </div>
                 )}
 
-                {/* 1. SEÃ‡ENEK: KAYITLI ADRESLER LÄ°STESÄ° */}
+                {/* 1. SEÇENEK: KAYITLI ADRESLER LİSTESİ */}
                 {userAddresses.length > 0 && !isAddingNewAddress ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-b pb-4">
                       <div>
                         <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                          <MapPin className="text-rose-500" /> KAYITLI TESLÄ°MAT ADRESLERÄ°M
+                          <MapPin className="text-rose-500" /> KAYITLI TESLİMAT ADRESLERİM
                         </h2>
                         <p className="text-xs text-gray-500 mt-1">
-                          LÃ¼tfen sipariÅŸinizin teslim edileceÄŸi adresi seÃ§iniz.
+                          Lütfen siparişinizin teslim edileceği adresi seçiniz.
                         </p>
                       </div>
 
@@ -566,7 +566,7 @@ export default function OdemeSayfasi() {
                             title: "Ev",
                             fullName: fetchedProfile?.fullName || session?.user?.name || "",
                             tcNo: fetchedProfile?.tcNo || "",
-                            country: "TÃ¼rkiye",
+                            country: "Türkiye",
                             city: "",
                             district: "",
                             neighborhood: "",
@@ -582,7 +582,7 @@ export default function OdemeSayfasi() {
                       </button>
                     </div>
 
-                    {/* Adres KartlarÄ± Grid */}
+                    {/* Adres Kartları Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {userAddresses.map((addr) => {
                         const isSelected = selectedAddressId === addr.id;
@@ -599,7 +599,7 @@ export default function OdemeSayfasi() {
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <span className="flex items-center gap-1.5 text-xs font-extrabold text-gray-800">
-                                  {addr.title.toLowerCase().includes("iÅŸ") ? (
+                                  {addr.title.toLowerCase().includes("iş") ? (
                                     <Building size={14} className="text-gray-500" />
                                   ) : (
                                     <Home size={14} className="text-gray-500" />
@@ -634,31 +634,31 @@ export default function OdemeSayfasi() {
                       })}
                     </div>
 
-                    {/* Ä°lerle Butonu */}
+                    {/* İlerle Butonu */}
                     <button
                       type="button"
                       onClick={() => {
                         if (!selectedAddressId) {
-                          setAddressError("LÃ¼tfen teslimat iÃ§in bir adres seÃ§iniz.");
+                          setAddressError("Lütfen teslimat için bir adres seçiniz.");
                           return;
                         }
                         setActiveStep(2);
                       }}
                       className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer mt-4"
                     >
-                      SEÃ‡Ä°LEN ADRES Ä°LE Ã–DEMEYE GEÃ‡ &gt;
+                      SEÇİLEN ADRES İLE ÖDEMEYE GEÇ &gt;
                     </button>
                   </div>
                 ) : (
-                  /* 2. SEÃ‡ENEK: YENÄ° ADRES FORMU */
+                  /* 2. SEÇENEK: YENİ ADRES FORMU */
                   <form onSubmit={handleSaveAndProceedAddress} className="space-y-6">
                     <div className="flex items-center justify-between border-b pb-4">
                       <div>
                         <h2 className="text-base font-extrabold text-gray-900 flex items-center gap-2">
-                          <MapPin className="text-rose-500" /> YENÄ° ADRES BÄ°LGÄ°LERÄ°
+                          <MapPin className="text-rose-500" /> YENİ ADRES BİLGİLERİ
                         </h2>
                         <p className="text-xs text-gray-500 mt-1">
-                          LÃ¼tfen aÅŸaÄŸÄ±daki alanlarÄ± eksiksiz doldurunuz.
+                          Lütfen aşağıdaki alanları eksiksiz doldurunuz.
                         </p>
                       </div>
 
@@ -671,16 +671,16 @@ export default function OdemeSayfasi() {
                           }}
                           className="text-xs font-bold text-gray-600 hover:text-gray-900 underline cursor-pointer"
                         >
-                          â† KayÄ±tlÄ± Adreslerime DÃ¶n
+                          â† Kayıtlı Adreslerime Dön
                         </button>
                       )}
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Fatura TÃ¼rÃ¼ */}
+                      {/* Fatura Türü */}
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          Fatura TÃ¼rÃ¼
+                          Fatura Türü
                         </label>
                         <select
                           value={addressForm.invoiceType}
@@ -694,17 +694,17 @@ export default function OdemeSayfasi() {
                         </select>
                       </div>
 
-                      {/* Adres BaÅŸlÄ±ÄŸÄ± */}
+                      {/* Adres Başlığı */}
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          Adres BaÅŸlÄ±ÄŸÄ± *
+                          Adres Başlığı *
                         </label>
                         <input
                           type="text"
                           required
                           value={addressForm.title}
                           onChange={(e) => setAddressForm({ ...addressForm, title: e.target.value })}
-                          placeholder="Evim, Ä°ÅŸ Yeri vb."
+                          placeholder="Evim, İş Yeri vb."
                           className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                         />
                       </div>
@@ -766,22 +766,22 @@ export default function OdemeSayfasi() {
                         />
                       </div>
 
-                      {/* Ãœlke */}
+                      {/* Ülke */}
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Ãœlke</label>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Ülke</label>
                         <select
                           value={addressForm.country}
                           disabled
                           className="w-full p-3 bg-gray-100 border rounded-xl text-xs font-semibold text-gray-500"
                         >
-                          <option value="TÃ¼rkiye">TÃ¼rkiye</option>
+                          <option value="Türkiye">Türkiye</option>
                         </select>
                       </div>
 
-                      {/* Ä°L SEÃ‡Ä°NÄ°Z (SeÃ§ili Gelmez) */}
+                      {/* İL SEÇİNİZ (Seçili Gelmez) */}
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          Ä°l SeÃ§iniz *
+                          İl Seçiniz *
                         </label>
                         <select
                           value={addressForm.city}
@@ -797,7 +797,7 @@ export default function OdemeSayfasi() {
                             !addressForm.city ? "bg-white text-gray-400 border-amber-300" : "bg-gray-50 text-gray-900"
                           }`}
                         >
-                          <option value="">-- Ä°l SeÃ§iniz --</option>
+                          <option value="">-- İl Seçiniz --</option>
                           {cities.map((c) => (
                             <option key={c} value={c} className="text-gray-900">
                               {c}
@@ -806,10 +806,10 @@ export default function OdemeSayfasi() {
                         </select>
                       </div>
 
-                      {/* Ä°LÃ‡E SEÃ‡Ä°NÄ°Z (SeÃ§ili Gelmez) */}
+                      {/* İLÇE SEÇİNİZ (Seçili Gelmez) */}
                       <div>
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          Ä°lÃ§e SeÃ§iniz *
+                          İlçe Seçiniz *
                         </label>
                         <select
                           value={addressForm.district}
@@ -830,7 +830,7 @@ export default function OdemeSayfasi() {
                           }`}
                         >
                           <option value="">
-                            {!addressForm.city ? "-- Ã–nce Ä°l SeÃ§iniz --" : "-- Ä°lÃ§e SeÃ§iniz --"}
+                            {!addressForm.city ? "-- Önce İl Seçiniz --" : "-- İlçe Seçiniz --"}
                           </option>
                           {districts.map((d) => (
                             <option key={d} value={d} className="text-gray-900">
@@ -840,10 +840,10 @@ export default function OdemeSayfasi() {
                         </select>
                       </div>
 
-                      {/* MAHALLE SEÃ‡Ä°NÄ°Z (SeÃ§ili Gelmez) */}
+                      {/* MAHALLE SEÇİNİZ (Seçili Gelmez) */}
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          Semt / Mahalle SeÃ§iniz *
+                          Semt / Mahalle Seçiniz *
                         </label>
                         <select
                           value={addressForm.neighborhood}
@@ -861,8 +861,8 @@ export default function OdemeSayfasi() {
                         >
                           <option value="">
                             {!addressForm.district
-                              ? "-- Ã–nce Ä°lÃ§e SeÃ§iniz --"
-                              : "-- Mahalle SeÃ§iniz --"}
+                              ? "-- Önce İlçe Seçiniz --"
+                              : "-- Mahalle Seçiniz --"}
                           </option>
                           {neighborhoods.map((n) => (
                             <option key={n} value={n} className="text-gray-900">
@@ -872,10 +872,10 @@ export default function OdemeSayfasi() {
                         </select>
                       </div>
 
-                      {/* AÃ§Ä±k Adres */}
+                      {/* Açık Adres */}
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-bold text-gray-700 mb-1">
-                          AÃ§Ä±k Adres (Cadde, Sokak, No, Daire) *
+                          Açık Adres (Cadde, Sokak, No, Daire) *
                         </label>
                         <textarea
                           required
@@ -884,7 +884,7 @@ export default function OdemeSayfasi() {
                           onChange={(e) =>
                             setAddressForm({ ...addressForm, fullAddress: e.target.value })
                           }
-                          placeholder="Cadde, Sokak, Apartman AdÄ±, DÄ±ÅŸ KapÄ± No, Daire No..."
+                          placeholder="Cadde, Sokak, Apartman Adı, Dış Kapı No, Daire No..."
                           className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                         />
                       </div>
@@ -900,7 +900,7 @@ export default function OdemeSayfasi() {
                         className="rounded text-rose-500"
                       />
                       <span className="text-xs text-gray-600 font-semibold">
-                        FaturamÄ±n farklÄ± bir adrese dÃ¼zenlenmesini istiyorum
+                        Faturamın farklı bir adrese düzenlenmesini istiyorum
                       </span>
                     </label>
 
@@ -908,34 +908,34 @@ export default function OdemeSayfasi() {
                       type="submit"
                       className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider cursor-pointer"
                     >
-                      ADRESÄ° KAYDET VE Ã–DEMEYE GEÃ‡ &gt;
+                      ADRESİ KAYDET VE ÖDEMEYE GEÇ &gt;
                     </button>
                   </form>
                 )}
               </div>
             )}
 
-            {/* ADIM 2: Ã–DEME BÄ°LGÄ°LERÄ° */}
+            {/* ADIM 2: ÖDEME BİLGİLERİ */}
             {activeStep === 2 && (
               <div className="space-y-6">
-                {/* Geri DÃ¶n Butonu & SeÃ§ili Adres Ã–zeti */}
+                {/* Geri Dön Butonu & Seçili Adres Özeti */}
                 <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
                   <button
                     type="button"
                     onClick={() => setActiveStep(1)}
                     className="text-xs font-bold text-gray-700 hover:text-emerald-700 flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    â† 1. AdÄ±ma DÃ¶n (Adres DeÄŸiÅŸtir)
+                    â† 1. Adıma Dön (Adres Değiştir)
                   </button>
                   <span className="text-[11px] text-gray-400 font-semibold truncate max-w-xs">
                     ğŸ“ {addressForm.city} / {addressForm.district}
                   </span>
                 </div>
 
-                {/* KARGO SEÃ‡ENEKLERÄ° */}
+                {/* KARGO SEÇENEKLERİ */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-4">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-                    <Truck className="text-emerald-600" /> KARGO SEÃ‡ENEKLERÄ°
+                    <Truck className="text-emerald-600" /> KARGO SEÇENEKLERİ
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -971,13 +971,13 @@ export default function OdemeSayfasi() {
                   </div>
                 </div>
 
-                {/* Ã–DEME SEÃ‡ENEKLERÄ° */}
+                {/* ÖDEME SEÇENEKLERİ */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-                    <CreditCard className="text-emerald-600" /> Ã–DEME SEÃ‡ENEKLERÄ°
+                    <CreditCard className="text-emerald-600" /> ÖDEME SEÇENEKLERİ
                   </h3>
 
-                  {/* Ã–deme Sekmeleri: Kredi KartÄ± / Mail Order | Havale / EFT | PayTR */}
+                  {/* Ödeme Sekmeleri: Kredi Kartı / Mail Order | Havale / EFT | PayTR */}
                   <div className="flex flex-wrap gap-2 border-b pb-3">
                     <button
                       type="button"
@@ -986,7 +986,7 @@ export default function OdemeSayfasi() {
                         paymentMethod === "cc" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      Kredi KartÄ± / Mail Order
+                      Kredi Kartı / Mail Order
                     </button>
                     <button
                       type="button"
@@ -1019,7 +1019,7 @@ export default function OdemeSayfasi() {
                           Kart Bilgileri
                         </h4>
                         <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
-                          256-Bit SSL GÃ¼venli
+                          256-Bit SSL Güvenli
                         </span>
                       </div>
 
@@ -1029,11 +1029,11 @@ export default function OdemeSayfasi() {
                         </div>
                       )}
 
-                      {/* KAYITLI KARTLAR SEÃ‡Ä°CÄ° */}
+                      {/* KAYITLI KARTLAR SEÇİCİ */}
                       {userCards.length > 0 && (
                         <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
                           <label className="block text-xs font-extrabold text-gray-700">
-                            KayÄ±tlÄ± KartlarÄ±m:
+                            Kayıtlı Kartlarım:
                           </label>
 
                           <div className="space-y-2">
@@ -1086,19 +1086,19 @@ export default function OdemeSayfasi() {
                                 className="text-rose-500"
                               />
                               <span className="text-xs font-bold text-gray-800">
-                                + FarklÄ± Bir Kart ile Ã–de
+                                + Farklı Bir Kart ile Öde
                               </span>
                             </label>
                           </div>
                         </div>
                       )}
 
-                      {/* YENÄ° KART FORMU ALANLARI */}
+                      {/* YENİ KART FORMU ALANLARI */}
                       {selectedCardId === "new" ? (
                         <div className="space-y-4 pt-1">
                           <div>
                             <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Kart Ãœzerindeki Ad Soyad *
+                              Kart Üzerindeki Ad Soyad *
                             </label>
                             <input
                               type="text"
@@ -1108,14 +1108,14 @@ export default function OdemeSayfasi() {
                                 const val = e.target.value.replace(/[0-9]/g, '');
                                 setCardForm({ ...cardForm, cardName: val });
                               }}
-                              placeholder="Kart Ãœzerindeki Ä°sim"
+                              placeholder="Kart Üzerindeki İsim"
                               className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold uppercase"
                             />
                           </div>
 
                           <div>
                             <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Kart NumarasÄ± *
+                              Kart Numarası *
                             </label>
                             <input
                               type="tel"
@@ -1132,7 +1132,7 @@ export default function OdemeSayfasi() {
                             />
                           </div>
 
-                          {/* Son Kullanma Tarihi DropdownlarÄ± (Ay & YÄ±l) */}
+                          {/* Son Kullanma Tarihi Dropdownları (Ay & Yıl) */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="sm:col-span-2">
                               <label className="block text-xs font-bold text-gray-700 mb-1">
@@ -1146,7 +1146,7 @@ export default function OdemeSayfasi() {
                                   }
                                   className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                                 >
-                                  <option value="">Ay SeÃ§iniz</option>
+                                  <option value="">Ay Seçiniz</option>
                                   {months.map((m) => (
                                     <option key={m} value={m}>
                                       {m}
@@ -1161,7 +1161,7 @@ export default function OdemeSayfasi() {
                                   }
                                   className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
                                 >
-                                  <option value="">YÄ±l SeÃ§iniz</option>
+                                  <option value="">Yıl Seçiniz</option>
                                   {years.map((y) => (
                                     <option key={y} value={y}>
                                       {y}
@@ -1190,7 +1190,7 @@ export default function OdemeSayfasi() {
                             </div>
                           </div>
 
-                          {/* KartÄ± Sisteme Kaydet Checkbox */}
+                          {/* Kartı Sisteme Kaydet Checkbox */}
                           <label className="flex items-center gap-2 cursor-pointer pt-1">
                             <input
                               type="checkbox"
@@ -1199,15 +1199,15 @@ export default function OdemeSayfasi() {
                               className="rounded text-rose-500"
                             />
                             <span className="text-xs text-gray-700 font-bold">
-                              Bu kartÄ± sonraki alÄ±ÅŸveriÅŸlerimde kullanmak iÃ§in gÃ¼venle kaydet (PCI-DSS)
+                              Bu kartı sonraki alışverişlerimde kullanmak için güvenle kaydet (PCI-DSS)
                             </span>
                           </label>
                         </div>
                       ) : (
-                        /* KayÄ±tlÄ± Kart SeÃ§ildiÄŸinde Sadece CVV Ä°ste */
+                        /* Kayıtlı Kart Seçildiğinde Sadece CVV İste */
                         <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-3">
                           <p className="text-xs font-bold text-emerald-900">
-                            ğŸ”’ SeÃ§ili kartÄ±nÄ±zla gÃ¼venli iÅŸlem yapabilmek iÃ§in lÃ¼tfen arkadaki 3 haneli gÃ¼venlik kodunu (CVC) giriniz:
+                            ğŸ”’ Seçili kartınızla güvenli işlem yapabilmek için lütfen arkadaki 3 haneli güvenlik kodunu (CVC) giriniz:
                           </p>
                           <div className="w-40">
                             <input
@@ -1225,7 +1225,7 @@ export default function OdemeSayfasi() {
                         </div>
                       )}
 
-                      {/* Mail Order Yetkilendirme OnayÄ± */}
+                      {/* Mail Order Yetkilendirme Onayı */}
                       <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl space-y-2 mt-4">
                         <label className="flex items-start gap-2.5 cursor-pointer">
                           <input
@@ -1235,7 +1235,7 @@ export default function OdemeSayfasi() {
                             className="mt-0.5 rounded text-amber-600"
                           />
                           <span className="text-[11px] text-amber-900 leading-tight">
-                            <strong>Mail Order / Kart Tahsilat OnayÄ±:</strong> Kredi kartÄ±mdan sipariÅŸ tutarÄ± olan <strong>{formatPrice(grandTotal)}</strong> tutarÄ±nÄ±n tahsil edilmesini ve sipariÅŸimin iÅŸleme alÄ±nmasÄ±nÄ± onaylÄ±yorum.
+                            <strong>Mail Order / Kart Tahsilat Onayı:</strong> Kredi kartımdan sipariş tutarı olan <strong>{formatPrice(grandTotal)}</strong> tutarının tahsil edilmesini ve siparişimin işleme alınmasını onaylıyorum.
                           </span>
                         </label>
                       </div>
@@ -1249,10 +1249,10 @@ export default function OdemeSayfasi() {
                         {PRICING_RULES.COMPANY_IBAN}
                       </p>
                       <p className="text-emerald-700">
-                        AlÄ±cÄ± AdÄ±: {PRICING_RULES.COMPANY_NAME}
+                        Alıcı Adı: {PRICING_RULES.COMPANY_NAME}
                       </p>
                       <p className="text-[11px] text-emerald-600 font-medium pt-1">
-                        * Havale aÃ§Ä±klamasÄ±na Ad Soyad veya SipariÅŸ NumaranÄ±zÄ± yazmayÄ± unutmayÄ±nÄ±z.
+                        * Havale açıklamasına Ad Soyad veya Sipariş Numaranızı yazmayı unutmayınız.
                       </p>
                     </div>
                   )}
@@ -1260,10 +1260,10 @@ export default function OdemeSayfasi() {
                   {paymentMethod === "paytr" && (
                     <div className="bg-blue-50 border border-blue-200 p-6 rounded-3xl space-y-4 text-xs">
                       <div className="flex items-center gap-3 text-blue-900 font-extrabold text-sm border-b border-blue-200 pb-3">
-                        <ShieldCheck size={24} className="text-blue-600" /> PayTR 256-Bit SSL GÃ¼venli Sanal POS
+                        <ShieldCheck size={24} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
                       </div>
                       <p className="text-blue-800 font-semibold">
-                        PayTR gÃ¼vencesiyle 3D Secure SMS ÅŸifrenizle anÄ±nda ve gÃ¼venli Ã¶deme yapabilirsiniz.
+                        PayTR güvencesiyle 3D Secure SMS şifrenizle anında ve güvenli ödeme yapabilirsiniz.
                       </p>
                     </div>
                   )}
@@ -1272,14 +1272,14 @@ export default function OdemeSayfasi() {
             )}
           </div>
 
-          {/* SaÄŸ Kolon: SipariÅŸ Ã–zeti */}
+          {/* Sağ Kolon: Sipariş Özeti */}
           <div className="space-y-4">
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4 sticky top-24">
               <h3 className="font-extrabold text-sm text-gray-900 uppercase border-b pb-3 flex justify-between items-center">
-                SipariÅŸ Ã–zeti <ChevronRight size={16} />
+                Sipariş Özeti <ChevronRight size={16} />
               </h3>
 
-              {/* ÃœrÃ¼n Mini Listesi */}
+              {/* Ürün Mini Listesi */}
               <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
                 {items.map(({ product, quantity }) => (
                   <div key={product.id} className="flex items-center gap-3 text-xs border-b pb-2">
@@ -1308,13 +1308,13 @@ export default function OdemeSayfasi() {
                 ))}
               </div>
 
-              {/* Ä°ndirim Kodu Kutu */}
+              {/* İndirim Kodu Kutu */}
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="Ä°ndirim Kodu"
+                  placeholder="İndirim Kodu"
                   className="flex-1 p-2.5 border rounded-xl text-xs bg-gray-50 uppercase font-bold"
                 />
                 <button
@@ -1338,11 +1338,11 @@ export default function OdemeSayfasi() {
                       if (data.success) {
                         setDiscount(data.discountAmount);
                       } else {
-                        alert(data.error || "Kupon uygulanamadÄ±.");
+                        alert(data.error || "Kupon uygulanamadı.");
                         setDiscount(0);
                       }
                     } catch (e: any) {
-                      alert("Sunucuyla iletiÅŸim kurulamadÄ±.");
+                      alert("Sunucuyla iletişim kurulamadı.");
                       setDiscount(0);
                     }
                   }}
@@ -1352,22 +1352,22 @@ export default function OdemeSayfasi() {
                 </button>
               </div>
 
-              {/* Fiyat DetaylarÄ± */}
+              {/* Fiyat Detayları */}
               <div className="space-y-2 text-xs border-t pt-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-bold">Sepet ToplamÄ±</span>
+                  <span className="text-gray-500 font-bold">Sepet Toplamı</span>
                   <span className="font-extrabold text-gray-900">{formatPrice(total)}</span>
                 </div>
 
                 {multiBuyDiscount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">
-                    <span>Sepet Ä°ndirimi (%5)</span>
+                    <span>Sepet İndirimi (%5)</span>
                     <span>-{formatPrice(multiBuyDiscount)}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between">
-                  <span className="text-gray-500 font-bold">Kargo Ãœcreti</span>
+                  <span className="text-gray-500 font-bold">Kargo Ücreti</span>
                   <span className="font-extrabold text-rose-500">
                     {shippingCost === 0 ? "BEDAVA" : formatPrice(shippingCost)}
                   </span>
@@ -1375,14 +1375,14 @@ export default function OdemeSayfasi() {
 
                 {discount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">
-                    <span>Kupon Ä°ndirimi</span>
+                    <span>Kupon İndirimi</span>
                     <span>-{formatPrice(discount)}</span>
                   </div>
                 )}
 
                 {eftDiscount > 0 && (
                   <div className="flex justify-between text-emerald-600 font-bold">
-                    <span>Havale/EFT Ä°ndirimi</span>
+                    <span>Havale/EFT İndirimi</span>
                     <span>-{formatPrice(eftDiscount)}</span>
                   </div>
                 )}
@@ -1393,7 +1393,7 @@ export default function OdemeSayfasi() {
                 </div>
               </div>
 
-              {/* SÃ¶zleÅŸme Onay Kutusu */}
+              {/* Sözleşme Onay Kutusu */}
               <label className="flex items-start gap-2 cursor-pointer pt-2">
                 <input
                   type="checkbox"
@@ -1402,12 +1402,12 @@ export default function OdemeSayfasi() {
                   className="mt-0.5 rounded text-rose-500"
                 />
                 <span className="text-[11px] text-gray-600 leading-tight">
-                  <strong className="underline">Ã–n Bilgilendirme Formunu</strong> ve{" "}
-                  <strong className="underline">Mesafeli SatÄ±ÅŸ SÃ¶zleÅŸmesini</strong> okudum, onaylÄ±yorum.
+                  <strong className="underline">Ön Bilgilendirme Formunu</strong> ve{" "}
+                  <strong className="underline">Mesafeli Satış Sözleşmesini</strong> okudum, onaylıyorum.
                 </span>
               </label>
 
-              {/* SÄ°PARÄ°ÅÄ° TAMAMLA Butonu */}
+              {/* SİPARİÅİ TAMAMLA Butonu */}
               <button
                 type="button"
                 onClick={() => {
@@ -1415,7 +1415,7 @@ export default function OdemeSayfasi() {
                     if (selectedAddressId || (addressForm.fullName && addressForm.city && addressForm.district)) {
                       setActiveStep(2);
                     } else {
-                      setAddressError("LÃ¼tfen Ã¶nce teslimat adresi bilgilerinizi tamamlayÄ±nÄ±z.");
+                      setAddressError("Lütfen önce teslimat adresi bilgilerinizi tamamlayınız.");
                     }
                   } else {
                     handleCompleteOrder();
@@ -1423,7 +1423,7 @@ export default function OdemeSayfasi() {
                 }}
                 className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
-                {activeStep === 1 ? "Ã–DEME ADIMINA GEÃ‡ >" : "SÄ°PARÄ°ÅÄ° TAMAMLA"}
+                {activeStep === 1 ? "ÖDEME ADIMINA GEÇ >" : "SİPARİÅİ TAMAMLA"}
               </button>
             </div>
           </div>
