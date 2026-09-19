@@ -52,6 +52,7 @@ import { useOrderStore } from '@/stores/orderStore';
 import { useReviewStore } from '@/stores/reviewStore';
 import { useAccountExtrasStore } from '@/stores/accountExtrasStore';
 import { useFavoritesStore } from '@/stores/favoritesStore';
+import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/products';
 import { clearUserSession } from '@/lib/authUtils';
 import { ALL_81_PROVINCES } from '@/lib/turkeyLocations';
@@ -74,7 +75,8 @@ export default function HesabimPage() {
   const { cards, removeCard, getUserCards } = useCardStore();
   const { orders } = useOrderStore();
   const { reviews } = useReviewStore();
-  const { items: favoriteItems } = useFavoritesStore();
+  const { items: favoriteItems, syncWithServer: syncFavorites } = useFavoritesStore();
+  const { syncWithServer: syncCart } = useCartStore();
   const {
     stockAlerts,
     removeStockAlertAsync,
@@ -95,8 +97,10 @@ export default function HesabimPage() {
     if (session?.user) {
       syncAddresses();
       syncAlarms();
+      syncFavorites();
+      syncCart();
     }
-  }, [session, syncAddresses, syncAlarms]);
+  }, [session, syncAddresses, syncAlarms, syncFavorites, syncCart]);
 
   // KULLANICIYA ÖZEL İZOLE EDİLMİŞ VERİLER
   const userOrders =

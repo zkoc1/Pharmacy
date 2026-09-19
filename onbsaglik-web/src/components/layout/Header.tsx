@@ -19,6 +19,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import CartDrawer from "@/components/ui/CartDrawer";
 import LoginModal from "@/components/ui/LoginModal";
 import { isUserLoggedIn } from "@/lib/authUtils";
@@ -113,9 +114,18 @@ export default function Header() {
   const [activeMegaCategory, setActiveMegaCategory] = useState<typeof NAV_CATEGORIES[0] | null>(null);
 
   const cartItems = useCartStore((state) => state.items);
+  const syncCart = useCartStore((state) => state.syncWithServer);
+  const syncFavorites = useFavoritesStore((state) => state.syncWithServer);
   const totalItemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      syncCart();
+      syncFavorites();
+    }
+  }, [session, syncCart, syncFavorites]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

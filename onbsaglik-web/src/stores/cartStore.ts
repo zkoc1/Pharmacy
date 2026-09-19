@@ -38,7 +38,25 @@ interface CartStore {
   getTotalPrice: () => number;
   /** DB ve kampanya durumuna göre sepeti güncelle (geçersiz/bitmiş fiyatları düzeltir) */
   syncCartPrices: (products: Product[], activeCampaigns: any[]) => void;
+  /** Sunucudan sepeti çeker ve eşitler */
+  syncWithServer: () => Promise<void>;
 }
+
+// Helper to push cart to server
+const pushCartToServer = async (email: string, items: CartItem[]) => {
+  if (email === "guest" || !email) return;
+  try {
+    await fetch("/api/cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        items: items.map(i => ({ product_id: i.product.id, quantity: i.quantity })) 
+      }),
+    });
+  } catch (error) {
+    console.error("Cart push error", error);
+  }
+};
 
 export const useCartStore = create<CartStore>()(
   persist(
@@ -105,6 +123,11 @@ export const useCartStore = create<CartStore>()(
             },
           };
         });
+
+        const finalEmail = get().userEmail;
+        if (finalEmail !== "guest") {
+          pushCartToServer(finalEmail, get().cartsByUser[finalEmail] || get().items);
+        }
       },
 
       removeItem: (productId) => {
@@ -121,6 +144,11 @@ export const useCartStore = create<CartStore>()(
             },
           };
         });
+
+        const finalEmail = get().userEmail;
+        if (finalEmail !== "guest") {
+          pushCartToServer(finalEmail, get().cartsByUser[finalEmail] || get().items);
+        }
       },
 
       updateQuantity: (productId, quantity) => {
@@ -144,6 +172,11 @@ export const useCartStore = create<CartStore>()(
             },
           };
         });
+
+        const finalEmail = get().userEmail;
+        if (finalEmail !== "guest") {
+          pushCartToServer(finalEmail, get().cartsByUser[finalEmail] || get().items);
+        }
       },
 
       clearCart: () => {
@@ -157,6 +190,11 @@ export const useCartStore = create<CartStore>()(
             },
           };
         });
+        
+        const finalEmail = get().userEmail;
+        if (finalEmail !== "guest") {
+          pushCartToServer(finalEmail, []);
+        }
       },
 
       getTotalCount: () => {
@@ -221,6 +259,37 @@ export const useCartStore = create<CartStore>()(
              }
           };
         });
+      },
+
+      syncWithServer: async () => {
+        const email = get().userEmail;
+        if (!email || email === "guest") return;
+        
+        try {
+          const res = await fetch("/api/cart");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.cart && data.cart.length > 0) {
+              const serverItems = data.cart.map((c: any) => ({
+                product: c.products,
+                quantity: c.quantity
+              }));
+
+              set((state) => ({
+                items: serverItems,
+                cartsByUser: {
+                  ...state.cartsByUser,
+                  [email]: serverItems,
+                },
+              }));
+            } else if (get().items.length > 0) {
+               // Eger veritabaninda sepet bossa, ama localde doluysa, localdekini veritabanina yaz
+               pushCartToServer(email, get().items);
+            }
+          }
+        } catch (error) {
+          console.error("Cart sync error", error);
+        }
       },
     }),
     {
