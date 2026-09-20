@@ -71,7 +71,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
         body: JSON.stringify({ type: "price", product_id: product.id, target_price: priceAlarmTarget })
       });
       setShowPriceAlarmInput(false);
-      alert("Fiyat alarmı kuruldu!");
+      setAlarmMessage("Fiyat alarmı başarıyla kuruldu! (Hesabım sayfasından görebilirsiniz)"); setTimeout(() => setAlarmMessage(""), 5000);
     } catch (e) {
       console.error(e);
     }
@@ -88,7 +88,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "stock", product_id: product.id })
       });
-      alert("Stok alarmı kuruldu!");
+      setAlarmMessage("Stok alarmı başarıyla kuruldu! (Hesabım sayfasından görebilirsiniz)"); setTimeout(() => setAlarmMessage(""), 5000);
     } catch (e) {
       console.error(e);
     }
