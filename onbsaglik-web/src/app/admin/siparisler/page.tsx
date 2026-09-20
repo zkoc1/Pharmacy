@@ -41,6 +41,7 @@ export default function AdminSiparislerTrendyol() {
     bulkUpdateStatus,
     fetchOrders,
     updateCarrier,
+    updateTrackingNumber,
   } = useOrderStore();
 
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -135,6 +136,26 @@ export default function AdminSiparislerTrendyol() {
       {billingInfoOrder && (
         <BillingInfoModal order={billingInfoOrder} onClose={() => setBillingInfoOrder(null)} />
       )}
+      {customCarrierOrder && (
+        <CustomCarrierModal
+          order={customCarrierOrder}
+          onClose={() => setCustomCarrierOrder(null)}
+          onSubmit={async (carrier, trackingNumber) => {
+            await updateCarrier(customCarrierOrder.id, carrier);
+            await updateTrackingNumber(customCarrierOrder.id, trackingNumber);
+            await updateOrderStatus(customCarrierOrder.id, "Kargoda", carrier + " ile kargoya verildi.");
+            setCustomCarrierOrder(null);
+          }}
+        />
+      )}
+      {documentOrder && (
+        <DocumentModal
+          order={documentOrder.order}
+          type={documentOrder.type}
+          onClose={() => setDocumentOrder(null)}
+        />
+      )}
+
 
       {/* TABS (Trendyol Style) */}
       <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
