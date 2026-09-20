@@ -336,6 +336,6 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         );
       },
     }),
-    { name: "onbsaglik-account-extras" }
+    { name: "onbsaglik-account-extras", version: 1 }
   )
 );
