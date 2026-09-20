@@ -165,7 +165,7 @@ export default function OdemeSayfasi() {
   const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
   const grandTotal = Math.max(0, tempGrandTotal - eftDiscount);
 
-  // 1. API'den Åehir İsimlerini Çek ve Kargo Ayarlarını Al
+  // 1. API'den Şehir İsimlerini Çek ve Kargo Ayarlarını Al
   useEffect(() => {
     fetch("/api/locations")
       .then((r) => r.json())
@@ -182,7 +182,7 @@ export default function OdemeSayfasi() {
       .catch(() => {});
   }, []);
 
-  // 2. Seçilen Åehrin Tüm İlçelerini Çek
+  // 2. Seçilen Şehrin Tüm İlçelerini Çek
   useEffect(() => {
     if (!addressForm.city) {
       setDistricts([]);
@@ -422,7 +422,7 @@ export default function OdemeSayfasi() {
       }
     }
 
-    // SİPARİÅİ MERKEZİ SİPARİÅ STORE'UNA KAYDET (SLUG DAHİL)
+    // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET (SLUG DAHİL)
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
     const orderStatus =
       paymentMethod === "cc"
@@ -687,7 +687,7 @@ export default function OdemeSayfasi() {
                           }}
                           className="text-xs font-bold text-gray-600 hover:text-gray-900 underline cursor-pointer"
                         >
-                          â† Kayıtlı Adreslerime Dön
+                          ← Kayıtlı Adreslerime Dön
                         </button>
                       )}
                     </div>
@@ -941,10 +941,10 @@ export default function OdemeSayfasi() {
                     onClick={() => setActiveStep(1)}
                     className="text-xs font-bold text-gray-700 hover:text-emerald-700 flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    â† 1. Adıma Dön (Adres Değiştir)
+                    ← 1. Adıma Dön (Adres Değiştir)
                   </button>
                   <span className="text-[11px] text-gray-400 font-semibold truncate max-w-xs">
-                    ğŸ“ {addressForm.city} / {addressForm.district}
+                    📍 {addressForm.city} / {addressForm.district}
                   </span>
                 </div>
 
@@ -1423,7 +1423,7 @@ export default function OdemeSayfasi() {
                 </span>
               </label>
 
-              {/* SİPARİÅİ TAMAMLA Butonu */}
+              {/* SİPARİŞİ TAMAMLA Butonu */}
               <button
                 type="button"
                 onClick={() => {
@@ -1439,7 +1439,7 @@ export default function OdemeSayfasi() {
                 }}
                 className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
-                {activeStep === 1 ? "ÖDEME ADIMINA GEÇ >" : "SİPARİÅİ TAMAMLA"}
+                {activeStep === 1 ? "ÖDEME ADIMINA GEÇ >" : "SİPARİŞİ TAMAMLA"}
               </button>
             </div>
           </div>
