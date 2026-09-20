@@ -363,10 +363,10 @@ export default function AdminSiparislerTrendyol() {
                             <div className="absolute right-0 top-full pt-1 w-48 z-50 hidden group-hover:block text-left text-xs">
                               <div className="bg-white border shadow-xl rounded overflow-hidden text-gray-700">
                                 
-                                {ord.status === "Ödeme Bekliyor" && (
+                                {(ord.status === "Ödeme Bekliyor" || ord.status === "Mail Order Bekliyor") && (
                                   <button onClick={() => updateOrderStatus(ord.id, "Hazırlanıyor")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">İşleme Al</button>
                                 )}
-                                {(ord.status === "Hazırlanıyor" || ord.status === "Ödeme Bekliyor") && (
+                                {(ord.status === "Hazırlanıyor" || ord.status === "Ödeme Bekliyor" || ord.status === "Mail Order Bekliyor") && (
                                   <button onClick={() => setCustomCarrierOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması ile Gönder</button>
                                 )}
                                 {ord.status !== "İptal / İade" && ord.status !== "Teslim Edildi" && (
