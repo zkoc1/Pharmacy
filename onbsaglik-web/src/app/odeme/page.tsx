@@ -6,6 +6,19 @@
 
 "use client";
 
+// Geriye dönük uyumluluk için güvenli görsel alıcı
+const getImg = (imgs: any) => {
+  if (Array.isArray(imgs)) return imgs[0] || '/placeholder.png';
+  if (typeof imgs === 'string') {
+    if (imgs.startsWith('[')) {
+      try { return JSON.parse(imgs)[0] || '/placeholder.png'; } catch { return '/placeholder.png'; }
+    }
+    return imgs.split(',')[0] || '/placeholder.png';
+  }
+  return '/placeholder.png';
+};
+
+
 import React, { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore, Address } from "@/stores/addressStore";
@@ -423,7 +436,7 @@ export default function OdemeSayfasi() {
         brand: i.product.brand,
         price: i.product.price,
         quantity: i.quantity,
-        image: i.product.images?.[0] || "/placeholder.png",
+        image: getImg(i.product.images),
       })),
       total: grandTotal,
       carrier: selectedCarrier,
@@ -1285,7 +1298,7 @@ export default function OdemeSayfasi() {
                   <div key={product.id} className="flex items-center gap-3 text-xs border-b pb-2">
                     <Link href={`/urun/${product.slug}`} className="relative w-12 h-12 flex-shrink-0 bg-gray-50 rounded-lg p-1 border hover:border-emerald-500 transition-colors">
                       <Image
-                        src={product.images?.[0] || "/placeholder.png"}
+                        src={getImg(product.images)}
                         alt={product.name}
                         fill
                         className="object-contain"

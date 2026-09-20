@@ -1,5 +1,18 @@
 'use client';
 
+// Geriye dönük uyumluluk için güvenli görsel alıcı
+const getImg = (imgs: any) => {
+  if (Array.isArray(imgs)) return imgs[0] || '/placeholder.png';
+  if (typeof imgs === 'string') {
+    if (imgs.startsWith('[')) {
+      try { return JSON.parse(imgs)[0] || '/placeholder.png'; } catch { return '/placeholder.png'; }
+    }
+    return imgs.split(',')[0] || '/placeholder.png';
+  }
+  return '/placeholder.png';
+};
+
+
 // Sepet özeti ve yönetimi için yandan kayan panel (Drawer)
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -78,7 +91,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {/* Ürün Görseli */}
                   <div className="relative w-20 h-20 bg-gray-50 rounded-lg overflow-hidden flex-shrink-0">
                     <Image 
-                      src={item.product.images?.[0] || '/placeholder.png'} 
+                      src={getImg(item.product.images)} 
                       alt={item.product.name} 
                       fill 
                       className="object-contain p-2"

@@ -5,6 +5,19 @@
 
 "use client";
 
+// Geriye dönük uyumluluk için güvenli görsel alıcı
+const getImg = (imgs: any) => {
+  if (Array.isArray(imgs)) return imgs[0] || '/placeholder.png';
+  if (typeof imgs === 'string') {
+    if (imgs.startsWith('[')) {
+      try { return JSON.parse(imgs)[0] || '/placeholder.png'; } catch { return '/placeholder.png'; }
+    }
+    return imgs.split(',')[0] || '/placeholder.png';
+  }
+  return '/placeholder.png';
+};
+
+
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -126,7 +139,7 @@ export default function SepetSayfasi() {
                     {/* Ürün Detayı */}
                     <div className="col-span-6 flex gap-3 items-center">
                       <div className="relative w-16 h-16 flex-shrink-0 bg-gray-50 rounded-xl p-1 border">
-                        <Image src={product.images?.[0] || "/placeholder.png"} alt={product.name} fill className="object-contain" unoptimized />
+                        <Image src={getImg(product.images)} alt={product.name} fill className="object-contain" unoptimized />
                       </div>
                       <div>
                         <span className="font-bold text-gray-400 block uppercase">{product.brand}</span>
@@ -283,7 +296,7 @@ export default function SepetSayfasi() {
             {specialOffers.map((sp) => (
               <div key={sp.id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm text-center">
                 <div className="relative aspect-square w-full mb-2 bg-gray-50 rounded-xl p-2">
-                  <Image src={sp.images?.[0] || "/placeholder.png"} alt={sp.name} fill className="object-contain" unoptimized />
+                  <Image src={getImg(sp.images)} alt={sp.name} fill className="object-contain" unoptimized />
                 </div>
                 <span className="text-[10px] font-bold text-gray-400 block uppercase">{sp.brand}</span>
                 <p className="text-xs font-bold text-gray-800 line-clamp-2 h-8">{sp.name}</p>
