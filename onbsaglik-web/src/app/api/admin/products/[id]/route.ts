@@ -77,35 +77,47 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  
+  // Fiyat Düşüşü Bildirimi
   if (oldProduct && updateData.price && updateData.price < oldProduct.price) {
-    const { data: favorites } = await supabase.from("favorites").select("user_email").eq("product_id", id);
-    if (favorites && favorites.length > 0) {
+    const { data: priceAlarms } = await supabase.from("price_alarms").select("user_email, target_price").eq("product_id", id);
+    if (priceAlarms && priceAlarms.length > 0) {
       const { sendEmail } = await import("@/lib/email");
-      
       const productUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://onbsaglik.com.tr"}/urun/${oldProduct.slug || id}`;
-      
-      for (const fav of favorites) {
-        if (fav.user_email) {
-          const mailHtml = `
-            <h2>Müjde! Favorinizdeki Ürünün Fiyatı Düştü 🥳</h2>
-            <p>Merhaba,</p>
-            <p>Favorilerinize eklediğiniz <strong>${oldProduct.name}</strong> ürününün fiyatı düştü!</p>
-            <p>Eski Fiyat: <s>${oldProduct.price} TL</s></p>
-            <p><strong>Yeni Fiyat: <span style="color: green;">${updateData.price} TL</span></strong></p>
-            <br/>
-            <a href="${productUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">Ürünü Hemen İncele</a>
+      for (const alarm of priceAlarms) {
+        if (alarm.user_email && updateData.price <= alarm.target_price) {
+          const mailHtml = `<h2>Müjde! Beklediğiniz Ürünün Fiyatı Düştü 🥳</h2>
+            <p><strong>${oldProduct.name}</strong> ürününün fiyatı <strong>${updateData.price} TL</strong> seviyesine düştü!</p>
+            <a href="${productUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">Hemen İncele</a>
             <br/><br/>
-            <p>Sağlıklı günler dileriz,<br/><strong>OnbSağlık</strong></p>
-          `;
-          await sendEmail({
-            to: fav.user_email,
-            subject: `Favori Ürününüzde İndirim: ${oldProduct.name}`,
-            html: mailHtml,
-          });
+            <p>Sağlıklı günler dileriz,<br/><strong>OnbSağlık</strong></p>`;
+          await sendEmail({ to: alarm.user_email, subject: `Fiyat Alarmı: ${oldProduct.name}`, html: mailHtml });
+          await supabase.from("price_alarms").delete().eq("user_email", alarm.user_email).eq("product_id", id);
         }
       }
     }
   }
+
+  // Stok Geldi Bildirimi
+  if (oldProduct && oldProduct.stock === 0 && updateData.stock > 0) {
+    const { data: stockAlarms } = await supabase.from("stock_alarms").select("user_email").eq("product_id", id);
+    if (stockAlarms && stockAlarms.length > 0) {
+      const { sendEmail } = await import("@/lib/email");
+      const productUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://onbsaglik.com.tr"}/urun/${oldProduct.slug || id}`;
+      for (const alarm of stockAlarms) {
+        if (alarm.user_email) {
+          const mailHtml = `<h2>Müjde! Beklediğiniz Ürün Stoklarda 📦</h2>
+            <p><strong>${oldProduct.name}</strong> ürünü yeniden stoklarımıza girmiştir!</p>
+            <a href="${productUrl}" style="background-color: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px;">Hemen Satın Al</a>
+            <br/><br/>
+            <p>Sağlıklı günler dileriz,<br/><strong>OnbSağlık</strong></p>`;
+          await sendEmail({ to: alarm.user_email, subject: `Stok Alarmı: ${oldProduct.name} Geldi!`, html: mailHtml });
+          await supabase.from("stock_alarms").delete().eq("user_email", alarm.user_email).eq("product_id", id);
+        }
+      }
+    }
+  }
+
 
   await logAction(adminEmail, "ÜRÜN GÜNCELLENDİ", `Ürün #${id} güncellendi.`);
 

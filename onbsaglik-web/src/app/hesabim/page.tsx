@@ -116,8 +116,22 @@ export default function HesabimPage() {
   const userAddresses = getUserAddresses(currentUserEmail);
   const userCards = getUserCards(currentUserEmail);
   const userCoupons = getUserCoupons(currentUserEmail);
-  const userStockAlerts = getUserStockAlerts(currentUserEmail);
-  const userPriceAlerts = getUserPriceAlerts(currentUserEmail);
+  const userStockAlerts = dbStockAlerts.map(a => ({
+  id: a.id,
+  productSlug: a.products?.slug,
+  productName: a.products?.name,
+  productImage: Array.isArray(a.products?.images) ? a.products.images[0] : (a.products?.images || '/placeholder.png'),
+  price: a.products?.price || 0,
+  email: a.user_email
+}));
+  const userPriceAlerts = dbPriceAlerts.map(a => ({
+  id: a.id,
+  productSlug: a.products?.slug,
+  productName: a.products?.name,
+  productImage: Array.isArray(a.products?.images) ? a.products.images[0] : (a.products?.images || '/placeholder.png'),
+  currentPrice: a.products?.price || 0,
+  targetPrice: a.target_price || 0
+}));
   const userTransferNotifications = getUserTransferNotifications(currentUserEmail);
   const userReviews = reviews.filter(
     (r) =>
@@ -1184,7 +1198,7 @@ export default function HesabimPage() {
                       </span>
                     </div>
                     <button
-                      onClick={() => removeStockAlertAsync(item.id)}
+                      onClick={() => handleRemoveDbStock(item.id)}
                       className="text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       title="Alarmı Sil"
                     >
@@ -1426,7 +1440,7 @@ export default function HesabimPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => removePriceAlertAsync(item.id)}
+                      onClick={() => handleRemoveDbPrice(item.id)}
                       className="text-red-500 p-2 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
                       title="Alarmı Sil"
                     >
