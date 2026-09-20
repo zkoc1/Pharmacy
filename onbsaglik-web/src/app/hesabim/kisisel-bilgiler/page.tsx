@@ -206,9 +206,9 @@ export default function KisiselBilgilerSayfasi() {
                 <div>
                   <label className="block text-[11px] font-bold text-gray-600 mb-1">Cep Telefonu *</label>
                   <input
-                    type="tel"
+                    type="tel" name="phone" autoComplete="tel"
                     required
-                    maxLength={10}
+                    maxLength={17}
                     value={profile.phone}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '');

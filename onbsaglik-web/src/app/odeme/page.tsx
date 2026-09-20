@@ -753,9 +753,9 @@ export default function OdemeSayfasi() {
   🇹🇷 +90
 </span>
                           <input
-                            type="tel"
+                            type="tel" name="phone" autoComplete="tel"
                             required
-                            maxLength={10}
+                            maxLength={17}
                             value={addressForm.phone}
                             onChange={(e) => {
                               const val = e.target.value.replace(/[^0-9]/g, '');
@@ -1134,7 +1134,7 @@ export default function OdemeSayfasi() {
                               Kart Numarası *
                             </label>
                             <input
-                              type="tel"
+                              type="tel" name="phone" autoComplete="tel"
                               required
                               maxLength={19}
                               value={cardForm.cardNumber}
@@ -1192,7 +1192,7 @@ export default function OdemeSayfasi() {
                                 CVC / CVV *
                               </label>
                               <input
-                                type="tel"
+                                type="tel" name="phone" autoComplete="tel"
                                 required
                                 maxLength={3}
                                 value={cardForm.cvc}
