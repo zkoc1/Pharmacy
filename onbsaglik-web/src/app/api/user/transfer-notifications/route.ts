@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   if (!session?.user?.email) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
 
   const body = await req.json();
-  const { bank_name, sender_name, amount, transfer_date } = body;
+  const { bank_name, sender_name, amount, transfer_date, order_id, note } = body;
 
   const { data, error } = await supabase
     .from("bank_transfer_notifications")
@@ -32,10 +32,11 @@ export async function POST(req: Request) {
       sender_name,
       amount,
       transfer_date,
+      order_id,
+      note,
       status: "İnceleniyor"
     }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true, notification: data });
 }
-

@@ -67,6 +67,15 @@ export default function HesabimPage() {
   const [orderSearchResult, setOrderSearchResult] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
 
+  
+  const [dbTransferNotifications, setDbTransferNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/user/transfer-notifications').then(r => r.json()).then(d => setDbTransferNotifications(d.notifications || []));
+    }
+  }, [session?.user?.email]);
+
   const [dbStockAlerts, setDbStockAlerts] = useState<any[]>([]);
   const [dbPriceAlerts, setDbPriceAlerts] = useState<any[]>([]);
 
@@ -153,7 +162,15 @@ export default function HesabimPage() {
   currentPrice: a.products?.price || 0,
   targetPrice: a.target_price || 0
 }));
-  const userTransferNotifications = getUserTransferNotifications(currentUserEmail);
+  const userTransferNotifications = dbTransferNotifications.map((n: any) => ({
+  id: n.id,
+  orderId: n.order_id,
+  bankName: n.bank_name,
+  senderName: n.sender_name,
+  amount: n.amount,
+  transferDate: n.transfer_date,
+  status: n.status
+}));
   const userReviews = reviews.filter(
     (r) =>
       (r.email && r.email.toLowerCase() === currentUserEmail.toLowerCase()) ||
@@ -335,24 +352,35 @@ export default function HesabimPage() {
   };
 
   // Havale Bildirimi Gönderme (Kullanıcıya Özel)
-  const handleHavaleSubmit = (e: React.FormEvent) => {
+  const handleHavaleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!havaleForm.senderName.trim() || !havaleForm.amount) {
       alert('Lütfen Gönderen Ad Soyad ve Tutar alanlarını doldurunuz.');
       return;
     }
 
-    addTransferNotification({
-      userEmail: currentUserEmail,
-      orderId:
-        havaleForm.orderId ||
-        (userOrders[0]?.id || `ONB-${Date.now().toString().slice(-6)}`),
-      bankName: havaleForm.bankName,
-      senderName: havaleForm.senderName,
-      amount: parseFloat(havaleForm.amount),
-      transferDate: havaleForm.transferDate,
-      note: havaleForm.note,
-    });
+    const orderId = havaleForm.orderId || (userOrders[0]?.id || `ONB-${Date.now().toString().slice(-6)}`);
+
+    try {
+      const res = await fetch('/api/user/transfer-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: orderId,
+          bank_name: havaleForm.bankName,
+          sender_name: havaleForm.senderName,
+          amount: parseFloat(havaleForm.amount),
+          transfer_date: havaleForm.transferDate,
+          note: havaleForm.note,
+        })
+      });
+      if (res.ok) {
+        // Refresh notifications
+        fetch('/api/user/transfer-notifications').then(r => r.json()).then(d => setDbTransferNotifications(d.notifications || []));
+      }
+    } catch (err) {
+      console.error(err);
+    }
 
     setHavaleSuccess(true);
     setHavaleForm({
