@@ -19,6 +19,8 @@ import {
 import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
 import CargoLabelPrint from "@/components/admin/CargoLabelPrint";
+import CustomCarrierModal from "@/components/admin/CustomCarrierModal";
+import DocumentModal from "@/components/admin/DocumentModal";
 import InvoiceModal from "@/components/admin/InvoiceModal";
 import BillingInfoModal from "@/components/admin/BillingInfoModal";
 
@@ -47,6 +49,8 @@ export default function AdminSiparislerTrendyol() {
   const [cargoLabelOrder, setCargoLabelOrder] = useState<OrderRecord | null>(null);
   const [invoiceOrder, setInvoiceOrder] = useState<OrderRecord | null>(null);
   const [billingInfoOrder, setBillingInfoOrder] = useState<OrderRecord | null>(null);
+  const [customCarrierOrder, setCustomCarrierOrder] = useState<OrderRecord | null>(null);
+  const [documentOrder, setDocumentOrder] = useState<{order: OrderRecord, type: "magaza_karti" | "mesafeli_satis" | "on_bilgilendirme"} | null>(null);
 
   // Filters
   const [activeTab, setActiveTab] = useState("all");
@@ -337,11 +341,11 @@ export default function AdminSiparislerTrendyol() {
                               <div className="bg-white border shadow-xl rounded overflow-hidden text-gray-700">
                                 
                                 <button onClick={() => updateOrderStatus(ord.id, "Hazırlanıyor")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">İşleme Al</button>
-                                <button onClick={() => updateOrderStatus(ord.id, "Kargoda")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması ile Gönder</button>
+                                <button onClick={() => setCustomCarrierOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması ile Gönder</button>
                                 <button onClick={() => updateOrderStatus(ord.id, "İptal / İade")} className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 border-b">İptal Et</button>
-                                <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mağaza Kartı Yazdır</button>
-                                <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mesafeli Satış Sözleşmesi</button>
-                                <button className="w-full text-left px-3 py-2 hover:bg-gray-50">Ön Bilgilendirme Formu</button>
+                                <button onClick={() => setDocumentOrder({order: ord, type: "magaza_karti"})} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mağaza Kartı Yazdır</button>
+                                <button onClick={() => setDocumentOrder({order: ord, type: "mesafeli_satis"})} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mesafeli Satış Sözleşmesi</button>
+                                <button onClick={() => setDocumentOrder({order: ord, type: "on_bilgilendirme"})} className="w-full text-left px-3 py-2 hover:bg-gray-50">Ön Bilgilendirme Formu</button>
 
                                 <button onClick={() => setBillingInfoOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-t bg-blue-50 text-blue-700 font-bold">Fatura Bilgilerini Görüntüle</button>
                               </div>
