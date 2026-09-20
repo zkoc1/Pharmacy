@@ -103,7 +103,6 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/admin")) return null;
 
   const { data: session, status } = useSession();
 
@@ -184,6 +183,8 @@ export default function Header() {
       setIsLoginModalOpen(true);
     }
   };
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
