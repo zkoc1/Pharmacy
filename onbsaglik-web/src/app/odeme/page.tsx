@@ -114,7 +114,7 @@ export default function OdemeSayfasi() {
   
 
   // Ödeme Seçeneği Tab (Kredi Kartı | Havale / EFT | PayTR ile Öde)
-  const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
+  const [paymentMethod, setPaymentMethod] = useState<"eft" | "paytr">("paytr");
 
   // Kayıtlı Kartlar & Yeni Kart State
   const [selectedCardId, setSelectedCardId] = useState<string | "new">("new");
@@ -367,70 +367,19 @@ export default function OdemeSayfasi() {
       return;
     }
 
-    // Kredi Kartı Validasyonu
-    if (paymentMethod === "cc") {
-      if (selectedCardId === "new") {
-        const cleanCardNum = cardForm.cardNumber.replace(/\s+/g, "");
-        if (!cardForm.cardName.trim()) {
-          setCardError("Lütfen kart üzerindeki Ad Soyad bilgisini giriniz.");
-          return;
-        }
-        if (cleanCardNum.length < 15 || isNaN(Number(cleanCardNum))) {
-          setCardError("Lütfen 16 haneli geçerli bir kart numarası giriniz.");
-          return;
-        }
-        if (!cardForm.expireMonth || !cardForm.expireYear) {
-          setCardError("Lütfen kartınızın son kullanma ay ve yılını seçiniz.");
-          return;
-        }
-        if (cardForm.cvc.trim().length < 3 || isNaN(Number(cardForm.cvc))) {
-          setCardError("Lütfen 3 haneli CVC güvenlik kodunu giriniz.");
-          return;
-        }
 
-        // Kartı Kullanıcıya Özel Güvenle Kaydet
-        if (saveCardCheckbox) {
-          const type = cleanCardNum.startsWith("4")
-            ? "Visa"
-            : cleanCardNum.startsWith("5")
-            ? "Mastercard"
-            : cleanCardNum.startsWith("9")
-            ? "Troy"
-            : "Diğer";
-
-          addCard({
-            userEmail: currentUserEmail,
-            cardName: cardForm.cardName,
-            cardNumberMasked: `${cleanCardNum.slice(0, 4)} **** **** ${cleanCardNum.slice(-4)}`,
-            cardLast4: cleanCardNum.slice(-4),
-            expireMonth: cardForm.expireMonth,
-            expireYear: cardForm.expireYear,
-            cardType: type,
-            isDefault: userCards.length === 0,
-          });
-        }
-      } else {
-        // Kayıtlı Kart ile Ödeme â€” CVC Kontrolü
-        if (cardForm.cvc.trim().length < 3 || isNaN(Number(cardForm.cvc))) {
-          setCardError("Lütfen seçili kartınızın 3 haneli CVC güvenlik kodunu giriniz.");
-          return;
-        }
-      }
-
-      if (!mailOrderConsent) {
-        setCardError("Lütfen Mail Order / Kart Tahsilat Onayını işaretleyiniz.");
-        return;
-      }
-    }
 
     // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET (SLUG DAHİL)
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
     const orderStatus =
-      paymentMethod === "cc"
-        ? "Mail Order Bekliyor"
-        : paymentMethod === "paytr"
+      paymentMethod === "paytr"
         ? "PayTR Ödeme Bekliyor"
         : "Ödeme Bekliyor";
+
+    const userEmail = currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr";
+    const userName = addressForm.fullName || userSession.name || "Değerli Müşterimiz";
+    const userPhone = addressForm.phone || "05555555555";
+    const userAddress = `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`;
 
     const orderPayload = {
       items: items.map((i) => ({
@@ -444,17 +393,15 @@ export default function OdemeSayfasi() {
       })),
       total: grandTotal,
       carrier: selectedCarrier,
-      customerEmail: currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr",
-      customerName: addressForm.fullName || userSession.name || "Değerli Müşterimiz",
-      customerPhone: addressForm.phone || "",
+      customerEmail: userEmail,
+      customerName: userName,
+      customerPhone: userPhone,
       paymentMethod:
-        paymentMethod === "cc"
-          ? "Kredi Kartı / Mail Order"
-          : paymentMethod === "eft"
+        paymentMethod === "eft"
           ? "Havale / EFT"
-          : "PayTR 3D Secure",
-      deliveryAddress: `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
-      billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
+          : "Kredi Kartı (PayTR 3D Secure)",
+      deliveryAddress: userAddress,
+      billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${userAddress}`,
       status: orderStatus,
       couponCode: discount > 0 ? couponCode.trim() : "",
     };
@@ -469,7 +416,7 @@ export default function OdemeSayfasi() {
             orderId: newOrderId,
             total: grandTotal,
             items: items.map(i => ({ name: i.product.name, price: i.product.price, quantity: i.quantity })),
-            customerInfo: { email: currentUserEmail, fullName: addressForm.fullName, phone: addressForm.phone, address: addressForm.fullAddress }
+            customerInfo: { email: userEmail, fullName: userName, phone: userPhone, address: userAddress }
           })
         });
         const data = await response.json();
@@ -478,11 +425,11 @@ export default function OdemeSayfasi() {
           window.location.href = data.iframeUrl; // Redirect to PayTR
           return;
         } else {
-          alert("PayTR token alınamadı: " + (data.error || "Lütfen tekrar deneyin."));
+          alert("PayTR Ödeme Başlatılamadı: " + (data.error || "Lütfen tekrar deneyin."));
           return;
         }
       } catch (err) {
-        alert("Ödeme başlatılamadı.");
+        alert("Ödeme servisine bağlanırken bir hata oluştu.");
         return;
       }
     }
@@ -996,322 +943,96 @@ export default function OdemeSayfasi() {
                     <CreditCard className="text-emerald-600" /> ÖDEME SEÇENEKLERİ
                   </h3>
 
-                  {/* Ödeme Sekmeleri: Kredi Kartı / Mail Order | Havale / EFT | PayTR */}
-                  <div className="flex flex-wrap gap-2 border-b pb-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("cc")}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                        paymentMethod === "cc" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      Mail Order (Çevrimdışı)
-                    </button>
+                  {/* Ödeme Sekmeleri: Kredi Kartı | Havale / EFT */}
+                  <div className="grid grid-cols-2 gap-3 border-b pb-4">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("paytr")}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      className={`py-3 px-4 rounded-2xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 border ${
                         paymentMethod === "paytr"
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
+                          : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                       }`}
                     >
-                      Kredi Kartı (3D Secure)
+                      <CreditCard size={18} /> Kredi / Banka Kartı (3D Secure)
                     </button>
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("eft")}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      className={`py-3 px-4 rounded-2xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer flex items-center justify-center gap-2 border ${
                         paymentMethod === "eft"
-                          ? "bg-emerald-600 text-white"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-200"
+                          : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                       }`}
                     >
-                      Havale / EFT
+                      <Banknote size={18} /> Havale / EFT (%2 İndirimli)
                     </button>
                   </div>
 
-                  {paymentMethod === "cc" && (
-                    <form onSubmit={handleCompleteOrder} className="space-y-5">
-                      <div className="flex justify-between items-center border-b pb-2">
-                        <h4 className="text-xs font-extrabold text-gray-900 uppercase">
-                          Kart Bilgileri
-                        </h4>
-                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
-                          256-Bit SSL Güvenli
+                  {paymentMethod === "paytr" && (
+                    <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-blue-200 p-6 rounded-3xl space-y-4 text-xs">
+                      <div className="flex items-center justify-between border-b border-blue-200 pb-3">
+                        <div className="flex items-center gap-2 text-blue-900 font-extrabold text-sm">
+                          <ShieldCheck size={22} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
+                        </div>
+                        <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full">
+                          3D Secure Korumalı
                         </span>
                       </div>
 
-                      {cardError && (
-                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 font-bold text-xs rounded-xl flex items-center gap-2">
-                          <AlertCircle size={16} /> {cardError}
-                        </div>
-                      )}
-
-                      {/* KAYITLI KARTLAR SEÇİCİ */}
-                      {userCards.length > 0 && (
-                        <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                          <label className="block text-xs font-extrabold text-gray-700">
-                            Kayıtlı Kartlarım:
-                          </label>
-
-                          <div className="space-y-2">
-                            {userCards.map((c) => (
-                              <label
-                                key={c.id}
-                                onClick={() => setSelectedCardId(c.id)}
-                                className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
-                                  selectedCardId === c.id
-                                    ? "bg-white border-rose-400 shadow-sm"
-                                    : "bg-white/50 border-gray-200 hover:border-gray-300"
-                                }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="radio"
-                                    name="savedCard"
-                                    checked={selectedCardId === c.id}
-                                    readOnly
-                                    className="text-rose-500"
-                                  />
-                                  <div>
-                                    <span className="text-xs font-bold text-gray-900 block">
-                                      {c.cardNumberMasked}
-                                    </span>
-                                    <span className="text-[10px] text-gray-400 font-semibold">
-                                      {c.cardName} | SKT: {c.expireMonth}/{c.expireYear}
-                                    </span>
-                                  </div>
-                                </div>
-                                <span className="text-[10px] font-extrabold bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                  {c.cardType}
-                                </span>
-                              </label>
-                            ))}
-
-                            <label
-                              onClick={() => setSelectedCardId("new")}
-                              className={`p-3 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
-                                selectedCardId === "new"
-                                  ? "bg-white border-rose-400 shadow-sm"
-                                  : "bg-white/50 border-gray-200 hover:border-gray-300"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="savedCard"
-                                checked={selectedCardId === "new"}
-                                readOnly
-                                className="text-rose-500"
-                              />
-                              <span className="text-xs font-bold text-gray-800">
-                                + Farklı Bir Kart ile Öde
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* YENİ KART FORMU ALANLARI */}
-                      {selectedCardId === "new" ? (
-                        <div className="space-y-4 pt-1">
-                          <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Kart Üzerindeki Ad Soyad *
-                            </label>
-                            <input
-                              type="text"
-                              required
-                              value={cardForm.cardName}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/[0-9]/g, '');
-                                setCardForm({ ...cardForm, cardName: val });
-                              }}
-                              placeholder="Kart Üzerindeki İsim"
-                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold uppercase"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                              Kart Numarası *
-                            </label>
-                            <input
-                              type="tel" name="phone" autoComplete="tel"
-                              required
-                              maxLength={19}
-                              value={cardForm.cardNumber}
-                              onChange={(e) => {
-                                let val = e.target.value.replace(/[^0-9]/g, '');
-                                val = val.match(/.{1,4}/g)?.join(' ') || val;
-                                setCardForm({ ...cardForm, cardNumber: val });
-                              }}
-                              placeholder="XXXX XXXX XXXX XXXX"
-                              className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold font-mono tracking-wider"
-                            />
-                          </div>
-
-                          {/* Son Kullanma Tarihi Dropdownları (Ay & Yıl) */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="sm:col-span-2">
-                              <label className="block text-xs font-bold text-gray-700 mb-1">
-                                Son Kullanma Tarihi *
-                              </label>
-                              <div className="grid grid-cols-2 gap-2">
-                                <select
-                                  value={cardForm.expireMonth}
-                                  onChange={(e) =>
-                                    setCardForm({ ...cardForm, expireMonth: e.target.value })
-                                  }
-                                  className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
-                                >
-                                  <option value="">Ay Seçiniz</option>
-                                  {months.map((m) => (
-                                    <option key={m} value={m}>
-                                      {m}
-                                    </option>
-                                  ))}
-                                </select>
-
-                                <select
-                                  value={cardForm.expireYear}
-                                  onChange={(e) =>
-                                    setCardForm({ ...cardForm, expireYear: e.target.value })
-                                  }
-                                  className="p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
-                                >
-                                  <option value="">Yıl Seçiniz</option>
-                                  {years.map((y) => (
-                                    <option key={y} value={y}>
-                                      {y}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-xs font-bold text-gray-700 mb-1">
-                                CVC / CVV *
-                              </label>
-                              <input
-                                type="tel" name="phone" autoComplete="tel"
-                                required
-                                maxLength={3}
-                                value={cardForm.cvc}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/[^0-9]/g, '');
-                                  setCardForm({ ...cardForm, cvc: val });
-                                }}
-                                placeholder="CVC"
-                                className="w-full p-3 bg-gray-50 border rounded-xl text-xs font-semibold"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Kartı Sisteme Kaydet Checkbox */}
-                          <label className="flex items-center gap-2 cursor-pointer pt-1">
-                            <input
-                              type="checkbox"
-                              checked={saveCardCheckbox}
-                              onChange={(e) => setSaveCardCheckbox(e.target.checked)}
-                              className="rounded text-rose-500"
-                            />
-                            <span className="text-xs text-gray-700 font-bold">
-                              Bu kartı sonraki alışverişlerimde kullanmak için güvenle kaydet (PCI-DSS)
-                            </span>
-                          </label>
-                        </div>
-                      ) : (
-                        /* Kayıtlı Kart Seçildiğinde Sadece CVV İste */
-                        <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-3">
-                          <p className="text-xs font-bold text-emerald-900">
-                            ğŸ”’ Seçili kartınızla güvenli işlem yapabilmek için lütfen arkadaki 3 haneli güvenlik kodunu (CVC) giriniz:
-                          </p>
-                          <div className="w-40">
-                            <input
-                              type="text"
-                              required
-                              maxLength={4}
-                              placeholder="CVC"
-                              value={cardForm.cvc}
-                              onChange={(e) =>
-                                setCardForm({ ...cardForm, cvc: e.target.value })
-                              }
-                              className="w-full p-3 bg-white border border-emerald-300 rounded-xl text-xs font-bold font-mono text-center tracking-widest"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Mail Order Yetkilendirme Onayı */}
-                      <div className="bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-2xl space-y-2 mt-4">
-                        <label className="flex items-start gap-2.5 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={mailOrderConsent}
-                            onChange={(e) => setMailOrderConsent(e.target.checked)}
-                            className="mt-0.5 rounded text-amber-600"
-                          />
-                          <span className="text-[11px] text-amber-900 leading-tight">
-                            <strong>Mail Order / Kart Tahsilat Onayı:</strong> Kredi kartımdan sipariş tutarı olan <strong>{formatPrice(grandTotal)}</strong> tutarının tahsil edilmesini ve siparişimin işleme alınmasını onaylıyorum.
-                          </span>
-                        </label>
-                      </div>
-                    </form>
-                  )}
-
-                  {paymentMethod === "eft" && (
-                    <div className="bg-white border border-gray-200 p-6 rounded-3xl space-y-4 text-xs">
-                      <div className="flex items-center gap-3 text-emerald-800 font-extrabold text-[15px] border-b pb-3">
-                        <Banknote size={24} className="text-emerald-600" /> Havale / EFT Bilgileri
-                      </div>
-                      
-                      <div className="text-gray-700 font-medium space-y-2 leading-relaxed">
-                        <p>-- Havale Fiyatı: <strong>{formatPrice(tempGrandTotal - eftDiscount)}</strong> (Yüzde 2 indirimli) idir.</p>
-                        <p>-- Havalenizi yaparken gönderen bölümünde mutlaka <strong>{addressForm.fullName || "Adınızı ve Soyadınızı"}</strong> belirtiniz.</p>
-                        <p>-- Banka hesap numaraları aşağıda listelenmektedir.</p>
-                        <p>-- Havale yaparken alıcı olarak mutlaka <strong>{PRICING_RULES.COMPANY_NAME}</strong> olarak belirtiniz.</p>
-                        <p>-- Sipariş onaylandıktan sonra oluşacak sipariş numaranızı havalenizin açıklama bölümünde belirtiniz.</p>
+                      <div className="space-y-2 text-gray-700">
+                        <p className="font-semibold text-blue-950">
+                          Tüm bankaların Kredi Kartı ve Banka (Debit) Kartları ile tek çekim veya taksitli ödeme yapabilirsiniz.
+                        </p>
+                        <p className="text-gray-600 text-[11px] leading-relaxed">
+                          Aşağıdaki <strong>Siparişi Tamamla</strong> butonuna tıkladığınızda, PayTR güvencesiyle bankanızın 3D Secure SMS şifresi onay ekranı açılacaktır. Kart bilgileriniz kesinlikle sitemizde tutulmaz.
+                        </p>
                       </div>
 
-                      <div className="mt-4">
-                        <h4 className="font-extrabold text-gray-900 text-sm mb-3">Banka Hesaplarımız</h4>
-                        
-                        <div className="space-y-3">
-                          <label className="flex items-center gap-3 p-4 border border-rose-200 bg-rose-50 rounded-xl cursor-pointer hover:bg-rose-100 transition-colors">
-                            <input type="radio" name="bank" defaultChecked className="text-rose-500 w-4 h-4" />
-                            <div className="text-gray-800 text-[11px] sm:text-xs">
-                              <strong>İŞ BANKASI</strong>, 7625 - Hesap No: 477445 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR93 0006 4000 0017 6250 4774 45)
-                            </div>
-                          </label>
-
-                          <label className="flex items-center gap-3 p-4 border border-gray-100 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                            <input type="radio" name="bank" className="text-rose-500 w-4 h-4" />
-                            <div className="text-gray-800 text-[11px] sm:text-xs">
-                              <strong>GARANTİ</strong>, 174 - Hesap No: 6289251 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR26 0006 2000 1740 0006 2892 51)
-                            </div>
-                          </label>
-
-                          <label className="flex items-center gap-3 p-4 border border-gray-100 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
-                            <input type="radio" name="bank" className="text-rose-500 w-4 h-4" />
-                            <div className="text-gray-800 text-[11px] sm:text-xs">
-                              <strong>YAPIKREDİ</strong>, 324 - Hesap No: 93638693 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR79 0006 7010 0000 0093 6386 93)
-                            </div>
-                          </label>
-                        </div>
+                      <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] font-bold text-gray-500">
+                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Visa</span>
+                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Mastercard</span>
+                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Troy</span>
+                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">🔒 256-Bit SSL</span>
                       </div>
                     </div>
                   )}
 
-                  {paymentMethod === "paytr" && (
-                    <div className="bg-blue-50 border border-blue-200 p-6 rounded-3xl space-y-4 text-xs">
-                      <div className="flex items-center gap-3 text-blue-900 font-extrabold text-sm border-b border-blue-200 pb-3">
-                        <ShieldCheck size={24} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
+                  {paymentMethod === "eft" && (
+                    <div className="bg-white border border-gray-200 p-6 rounded-3xl space-y-4 text-xs">
+                      <div className="flex items-center justify-between border-b pb-3">
+                        <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-[15px]">
+                          <Banknote size={22} className="text-emerald-600" /> Havale / EFT Bilgileri
+                        </div>
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                          %2 Havale İndirimi
+                        </span>
                       </div>
-                      <p className="text-blue-800 font-semibold">
-                        PayTR güvencesiyle 3D Secure SMS şifrenizle anında ve güvenli ödeme yapabilirsiniz.
-                      </p>
+                      
+                      <div className="text-gray-700 font-medium space-y-2.5 leading-relaxed bg-emerald-50/40 p-4 rounded-2xl border border-emerald-100">
+                        <p>-- Havale Fiyatı: <strong className="text-emerald-700 text-sm">{formatPrice(tempGrandTotal - eftDiscount)}</strong> (Yüzde 2 indirim uygulanmıştır).</p>
+                        <p>-- Havalenizi yaparken gönderen bölümünde sipariş sahibinin adını (<strong className="text-gray-900">{addressForm.fullName || "Adınız Soyadınız"}</strong>) belirtiniz.</p>
+                        <p>-- Havale yaparken alıcı ünvanı olarak mutlaka <strong className="text-gray-900">{PRICING_RULES.COMPANY_NAME}</strong> yazınız.</p>
+                        <p>-- Sipariş onaylandıktan sonra ekranda oluşacak <strong>Sipariş Numaranızı</strong> havalenizin açıklama kısmına ekleyiniz.</p>
+                      </div>
+
+                      <div className="mt-4">
+                        <h4 className="font-extrabold text-gray-900 text-sm mb-3">Banka IBAN Bilgimiz</h4>
+                        
+                        <div className="p-4 border-2 border-emerald-300 bg-emerald-50/50 rounded-2xl space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-gray-700 uppercase">Alıcı / Ünvan:</span>
+                            <span className="font-extrabold text-xs text-gray-900">{PRICING_RULES.COMPANY_NAME}</span>
+                          </div>
+                          <div className="pt-2 border-t border-emerald-200">
+                            <span className="block text-[11px] font-semibold text-gray-600 mb-1">IBAN Numarası:</span>
+                            <div className="font-mono text-xs sm:text-sm font-extrabold text-emerald-900 bg-white p-3 rounded-xl border border-emerald-300 select-all tracking-wider flex items-center justify-between">
+                              <span>{PRICING_RULES.COMPANY_IBAN}</span>
+                              <span className="text-[10px] text-gray-400 font-sans font-normal ml-2">(Tıkla / Seç Kopyala)</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -43,6 +43,5 @@ export function applyCouponDiscount(code: string, amount: number, isFirstOrder: 
     }
     return PRICING_RULES.FIRST_ORDER_DISCOUNT_AMOUNT;
   }
-  // Diğer kuponlar eklenebilir
   return 0;
 }

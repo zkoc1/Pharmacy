@@ -22,43 +22,58 @@ export async function POST(req: Request) {
       ? customerInfo.email
       : "musteri@onbsaglik.com.tr";
 
-    // Madde 1: Anahtarları Çıkar (process.env üzerinden zorunlu)
-    const merchant_id = process.env.PAYTR_MERCHANT_ID || "678666";
-    const merchant_key = process.env.PAYTR_MERCHANT_KEY || "";
-    const merchant_salt = process.env.PAYTR_MERCHANT_SALT || "";
+    // Madde 1: Anahtarları Çıkar ve Boşlukları Temizle
+    const merchant_id = (process.env.PAYTR_MERCHANT_ID || "").trim();
+    const merchant_key = (process.env.PAYTR_MERCHANT_KEY || "").trim();
+    const merchant_salt = (process.env.PAYTR_MERCHANT_SALT || "").trim();
 
     // Sipariş Numarası
     const merchant_oid = orderId || `ONB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     // Kullanıcı Bilgileri
-    const user_name = customerInfo?.fullName || "Değerli Müşterimiz";
-    const user_address = customerInfo?.address || "Türkiye";
-    const user_phone = customerInfo?.phone || "05555555555";
-    const user_ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1";
+    const user_name = (customerInfo?.fullName || "Değerli Müşterimiz").trim();
+    const user_address = (customerInfo?.address || "Türkiye").trim();
+    const user_phone = (customerInfo?.phone || "05555555555").trim().replace(/[^0-9]/g, "");
+
+    // PayTR IPv4 Zorunluluğu (IPv6 veya localhost gönderilirse PayTR hata verir)
+    let user_ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+                  req.headers.get("x-real-ip")?.trim() ||
+                  "";
+    if (!user_ip || user_ip === "127.0.0.1" || user_ip === "::1" || user_ip.includes(":")) {
+      user_ip = "88.255.215.10"; // Standart Türkiye IPv4 fallback
+    }
+
+    // PayTR Minimum Tutar Kontrolü (Minimum 1.00 TL)
+    if (total < 1) {
+      return NextResponse.json(
+        { error: "PayTR ile kredi kartı ödemelerinde minimum sepet tutarı 1.00 TL olmalıdır." },
+        { status: 400 }
+      );
+    }
 
     // Kuruş Cinsinden Tutar (örn: 100 TL -> 10000)
     const payment_amount = Math.round(total * 100).toString();
 
     // Sepet İçeriği JSON -> Base64
     const basketArray = items.map((i: any) => [
-      i.name || i.product?.name || "Ürün",
-      (i.price || i.product?.price || 0).toFixed(2),
-      i.quantity || 1,
+      (i.name || i.product?.name || "Ürün").toString().slice(0, 50),
+      Number(i.price || i.product?.price || 0).toFixed(2),
+      Number(i.quantity || 1),
     ]);
     const user_basket = Buffer.from(JSON.stringify(basketArray)).toString("base64");
 
-    const baseUrl = process.env.NEXTAUTH_URL || "https://onbsaglik.com.tr";
+    const baseUrl = (process.env.NEXTAUTH_URL || "https://onbsaglik.com.tr").replace(/\/$/, "");
     const merchant_ok_url = `${baseUrl}/odeme/basarili?orderId=${merchant_oid}`;
     const merchant_fail_url = `${baseUrl}/odeme?status=fail`;
 
     const timeout_limit = "30";
     const currency = "TL";
-    const test_mode = process.env.PAYTR_TEST_MODE === "1" ? "1" : "0";
+    const test_mode = (process.env.PAYTR_TEST_MODE || "0").trim() === "1" ? "1" : "0";
     const no_installment = "0";
     const max_installment = "0";
 
     // Eğer Key ve Salt tanımlıysa resmi PayTR API'sine istek at
-    if (merchant_key && merchant_salt) {
+    if (merchant_key && merchant_salt && merchant_id) {
       const hash_str = `${merchant_id}${user_ip}${merchant_oid}${email}${payment_amount}${user_basket}${no_installment}${max_installment}${currency}${test_mode}`;
       const paytr_token = crypto
         .createHmac("sha256", merchant_key)
@@ -99,7 +114,7 @@ export async function POST(req: Request) {
           orderId: merchant_oid,
         });
       } else {
-        console.error("[PayTR Get-Token Error]", data.reason);
+        console.error("[PayTR Get-Token Error]", data);
         return NextResponse.json(
           { error: data.reason || "PayTR token alınamadı." },
           { status: 400 }
@@ -107,10 +122,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // Madde 1: Prodüksiyonda sahte ödeme token'ı üretilmez, anahtar zorunludur
+    // Prodüksiyonda anahtarlar yoksa net hata bildir
     if (process.env.NODE_ENV === "production") {
       return NextResponse.json(
-        { error: "Ödeme sistemi yapılandırması tamamlanmadı. Lütfen yöneticiyle iletişime geçin." },
+        { error: "PayTR API anahtarları (ID, Key, Salt) sunucuda eksik veya yüklenmedi." },
         { status: 503 }
       );
     }
