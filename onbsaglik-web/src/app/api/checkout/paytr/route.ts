@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const merchant_salt = (process.env.PAYTR_MERCHANT_SALT || "").trim();
 
     // Sipariş Numarası
-    const merchant_oid = orderId || `ONB-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const merchant_oid = (orderId || `ONB${Date.now()}${Math.floor(100 + Math.random() * 900)}`).replace(/[^a-zA-Z0-9]/g, "");
 
     // Kullanıcı Bilgileri
     const user_name = (customerInfo?.fullName || "Değerli Müşterimiz").trim();

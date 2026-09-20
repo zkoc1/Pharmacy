@@ -61,7 +61,8 @@ export async function POST(req: Request) {
     const supabase = getServiceSupabase();
 
     // Rastgele ID ve Fatura No oluştur
-    const id = body.id || `ONB-${Math.floor(100000 + Math.random() * 900000)}`;
+    const rawId = body.id || `ONB${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
+    const id = rawId.replace(/[^a-zA-Z0-9]/g, "");
     const invoiceNo = `ONB2026${Math.floor(10000 + Math.random() * 90000)}`;
 
     const orderData = {
