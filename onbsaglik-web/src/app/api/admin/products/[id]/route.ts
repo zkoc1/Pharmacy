@@ -64,7 +64,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   delete updateData.description;
   delete updateData.desi;
 
-  const { data: oldProduct } = await supabase.from("products").select("name, price, slug").eq("id", id).single();
+  const { data: oldProduct } = await supabase.from("products").select("name, price, slug, stock").eq("id", id).single();
 
   const { data, error } = await supabase
     .from("products")

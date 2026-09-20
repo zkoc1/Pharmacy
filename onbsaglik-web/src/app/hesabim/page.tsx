@@ -67,6 +67,27 @@ export default function HesabimPage() {
   const [orderSearchResult, setOrderSearchResult] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
 
+  const [dbStockAlerts, setDbStockAlerts] = useState<any[]>([]);
+  const [dbPriceAlerts, setDbPriceAlerts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/user/alarms?type=stock').then(r => r.json()).then(d => setDbStockAlerts(d.alarms || []));
+      fetch('/api/user/alarms?type=price').then(r => r.json()).then(d => setDbPriceAlerts(d.alarms || []));
+    }
+  }, [session?.user?.email]);
+
+  const handleRemoveDbStock = async (id: string) => {
+    await fetch(`/api/user/alarms?type=stock&id=${id}`, { method: "DELETE" });
+    setDbStockAlerts(prev => prev.filter(a => a.id !== id));
+  };
+
+  const handleRemoveDbPrice = async (id: string) => {
+    await fetch(`/api/user/alarms?type=price&id=${id}`, { method: "DELETE" });
+    setDbPriceAlerts(prev => prev.filter(a => a.id !== id));
+  };
+
+
   const currentUserEmail = session?.user?.email || '';
   const userName = session?.user?.name || (isAdminUser ? 'Sistem Yöneticisi' : 'Değerli Müşterimiz');
 
@@ -116,7 +137,7 @@ export default function HesabimPage() {
   const userAddresses = getUserAddresses(currentUserEmail);
   const userCards = getUserCards(currentUserEmail);
   const userCoupons = getUserCoupons(currentUserEmail);
-  const userStockAlerts = dbStockAlerts.map(a => ({
+  const userStockAlerts = dbStockAlerts.map((a: any) => ({
   id: a.id,
   productSlug: a.products?.slug,
   productName: a.products?.name,
@@ -124,7 +145,7 @@ export default function HesabimPage() {
   price: a.products?.price || 0,
   email: a.user_email
 }));
-  const userPriceAlerts = dbPriceAlerts.map(a => ({
+  const userPriceAlerts = dbPriceAlerts.map((a: any) => ({
   id: a.id,
   productSlug: a.products?.slug,
   productName: a.products?.name,
@@ -1166,7 +1187,7 @@ export default function HesabimPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {userStockAlerts.map((item) => (
+                {userStockAlerts.map((item: any) => (
                   <div
                     key={item.id}
                     className="bg-gray-50 p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs"
@@ -1406,7 +1427,7 @@ export default function HesabimPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {userPriceAlerts.map((item) => (
+                {userPriceAlerts.map((item: any) => (
                   <div
                     key={item.id}
                     className="bg-gray-50 p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs"
