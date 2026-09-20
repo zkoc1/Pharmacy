@@ -110,15 +110,7 @@ export default function OdemeSayfasi() {
   // Kargo Seçenekleri
   const [selectedCarrier, setSelectedCarrier] = useState("Kolay Gelsin");
 
-  const carriers = [
-    { name: "Kolay Gelsin", price: 0, label: "BEDAVA" },
-    { name: "HepsiJet", price: 0, label: "BEDAVA" },
-    { name: "PTT Kargo", price: 0, label: "BEDAVA" },
-    { name: "DHL Kargo", price: 149.9, label: "149,90 TL" },
-    { name: "Sürat Kargo", price: 129.9, label: "129,90 TL" },
-    { name: "Aras Kargo", price: 149.9, label: "149,90 TL" },
-    { name: "Yurtiçi Kargo", price: 149.9, label: "149,90 TL" },
-  ];
+  
 
   // Ödeme Seçeneği Tab (Kredi Kartı | Havale / EFT | PayTR ile Öde)
   const [paymentMethod, setPaymentMethod] = useState<"cc" | "eft" | "paytr">("cc");
@@ -150,13 +142,24 @@ export default function OdemeSayfasi() {
   const total = getTotalPrice();
   const multiBuyDiscount = calculateMultiBuyDiscount(items, total);
   
-  const carrierObj = carriers.find((c) => c.name === selectedCarrier);
-  const defaultShippingCost = carrierObj ? carrierObj.price : 0;
+    const subTotalForFreeShipping = total - multiBuyDiscount - discount;
+  const isFree = subTotalForFreeShipping >= checkoutSettings.freeShippingThreshold;
   
-  // Dinamik kargo hesaplama
+  const carriers = [
+    { name: "Kolay Gelsin", base: checkoutSettings.shippingCost },
+    { name: "HepsiJet", base: checkoutSettings.shippingCost },
+    { name: "PTT Kargo", base: checkoutSettings.shippingCost },
+    { name: "Sürat Kargo", base: checkoutSettings.shippingCost },
+    { name: "Aras Kargo", base: checkoutSettings.shippingCost },
+    { name: "Yurtiçi Kargo", base: checkoutSettings.shippingCost },
+  ].map(c => {
+    const p = isFree ? 0 : c.base;
+    return { name: c.name, price: p, label: p === 0 ? "BEDAVA" : formatPrice(p) };
+  });
+
+  const carrierObj = carriers.find((c) => c.name === selectedCarrier);
+  const shippingCost = carrierObj ? carrierObj.price : 0;
   const subTotalForShipping = total - multiBuyDiscount - discount;
-  const calculatedShippingCost = subTotalForShipping > checkoutSettings.freeShippingThreshold ? 0 : checkoutSettings.shippingCost;
-  const shippingCost = defaultShippingCost > 0 ? calculatedShippingCost : 0;
   
   let tempGrandTotal = Math.max(0, total - multiBuyDiscount - discount + shippingCost);
   const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
@@ -747,8 +750,8 @@ export default function OdemeSayfasi() {
                         </label>
                         <div className="flex items-center">
                           <span className="inline-flex items-center gap-1.5 px-3 py-3 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-xs font-bold text-gray-700">
-                            ğŸ‡¹ğŸ‡· +90
-                          </span>
+  🇹🇷 +90
+</span>
                           <input
                             type="tel"
                             required
