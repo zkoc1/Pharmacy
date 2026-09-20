@@ -32,7 +32,7 @@ const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: Reac
   "Hazırlanıyor":        { color: "#3b82f6", bg: "#dbeafe", icon: <Package size={14} /> },
   "Kargoda":             { color: "#8b5cf6", bg: "#ede9fe", icon: <Truck size={14} /> },
   "Teslim Edildi":       { color: "#10b981", bg: "#d1fae5", icon: <CheckCircle size={14} /> },
-  "İptal Edildi":        { color: "#ef4444", bg: "#fee2e2", icon: <XCircle size={14} /> },
+  "İptal / İade":        { color: "#ef4444", bg: "#fee2e2", icon: <XCircle size={14} /> },
 };
 
 export default function SiparislerimSayfasi() {
@@ -238,7 +238,7 @@ export default function SiparislerimSayfasi() {
                   </div>
 
                   {/* Kargo Durum Çubuğu (Stepper) */}
-                  {ord.status === "İptal Edildi" ? (
+                  {ord.status === "İptal / İade" ? (
                     <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center gap-3 text-red-700">
                       <XCircle size={24} />
                       <div>
@@ -292,7 +292,7 @@ export default function SiparislerimSayfasi() {
                   )}
 
                   {/* Kargo Takip Linki Varsa */}
-                  {ord.trackingNumber && ord.status !== "İptal Edildi" && (
+                  {ord.trackingNumber && ord.status !== "İptal / İade" && (
                     <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       <div>
                         <p className="text-[11px] font-bold text-blue-800/60 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">

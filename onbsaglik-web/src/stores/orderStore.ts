@@ -24,7 +24,7 @@ export type OrderStatus =
   | "Hazırlanıyor"
   | "Kargoda"
   | "Teslim Edildi"
-  | "İptal Edildi";
+  | "İptal / İade";
 
 export interface OrderTimelineItem {
   status: OrderStatus;

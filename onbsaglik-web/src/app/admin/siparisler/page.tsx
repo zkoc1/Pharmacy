@@ -28,7 +28,7 @@ const TABS = [
   { id: "Hazırlanıyor", label: "İşleme Alınanlar" },
   { id: "Kargoda", label: "Taşıma Durumunda" },
   { id: "Teslim Edildi", label: "Teslim Edilen" },
-  { id: "İptal Edildi", label: "İptal / İade" },
+  { id: "İptal / İade", label: "İptal / İade" },
 ];
 
 export default function AdminSiparislerTrendyol() {
@@ -335,19 +335,14 @@ export default function AdminSiparislerTrendyol() {
                             {/* İşlemler Dropdown */}
                             <div className="absolute right-0 top-full pt-1 w-48 z-50 hidden group-hover:block text-left text-xs">
                               <div className="bg-white border shadow-xl rounded overflow-hidden text-gray-700">
-                                {ord.status === "Ödeme Bekliyor" && (
-                                  <button onClick={() => updateOrderStatus(ord.id, "Hazırlanıyor")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">İşleme Al</button>
-                                )}
-                                {ord.status === "Hazırlanıyor" && (
-                                  <button onClick={() => updateOrderStatus(ord.id, "Kargoda")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Kargoya Verildi</button>
-                                )}
-                                {ord.status === "Kargoda" && (
-                                  <button onClick={() => updateOrderStatus(ord.id, "Teslim Edildi")} className="w-full text-left px-3 py-2 text-emerald-600 font-bold hover:bg-emerald-50 border-b">Teslim Edildi İşaretle</button>
-                                )}
-                                <button onClick={() => updateCarrier(ord.id, "HepsiJet")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">HepsiJet'e Ata</button>
-                                <button onClick={() => updateOrderStatus(ord.id, "İptal Edildi")} className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 border-b">İptal Et</button>
+                                
+                                <button onClick={() => updateOrderStatus(ord.id, "Hazırlanıyor")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">İşleme Al</button>
+                                <button onClick={() => updateOrderStatus(ord.id, "Kargoda")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması ile Gönder</button>
+                                <button onClick={() => updateOrderStatus(ord.id, "İptal / İade")} className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 border-b">İptal Et</button>
+                                <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mağaza Kartı Yazdır</button>
                                 <button className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Mesafeli Satış Sözleşmesi</button>
                                 <button className="w-full text-left px-3 py-2 hover:bg-gray-50">Ön Bilgilendirme Formu</button>
+
                                 <button onClick={() => setBillingInfoOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-t bg-blue-50 text-blue-700 font-bold">Fatura Bilgilerini Görüntüle</button>
                               </div>
                             </div></div>

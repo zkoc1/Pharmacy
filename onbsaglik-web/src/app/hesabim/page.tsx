@@ -659,7 +659,7 @@ export default function HesabimPage() {
                     Kargoda: 'bg-purple-100 text-purple-800',
                     'Teslim Edildi': 'bg-emerald-100 text-emerald-800',
                     'Ödeme Bekliyor': 'bg-amber-100 text-amber-800',
-                    'İptal Edildi': 'bg-red-100 text-red-800',
+                    'İptal / İade': 'bg-red-100 text-red-800',
                   };
                   const badgeClass = statusColors[ord.status] || 'bg-gray-100 text-gray-800';
 

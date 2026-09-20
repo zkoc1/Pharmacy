@@ -80,7 +80,7 @@ export async function POST(request: Request) {
       
       const { getServiceSupabase } = await import("@/lib/supabase");
       const supabase = getServiceSupabase();
-      await supabase.from("orders").update({ status: "İptal Edildi", admin_note: "Ödeme Başarısız" }).eq("id", merchantOid);
+      await supabase.from("orders").update({ status: "İptal / İade", admin_note: "Ödeme Başarısız" }).eq("id", merchantOid);
     }
 
     // PayTR her zaman "OK" yanıtı bekler
