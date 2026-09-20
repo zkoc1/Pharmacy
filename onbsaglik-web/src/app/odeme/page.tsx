@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Ödeme & Teslimat Sayfası â€” /odeme
  * Kullanıcıya Özel Kayıtlı Adres & Kart Seçimi (userEmail Scoped),
  * Form Validasyonları, Ürün Slug Desteği, PayTR 3D Secure, Mail Order & Havale/EFT.
@@ -39,6 +39,7 @@ import {
   AlertCircle,
   Building,
   Home,
+  Banknote,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -431,7 +432,7 @@ export default function OdemeSayfasi() {
         ? "PayTR Ödeme Bekliyor"
         : "Ödeme Bekliyor";
 
-    const newOrderId = await addOrder({
+    const orderPayload = {
       items: items.map((i) => ({
         id: i.product.id,
         slug: i.product.slug,
@@ -456,12 +457,11 @@ export default function OdemeSayfasi() {
       billingAddress: `Fatura Türü: ${addressForm.invoiceType} | T.C. Kimlik No: ${addressForm.tcNo || "Girilmedi"} | ${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`,
       status: orderStatus,
       couponCode: discount > 0 ? couponCode.trim() : "",
-    });
-
-    clearCart();
+    };
 
     if (paymentMethod === "paytr") {
       try {
+        const newOrderId = await addOrder(orderPayload);
         const response = await fetch("/api/checkout/paytr", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -474,10 +474,11 @@ export default function OdemeSayfasi() {
         });
         const data = await response.json();
         if (data.success && data.iframeUrl) {
+          clearCart(); // Sadece başarılıysa temizle
           window.location.href = data.iframeUrl; // Redirect to PayTR
           return;
         } else {
-          alert("PayTR token alınamadı, lütfen tekrar deneyin.");
+          alert("PayTR token alınamadı: " + (data.error || "Lütfen tekrar deneyin."));
           return;
         }
       } catch (err) {
@@ -486,6 +487,8 @@ export default function OdemeSayfasi() {
       }
     }
 
+    const newOrderId = await addOrder(orderPayload);
+    clearCart();
     window.location.href = `/odeme/basarili?orderId=${newOrderId}`;
   };
 
@@ -1002,7 +1005,7 @@ export default function OdemeSayfasi() {
                         paymentMethod === "cc" ? "bg-rose-400 text-white" : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      Kredi Kartı / Mail Order
+                      Mail Order (Çevrimdışı)
                     </button>
                     <button
                       type="button"
@@ -1013,7 +1016,7 @@ export default function OdemeSayfasi() {
                           : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      PayTR 3D Secure
+                      Kredi Kartı (3D Secure)
                     </button>
                     <button
                       type="button"
@@ -1259,17 +1262,45 @@ export default function OdemeSayfasi() {
                   )}
 
                   {paymentMethod === "eft" && (
-                    <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl space-y-2 text-xs">
-                      <p className="font-extrabold text-emerald-900">Banka IBAN Bilgimiz:</p>
-                      <p className="font-mono text-emerald-800 font-bold bg-white p-2 rounded-lg border">
-                        {PRICING_RULES.COMPANY_IBAN}
-                      </p>
-                      <p className="text-emerald-700">
-                        Alıcı Adı: {PRICING_RULES.COMPANY_NAME}
-                      </p>
-                      <p className="text-[11px] text-emerald-600 font-medium pt-1">
-                        * Havale açıklamasına Ad Soyad veya Sipariş Numaranızı yazmayı unutmayınız.
-                      </p>
+                    <div className="bg-white border border-gray-200 p-6 rounded-3xl space-y-4 text-xs">
+                      <div className="flex items-center gap-3 text-emerald-800 font-extrabold text-[15px] border-b pb-3">
+                        <Banknote size={24} className="text-emerald-600" /> Havale / EFT Bilgileri
+                      </div>
+                      
+                      <div className="text-gray-700 font-medium space-y-2 leading-relaxed">
+                        <p>-- Havale Fiyatı: <strong>{formatPrice(tempGrandTotal - eftDiscount)}</strong> (Yüzde 2 indirimli) idir.</p>
+                        <p>-- Havalenizi yaparken gönderen bölümünde mutlaka <strong>{addressForm.fullName || "Adınızı ve Soyadınızı"}</strong> belirtiniz.</p>
+                        <p>-- Banka hesap numaraları aşağıda listelenmektedir.</p>
+                        <p>-- Havale yaparken alıcı olarak mutlaka <strong>{PRICING_RULES.COMPANY_NAME}</strong> olarak belirtiniz.</p>
+                        <p>-- Sipariş onaylandıktan sonra oluşacak sipariş numaranızı havalenizin açıklama bölümünde belirtiniz.</p>
+                      </div>
+
+                      <div className="mt-4">
+                        <h4 className="font-extrabold text-gray-900 text-sm mb-3">Banka Hesaplarımız</h4>
+                        
+                        <div className="space-y-3">
+                          <label className="flex items-center gap-3 p-4 border border-rose-200 bg-rose-50 rounded-xl cursor-pointer hover:bg-rose-100 transition-colors">
+                            <input type="radio" name="bank" defaultChecked className="text-rose-500 w-4 h-4" />
+                            <div className="text-gray-800 text-[11px] sm:text-xs">
+                              <strong>İŞ BANKASI</strong>, 7625 - Hesap No: 477445 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR93 0006 4000 0017 6250 4774 45)
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-3 p-4 border border-gray-100 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                            <input type="radio" name="bank" className="text-rose-500 w-4 h-4" />
+                            <div className="text-gray-800 text-[11px] sm:text-xs">
+                              <strong>GARANTİ</strong>, 174 - Hesap No: 6289251 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR26 0006 2000 1740 0006 2892 51)
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-3 p-4 border border-gray-100 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+                            <input type="radio" name="bank" className="text-rose-500 w-4 h-4" />
+                            <div className="text-gray-800 text-[11px] sm:text-xs">
+                              <strong>YAPIKREDİ</strong>, 324 - Hesap No: 93638693 - {PRICING_RULES.COMPANY_NAME}. (IBAN: TR79 0006 7010 0000 0093 6386 93)
+                            </div>
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   )}
 

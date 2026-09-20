@@ -105,6 +105,16 @@ export async function POST(req: Request) {
     }
 
     if (body.items && body.items.length > 0) {
+      // Sipariş alındığında stok miktarını düş
+      for (const item of body.items) {
+        if (!item.id) continue;
+        const { data: prod } = await supabase.from('products').select('stock').eq('id', item.id).single();
+        if (prod) {
+          const newStock = Math.max(0, (prod.stock || 0) - item.quantity);
+          await supabase.from('products').update({ stock: newStock }).eq('id', item.id);
+        }
+      }
+
       const itemsData = body.items.map((i: any) => ({
         order_id: id,
         product_id: i.id,
