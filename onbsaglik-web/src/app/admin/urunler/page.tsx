@@ -431,7 +431,7 @@ export default function AdminUrunlerPage() {
 
       {/* YENİ ÜRÜN EKLEME MODALİ */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b flex items-center justify-between bg-slate-50">
               <h3 className="font-black text-lg text-gray-900 flex items-center gap-2">
@@ -527,7 +527,7 @@ export default function AdminUrunlerPage() {
 
       {/* HIZLI DÜZENLEME MODALİ */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden">
             <div className="p-5 border-b bg-slate-50 flex justify-between items-center">
               <h3 className="font-black text-gray-900 text-sm flex items-center gap-2"><Edit2 size={16} className="text-sky-600"/> Stok ve Fiyat Güncelle</h3>

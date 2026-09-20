@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   ShoppingCart,
@@ -101,6 +101,10 @@ interface SearchResult {
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/admin")) return null;
+
   const { data: session, status } = useSession();
 
   const [searchQuery, setSearchQuery] = useState("");
