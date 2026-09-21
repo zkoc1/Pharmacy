@@ -8,19 +8,46 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 
+// PayTR veya sunucu sağlık kontrolleri için GET isteğine 200 OK dön
+export async function GET() {
+  return new Response("OK", {
+    status: 200,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const merchantOid = formData.get("merchant_oid") as string;
-    const status      = formData.get("status") as string;
-    const totalAmount = formData.get("total_amount") as string;
-    const hash        = formData.get("hash") as string;
+    let merchantOid = "";
+    let status = "";
+    let totalAmount = "";
+    let hash = "";
 
-    const merchantSalt = process.env.PAYTR_MERCHANT_SALT ?? "";
-    const merchantKey  = process.env.PAYTR_MERCHANT_KEY  ?? "";
+    try {
+      const formData = await request.formData();
+      merchantOid = (formData.get("merchant_oid") as string) || "";
+      status      = (formData.get("status") as string) || "";
+      totalAmount = (formData.get("total_amount") as string) || "";
+      hash        = (formData.get("hash") as string) || "";
+    } catch {
+      try {
+        const rawText = await request.text();
+        const params = new URLSearchParams(rawText);
+        merchantOid = params.get("merchant_oid") || "";
+        status      = params.get("status") || "";
+        totalAmount = params.get("total_amount") || "";
+        hash        = params.get("hash") || "";
+      } catch (parseErr) {
+        console.error("[PayTR Callback] Form parsing error:", parseErr);
+      }
+    }
+
+    const merchantSalt = (process.env.PAYTR_MERCHANT_SALT || "").trim();
+    const merchantKey  = (process.env.PAYTR_MERCHANT_KEY  || "").trim();
 
     // Madde 17: Webhook İmza Doğrulaması
     if (!merchantOid || !status || !totalAmount || !hash) {
+      console.warn("[PayTR Callback] Eksik parametreler:", { merchantOid, status, totalAmount });
       return new Response("PAYTR notification failed: missing parameters", { status: 400 });
     }
 
@@ -84,7 +111,10 @@ export async function POST(request: Request) {
     }
 
     // PayTR her zaman "OK" yanıtı bekler
-    return new Response("OK", { status: 200 });
+    return new Response("OK", {
+      status: 200,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
   } catch (err) {
     console.error("[PayTR Callback] Sunucu hatası:", err);
     return new Response("PAYTR notification failed: internal error", { status: 500 });

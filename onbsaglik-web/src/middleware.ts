@@ -74,7 +74,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  const isCheckoutRoute = pathname.startsWith("/api/checkout");
+  const isCheckoutRoute = pathname.startsWith("/api/checkout") && pathname !== "/api/checkout/callback";
   if (isCheckoutRoute && request.method === "POST") {
     // Ödeme oluşturma rotalarında dakikada en fazla 10 istek
     const allowed = checkRateLimit(`checkout_${ip}`, 10, 60 * 1000);
