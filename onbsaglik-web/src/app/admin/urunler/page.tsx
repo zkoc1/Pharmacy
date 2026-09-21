@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -50,6 +50,7 @@ export default function AdminUrunlerPage() {
   const [editMarketPrice, setEditMarketPrice] = useState("");
   const [editLongDescription, setEditLongDescription] = useState("");
   const [editIngredients, setEditIngredients] = useState("");
+  const [editBarcode, setEditBarcode] = useState("");
 
   // Notification
   const [toastMsg, setToastMsg] = useState("");
@@ -178,6 +179,7 @@ export default function AdminUrunlerPage() {
       price: isNaN(parsedPrice) ? editingProduct.price : parsedPrice,
       marketPrice: isNaN(parsedMarket) ? editingProduct.marketPrice : parsedMarket,
       stock: isNaN(parsedStock) ? editingProduct.stock : parsedStock,
+      barcode: editBarcode.trim(),
       longDescription: editLongDescription,
       ingredients: editIngredients,
     };
@@ -403,6 +405,7 @@ export default function AdminUrunlerPage() {
                               setEditPrice(String(p.price));
                               setEditMarketPrice(String(p.marketPrice || ""));
                               setEditStock(String(p.stock));
+                              setEditBarcode(p.barcode || "");
                               setEditLongDescription(p.longDescription || "");
                               setEditIngredients(p.ingredients || "");
                             }}
@@ -528,15 +531,26 @@ export default function AdminUrunlerPage() {
       {/* HIZLI DÜZENLEME MODALİ */}
       {editingProduct && (
         <div className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-5 border-b bg-slate-50 flex justify-between items-center">
-              <h3 className="font-black text-gray-900 text-sm flex items-center gap-2"><Edit2 size={16} className="text-sky-600"/> Stok ve Fiyat Güncelle</h3>
+              <h3 className="font-black text-gray-900 text-sm flex items-center gap-2"><Edit2 size={16} className="text-sky-600"/> Ürün Bilgilerini Güncelle</h3>
             </div>
-            <form onSubmit={handleEditSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleEditSubmit} className="p-5 space-y-4 overflow-y-auto">
               <p className="text-xs font-bold text-gray-500 line-clamp-2">{editingProduct.name}</p>
               
               <div>
-                <label className="block text-[11px] font-bold text-gray-700 mb-1">Satış Fiyatı</label>
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">Barkod No (EAN / GTIN)</label>
+                <input 
+                  type="text" 
+                  value={editBarcode} 
+                  onChange={e => setEditBarcode(e.target.value)} 
+                  placeholder="Örn: 8690123456789"
+                  className="w-full p-2.5 border border-gray-200 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-sky-500 outline-none" 
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">Satış Fiyatı (TL)</label>
                 <input required type="number" step="0.01" value={editPrice} onChange={e => setEditPrice(e.target.value)} className="w-full p-2.5 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-sky-500 outline-none" />
               </div>
               

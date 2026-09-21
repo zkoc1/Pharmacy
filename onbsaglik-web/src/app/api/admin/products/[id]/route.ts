@@ -61,6 +61,9 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
   if (updateData.ingredients !== undefined) {
     updateData.ingredients = updateData.ingredients;
   }
+  if (updateData.barcode !== undefined) {
+    updateData.barcode = typeof updateData.barcode === "string" ? updateData.barcode.trim() : String(updateData.barcode || "").trim();
+  }
   delete updateData.description;
   delete updateData.desi;
 

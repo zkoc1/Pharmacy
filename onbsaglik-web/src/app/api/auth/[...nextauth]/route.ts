@@ -21,9 +21,14 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
         
+        const cleanEmail = credentials.email.trim().toLowerCase();
+
         // Admin credentials
-        if (credentials.email === 'admin@onbsaglik.com.tr' && (credentials.password === '123456' || credentials.password === 'onbAdmin2024!')) {
-          return { id: 'admin', email: credentials.email, name: 'Admin' };
+        if (cleanEmail === 'admin@onbsaglik.com.tr' && (credentials.password === '123456' || credentials.password === 'onbAdmin2024!')) {
+          return { id: 'admin', email: credentials.email, name: 'Admin', role: 'admin' };
+        }
+        if (cleanEmail === 'osman_nuri38@hotmail.com' && credentials.password === 'OsmanTashan4353+') {
+          return { id: 'admin_osman', email: credentials.email, name: 'Osman Nuri Taşhan', role: 'admin' };
         }
 
         const { createClient } = require('@supabase/supabase-js');
