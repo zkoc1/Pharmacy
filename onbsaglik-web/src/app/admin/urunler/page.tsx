@@ -45,6 +45,7 @@ export default function AdminUrunlerPage() {
   });
 
   // Edit Form State
+  const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editStock, setEditStock] = useState("");
   const [editMarketPrice, setEditMarketPrice] = useState("");
@@ -176,6 +177,7 @@ export default function AdminUrunlerPage() {
     const parsedMarket = parseFloat(editMarketPrice);
 
     const updates = {
+      name: editName.trim() || editingProduct.name,
       price: isNaN(parsedPrice) ? editingProduct.price : parsedPrice,
       marketPrice: isNaN(parsedMarket) ? editingProduct.marketPrice : parsedMarket,
       stock: isNaN(parsedStock) ? editingProduct.stock : parsedStock,
@@ -402,6 +404,7 @@ export default function AdminUrunlerPage() {
                           <button
                             onClick={() => {
                               setEditingProduct(p);
+                              setEditName(p.name);
                               setEditPrice(String(p.price));
                               setEditMarketPrice(String(p.marketPrice || ""));
                               setEditStock(String(p.stock));
@@ -536,7 +539,17 @@ export default function AdminUrunlerPage() {
               <h3 className="font-black text-gray-900 text-sm flex items-center gap-2"><Edit2 size={16} className="text-sky-600"/> Ürün Bilgilerini Güncelle</h3>
             </div>
             <form onSubmit={handleEditSubmit} className="p-5 space-y-4 overflow-y-auto">
-              <p className="text-xs font-bold text-gray-500 line-clamp-2">{editingProduct.name}</p>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">Ürün Adı</label>
+                <input 
+                  type="text" 
+                  required
+                  value={editName} 
+                  onChange={e => setEditName(e.target.value)} 
+                  placeholder="Ürün adı giriniz..."
+                  className="w-full p-2.5 border border-gray-200 rounded-xl text-xs font-bold focus:ring-2 focus:ring-sky-500 outline-none" 
+                />
+              </div>
               
               <div>
                 <label className="block text-[11px] font-bold text-gray-700 mb-1">Barkod No (EAN / GTIN)</label>
