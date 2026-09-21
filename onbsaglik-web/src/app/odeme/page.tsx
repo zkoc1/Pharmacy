@@ -108,8 +108,8 @@ export default function OdemeSayfasi() {
     differentInvoice: false,
   });
 
-  // Kargo Seçenekleri
-  const [selectedCarrier, setSelectedCarrier] = useState("Kolay Gelsin");
+  // Kargo Seçenekleri (Yalnızca HepsiJet)
+  const [selectedCarrier, setSelectedCarrier] = useState("HepsiJet");
 
   
 
@@ -147,12 +147,7 @@ export default function OdemeSayfasi() {
   const isFree = subTotalForFreeShipping >= checkoutSettings.freeShippingThreshold;
   
   const carriers = [
-    { name: "Kolay Gelsin", base: checkoutSettings.shippingCost },
     { name: "HepsiJet", base: checkoutSettings.shippingCost },
-    { name: "PTT Kargo", base: checkoutSettings.shippingCost },
-    { name: "Sürat Kargo", base: checkoutSettings.shippingCost },
-    { name: "Aras Kargo", base: checkoutSettings.shippingCost },
-    { name: "Yurtiçi Kargo", base: checkoutSettings.shippingCost },
   ].map(c => {
     const p = isFree ? 0 : c.base;
     return { name: c.name, price: p, label: p === 0 ? "BEDAVA" : formatPrice(p) };
@@ -898,36 +893,34 @@ export default function OdemeSayfasi() {
                   </span>
                 </div>
 
-                {/* KARGO SEÇENEKLERİ */}
+                {/* KARGO SEÇENEĞİ */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-4">
                   <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b pb-3">
-                    <Truck className="text-emerald-600" /> KARGO SEÇENEKLERİ
+                    <Truck className="text-emerald-600" /> KARGO SEÇENEĞİ
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 max-w-md gap-3">
                     {carriers.map((car) => (
                       <label
                         key={car.name}
-                        onClick={() => setSelectedCarrier(car.name)}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center justify-between transition-all ${
-                          selectedCarrier === car.name
-                            ? "border-rose-400 bg-rose-50/30 font-bold"
-                            : "border-gray-100 hover:border-gray-200"
-                        }`}
+                        className="p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 cursor-pointer flex items-center justify-between transition-all"
                       >
                         <div className="flex items-center gap-3">
                           <input
                             type="radio"
                             name="carrier"
-                            checked={selectedCarrier === car.name}
+                            checked={true}
                             readOnly
-                            className="text-rose-500"
+                            className="text-emerald-600 w-4 h-4"
                           />
-                          <span className="text-xs font-bold text-gray-800">{car.name}</span>
+                          <div>
+                            <span className="text-sm font-extrabold text-gray-900 block">{car.name}</span>
+                            <span className="text-[11px] text-gray-500 font-medium">Hızlı ve Güvenli Teslimat</span>
+                          </div>
                         </div>
                         <span
-                          className={`text-xs font-extrabold ${
-                            car.price === 0 ? "text-rose-500" : "text-gray-700"
+                          className={`text-xs font-black ${
+                            car.price === 0 ? "text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full" : "text-gray-800"
                           }`}
                         >
                           {car.label}

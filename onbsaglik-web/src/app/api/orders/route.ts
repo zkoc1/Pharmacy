@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       customer_name: body.customerName,
       customer_phone: body.customerPhone,
       total: body.total,
-      carrier: body.carrier,
+      carrier: body.carrier || "HepsiJet",
       payment_method: body.paymentMethod,
       status: body.status || "Ödeme Bekliyor",
       delivery_address: body.deliveryAddress,

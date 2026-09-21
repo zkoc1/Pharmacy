@@ -367,7 +367,7 @@ export default function AdminSiparislerTrendyol() {
                                   <button onClick={() => updateOrderStatus(ord.id, "Hazırlanıyor")} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">İşleme Al</button>
                                 )}
                                 {(ord.status === "Hazırlanıyor" || ord.status === "Ödeme Bekliyor" || ord.status === "Mail Order Bekliyor") && (
-                                  <button onClick={() => setCustomCarrierOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Başka Kargo Firması ile Gönder</button>
+                                  <button onClick={() => setCustomCarrierOrder(ord)} className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b">Kargo Takip No Gir / Güncelle</button>
                                 )}
                                 {ord.status !== "İptal / İade" && ord.status !== "Teslim Edildi" && (
                                   <button onClick={() => updateOrderStatus(ord.id, "İptal / İade")} className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 border-b">İptal Et</button>
