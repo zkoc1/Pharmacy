@@ -149,6 +149,18 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         {/* Alt Bilgi ve Ödeme (Footer) */}
         {items.length > 0 && (
           <div className="p-4 border-t border-gray-100 bg-gray-50">
+            {/* 500 TL Üzeri Kargo Bedava Göstergesi */}
+            {getTotalPrice() >= 500 ? (
+              <div className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-1.5 rounded-lg mb-3 flex items-center gap-1.5 border border-emerald-200">
+                <span>🎉</span> <span>500 TL üzeri siparişinizde Kargo <strong>BEDAVA</strong>!</span>
+              </div>
+            ) : (
+              <div className="text-[11px] font-semibold text-gray-700 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded-lg mb-3 flex items-center justify-between">
+                <span>🚚 Kargo Bedava:</span>
+                <span className="font-extrabold text-amber-700">{formatPrice(500 - getTotalPrice())} kaldı</span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600 font-medium">Toplam Tutar:</span>
               <span className="text-xl font-bold text-emerald-600">

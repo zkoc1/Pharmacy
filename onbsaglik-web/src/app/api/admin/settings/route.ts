@@ -12,7 +12,12 @@ export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
   const supabase = getServiceSupabase();
   const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
-  return NextResponse.json(data || {});
+  const settingsData = data ? { ...data } : {};
+  if (!settingsData.free_shipping_threshold || Number(settingsData.free_shipping_threshold) >= 3000) {
+    settingsData.free_shipping_threshold = 500;
+    supabase.from("settings").update({ free_shipping_threshold: 500 }).eq("id", 1).then(() => {});
+  }
+  return NextResponse.json(settingsData);
 }
 
 export async function PUT(req: Request) {

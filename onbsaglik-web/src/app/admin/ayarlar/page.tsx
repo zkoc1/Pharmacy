@@ -10,7 +10,7 @@ export default function AyarlarSayfasi() {
   const router = useRouter();
 
   // Settings State
-  const [settings, setSettings] = useState({ freeShippingThreshold: 3000, shippingCost: 49.90 });
+  const [settings, setSettings] = useState({ freeShippingThreshold: 500, shippingCost: 49.90 });
   const [savingSettings, setSavingSettings] = useState(false);
 
   // Coupons State

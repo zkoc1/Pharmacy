@@ -51,8 +51,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // Backend Güvenlik: 500 TL ve üzeri siparişlerde kargo ücreti alınamaz
+    let calculatedTotal = total;
+    if (Array.isArray(items) && items.length > 0) {
+      const itemsTotal = items.reduce((acc: number, item: any) => acc + (Number(item.price || item.product?.price || 0) * Number(item.quantity || 1)), 0);
+      if (itemsTotal >= 500 && calculatedTotal > itemsTotal) {
+        calculatedTotal = itemsTotal;
+      }
+    }
+
     // Kuruş Cinsinden Tutar (örn: 100 TL -> 10000)
-    const payment_amount = Math.round(total * 100).toString();
+    const payment_amount = Math.round(calculatedTotal * 100).toString();
 
     // Sepet İçeriği JSON -> Base64
     const basketArray = items.map((i: any) => [

@@ -132,7 +132,7 @@ export default function OdemeSayfasi() {
 
   // Dinamik Ayarlar (Kargo Limiti vs)
   const [checkoutSettings, setCheckoutSettings] = useState({
-    freeShippingThreshold: 3000,
+    freeShippingThreshold: 500,
     shippingCost: 49.90
   });
 
@@ -143,8 +143,10 @@ export default function OdemeSayfasi() {
   const total = getTotalPrice();
   const multiBuyDiscount = calculateMultiBuyDiscount(items, total);
   
-    const subTotalForFreeShipping = total - multiBuyDiscount - discount;
-  const isFree = subTotalForFreeShipping >= checkoutSettings.freeShippingThreshold;
+  const subTotalForFreeShipping = total - multiBuyDiscount - discount;
+  // 500 TL ve üzeri siparişlerde kargo her koşulda tamamen ücretsizdir
+  const threshold = checkoutSettings.freeShippingThreshold ? Math.min(checkoutSettings.freeShippingThreshold, 500) : 500;
+  const isFree = total >= 500 || subTotalForFreeShipping >= threshold;
   
   const carriers = [
     { name: "HepsiJet", base: checkoutSettings.shippingCost },
@@ -154,7 +156,7 @@ export default function OdemeSayfasi() {
   });
 
   const carrierObj = carriers.find((c) => c.name === selectedCarrier);
-  const shippingCost = carrierObj ? carrierObj.price : 0;
+  const shippingCost = isFree ? 0 : (carrierObj ? carrierObj.price : 0);
   const subTotalForShipping = total - multiBuyDiscount - discount;
   
   let tempGrandTotal = Math.max(0, total - multiBuyDiscount - discount + shippingCost);

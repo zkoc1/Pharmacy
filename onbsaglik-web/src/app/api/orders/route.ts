@@ -65,13 +65,22 @@ export async function POST(req: Request) {
     const id = rawId.replace(/[^a-zA-Z0-9]/g, "");
     const invoiceNo = `ONB2026${Math.floor(10000 + Math.random() * 90000)}`;
 
+    // Backend Güvenlik: 500 TL ve üzeri siparişlerde kargo ücreti eklenemez
+    let finalTotal = body.total;
+    if (Array.isArray(body.items) && body.items.length > 0) {
+      const itemsSubtotal = body.items.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+      if (itemsSubtotal >= 500 && finalTotal > itemsSubtotal) {
+        finalTotal = itemsSubtotal;
+      }
+    }
+
     const orderData = {
       id,
       invoice_no: invoiceNo,
       customer_email: body.customerEmail,
       customer_name: body.customerName,
       customer_phone: body.customerPhone,
-      total: body.total,
+      total: finalTotal,
       carrier: body.carrier || "HepsiJet",
       payment_method: body.paymentMethod,
       status: body.status || "Ödeme Bekliyor",

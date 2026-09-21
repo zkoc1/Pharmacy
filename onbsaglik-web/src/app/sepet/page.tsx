@@ -26,7 +26,7 @@ import { useOrderStore } from "@/stores/orderStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { formatPrice } from "@/lib/products";
 import { calculateMultiBuyDiscount, applyCouponDiscount } from "@/lib/pricing";
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ChevronLeft, Gift, Printer, Calendar, RefreshCw, BookmarkPlus } from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ChevronLeft, Gift, Printer, Calendar, RefreshCw, BookmarkPlus, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types";
@@ -225,6 +225,29 @@ export default function SepetSayfasi() {
           <div className="space-y-4">
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-4 sticky top-24">
               
+              {/* Kargo Bilgilendirme Çubuğu */}
+              {total >= 500 ? (
+                <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 p-3 rounded-2xl flex items-center gap-2 text-xs font-extrabold">
+                  <Truck className="text-emerald-600 shrink-0" size={18} />
+                  <span>🎉 500 TL üzeri alışverişinizde Kargo BEDAVA!</span>
+                </div>
+              ) : (
+                <div className="bg-amber-50 text-amber-900 border border-amber-200 p-3 rounded-2xl text-xs space-y-1.5">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="flex items-center gap-1.5 text-amber-800">
+                      <Truck className="text-amber-600 shrink-0" size={16} /> Ücretsiz Kargo Fırsatı
+                    </span>
+                    <span className="font-extrabold text-amber-700">{formatPrice(500 - total)} kaldı</span>
+                  </div>
+                  <div className="w-full bg-amber-200/60 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-amber-500 h-full rounded-full transition-all"
+                      style={{ width: `${Math.min(100, (total / 500) * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2 text-xs border-b pb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-500 font-bold">Sepet Toplamı :</span>

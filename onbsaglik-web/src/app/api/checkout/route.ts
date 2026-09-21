@@ -51,7 +51,16 @@ export async function POST(request: Request) {
     ]);
     const basketEncoded = Buffer.from(JSON.stringify(basket)).toString("base64");
 
-    const totalKurus   = Math.round(total * 100); // Kuruş cinsinden toplam
+    // Backend Güvenlik: 500 TL ve üzeri siparişlerde kargo ücreti alınamaz
+    let calculatedTotal = total;
+    if (Array.isArray(items) && items.length > 0) {
+      const itemsTotal = items.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+      if (itemsTotal >= 500 && calculatedTotal > itemsTotal) {
+        calculatedTotal = itemsTotal;
+      }
+    }
+
+    const totalKurus   = Math.round(calculatedTotal * 100); // Kuruş cinsinden toplam
     const orderId      = `ONB-${Date.now()}`;
     const siteUrl      = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     const currency     = "TL";

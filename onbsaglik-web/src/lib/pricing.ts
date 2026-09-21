@@ -1,7 +1,7 @@
 import { CartItem } from "@/types";
 
 export const PRICING_RULES = {
-  FREE_SHIPPING_THRESHOLD: 3000,
+  FREE_SHIPPING_THRESHOLD: 500,
   SHIPPING_COST: 49.90, 
   MULTI_BUY_MIN_ITEMS: 3,
   MULTI_BUY_DISCOUNT_RATE: 0.05,
@@ -27,7 +27,7 @@ export function calculateEftDiscount(amount: number): number {
 }
 
 export function calculateShipping(amount: number): number {
-  if (amount > PRICING_RULES.FREE_SHIPPING_THRESHOLD) {
+  if (amount >= PRICING_RULES.FREE_SHIPPING_THRESHOLD) {
     return 0;
   }
   return PRICING_RULES.SHIPPING_COST;
