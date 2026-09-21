@@ -59,6 +59,7 @@ export const metadata: Metadata = {
 };
 
 import SessionWrapper from "@/components/providers/SessionWrapper";
+import MetaPixel from "@/components/analytics/MetaPixel";
 
 export default function RootLayout({
   children,
@@ -68,6 +69,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.variable}>
       <body>
+        <MetaPixel />
         <SessionWrapper>
           {/* Üst navigasyon çubuğu */}
           <Header />
