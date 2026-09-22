@@ -555,5 +555,75 @@
     "id": 93,
     "name": "wicromed",
     "slug": "wicromed"
+  },
+  {
+    "id": "nivea",
+    "name": "NIVEA",
+    "slug": "nivea",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "e2quality",
+    "name": "E2'quality",
+    "slug": "e2quality",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "collagen-forte",
+    "name": "Collagen Forte",
+    "slug": "collagen-forte",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "venatura",
+    "name": "VeNatura",
+    "slug": "venatura",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "tetagil",
+    "name": "Tetagil",
+    "slug": "tetagil",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "collagen-forte-platinum",
+    "name": "Collagen Forte Platinum",
+    "slug": "collagen-forte-platinum",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "xpecia",
+    "name": "Xpecia",
+    "slug": "xpecia",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "minoxil",
+    "name": "Minoxil",
+    "slug": "minoxil",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "hhs",
+    "name": "Hhs",
+    "slug": "hhs",
+    "logo": "/brands/default.png",
+    "featured": false
+  },
+  {
+    "id": "orthogen",
+    "name": "Orthogen",
+    "slug": "orthogen",
+    "logo": "/brands/default.png",
+    "featured": false
   }
 ]
