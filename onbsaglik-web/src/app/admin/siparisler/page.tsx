@@ -8,13 +8,13 @@ import {
   Search,
   Filter,
   Download,
-  Plus,
   Square,
   CheckSquare,
   AlertCircle,
   Truck,
   Eye,
   Calendar,
+  User,
 } from "lucide-react";
 import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
@@ -267,19 +267,27 @@ export default function AdminSiparislerTrendyol() {
                         </div>
                         <div>Sipariş Tarihi: <span className="font-bold">{ord.date.split(" ")[0]} {ord.date.split(" ")[1]}</span></div>
                         <div className="text-[10px] text-gray-400">Ödeme: {ord.paymentMethod}</div>
-                        {ord.status === "Hazırlanıyor" && (
-                          <div className="text-[#f27a1a] font-bold text-[11px] mt-2">Kalan Süre: <br/>0 gün 02 saat 05 dakika</div>
-                        )}
                       </td>
                       
                       {/* Alıcı */}
                       <td className="p-3 align-top">
-                        <div className="flex items-start gap-2">
-                          <div className="text-yellow-500 mt-0.5">★</div>
-                          <div>
-                            <div className="font-bold text-gray-800">{ord.customerName}</div>
-                            <div className="text-[10px] text-[#f27a1a] font-bold mb-1">OnbSağlık Plus'lı</div>
-                            <div className="text-[10px] text-gray-500 line-clamp-3">{ord.deliveryAddress}</div>
+                        <div className="space-y-1">
+                          <div className="font-bold text-gray-800 flex items-center gap-1.5">
+                            <User size={13} className="text-gray-400 shrink-0" />
+                            <span>{ord.customerName}</span>
+                          </div>
+                          {ord.customerPhone && (
+                            <div className="text-[11px] text-gray-500 font-medium">
+                              📞 {ord.customerPhone}
+                            </div>
+                          )}
+                          {ord.customerEmail && (
+                            <div className="text-[10px] text-gray-400">
+                              ✉ {ord.customerEmail}
+                            </div>
+                          )}
+                          <div className="text-[10px] text-gray-600 line-clamp-3 pt-1 border-t border-gray-100 mt-1">
+                            {ord.deliveryAddress}
                           </div>
                         </div>
                       </td>
