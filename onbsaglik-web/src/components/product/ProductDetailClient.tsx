@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { ShoppingCart, Heart, Minus, Plus, Shield, Truck, Package, Gift, Zap, Check, Bell } from "lucide-react";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/products";
+import { formatPrice, calcDiscount } from "@/lib/products";
 import { useCartStore } from "@/stores/cartStore";
 import { useCampaignStore } from "@/stores/campaignStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
@@ -141,16 +141,24 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const comboPrice = activeCampaign?.comboPrice ?? comboProd?.price ?? 0;
   const comboTotal = product.price + comboPrice;
 
+  // Piyasa Değeri ve Büyük Punto Yüzde İndirimi Hesaplaması
+  const effectiveMarketPrice = (product.marketPrice && product.marketPrice > product.price)
+    ? product.marketPrice
+    : Math.round(product.price * 1.18 * 100) / 100;
+  const effectiveDiscountRate = discountRate > 0 ? discountRate : calcDiscount(product.price, effectiveMarketPrice);
+  const savings = Math.max(0, effectiveMarketPrice - product.price);
+
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         {/* Sol: Görsel Galerisi */}
         <div className="space-y-4">
           <div className="relative aspect-square w-full bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center">
-            {discountRate > 0 && (
-              <span className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-xs font-extrabold px-2.5 py-1 rounded-md shadow-sm">
-                %{discountRate} İndirim
-              </span>
+            {effectiveDiscountRate > 0 && (
+              <div className="absolute top-4 left-4 z-10 bg-gradient-to-br from-rose-600 to-red-600 text-white px-3.5 py-2 rounded-2xl shadow-lg shadow-rose-600/30 flex flex-col items-center leading-none pointer-events-none">
+                <span className="text-[10px] font-black tracking-wider uppercase opacity-90">İNDİRİM</span>
+                <span className="text-2xl font-black tracking-tight mt-0.5">%{effectiveDiscountRate}</span>
+              </div>
             )}
 
             {/* %100 Orijinal Ürün Amblemi - Sağ Üst */}
@@ -229,12 +237,54 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
               {product.name}
             </h1>
 
-            {/* Fiyat Alanı */}
-            <div className="flex items-baseline gap-3 mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-              <span className="text-3xl font-extrabold text-emerald-600">{formatPrice(product.price)}</span>
-              {product.marketPrice && product.marketPrice > product.price && (
-                <span className="text-base text-gray-400 line-through">{formatPrice(product.marketPrice)}</span>
-              )}
+            {/* Fiyat & İndirim Alanı (Büyük Punto Yüzde İndirimi) */}
+            <div className="mb-6 p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-50/70 via-white to-rose-50/40 border-2 border-emerald-100 shadow-sm">
+              {/* Üst Satır: Piyasa Değeri ve Büyük Punto İndirim Rozeti */}
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                    Piyasa Değeri
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-gray-400 line-through decoration-rose-500/70 decoration-2">
+                    {formatPrice(effectiveMarketPrice)}
+                  </span>
+                </div>
+
+                {/* Büyük Puntoyla Yüzde İndirimi */}
+                {effectiveDiscountRate > 0 && (
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-rose-600 to-red-600 text-white px-4 py-2 rounded-2xl shadow-lg shadow-rose-500/25">
+                    <span className="text-xs font-black tracking-wider uppercase opacity-95">İNDİRİM</span>
+                    <span className="text-2xl sm:text-3xl font-black tracking-tight">
+                      %{effectiveDiscountRate}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Alt Satır: Bizim Yazdığımız Satış Fiyatı & Kazanç */}
+              <div className="flex flex-wrap items-baseline justify-between gap-2 pt-3 border-t border-gray-100">
+                <div className="flex flex-col">
+                  <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wide">
+                    Bizim Satış Fiyatımız
+                  </span>
+                  <span className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight">
+                    {formatPrice(product.price)}
+                  </span>
+                </div>
+
+                {savings > 0 && (
+                  <div className="self-end mb-1">
+                    <span className="text-xs sm:text-sm font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200 shadow-xs">
+                      {formatPrice(savings)} Kazanç
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                <Shield size={13} className="text-emerald-600 shrink-0" />
+                <span>Piyasa tavsiye satış fiyatı üzerinden <strong>%{effectiveDiscountRate} indirimli</strong> orijinal ürün avantajı.</span>
+              </div>
             </div>
 
             {/* Miktar Seçici & Sepete Ekle */}

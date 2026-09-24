@@ -30,7 +30,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const isOutOfStock = product.stock === 0;
 
-  const discountRate = product.marketPrice ? calcDiscount(product.marketPrice, product.price) : 0;
+  const effectiveMarketPrice = (product.marketPrice && product.marketPrice > product.price)
+    ? product.marketPrice
+    : Math.round(product.price * 1.18 * 100) / 100;
+  const discountRate = calcDiscount(product.price, effectiveMarketPrice);
   const imageUrl = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : '/placeholder.png';
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -66,10 +69,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <>
       <Link href={`/urun/${product.slug}`} className="group flex flex-col bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative">
-        {/* İndirim Rozeti */}
+        {/* İndirim Rozeti (Büyük Punto) */}
         {discountRate > 0 && (
-          <div className="absolute top-3 left-3 z-10 bg-rose-500 text-white text-xs font-extrabold px-2 py-0.5 rounded-md shadow-sm">
-            %{discountRate}
+          <div className="absolute top-2.5 left-2.5 z-10 bg-gradient-to-r from-rose-600 to-red-600 text-white px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 font-black leading-none">
+            <span className="text-[9px] font-bold tracking-wider uppercase opacity-90">İNDİRİM</span>
+            <span className="text-sm sm:text-base font-black">%{discountRate}</span>
           </div>
         )}
 
@@ -135,12 +139,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           <div className="mt-auto pt-3">
             <div className="flex flex-col mb-3">
-              {product.marketPrice && product.marketPrice > product.price && (
-                <span className="text-xs text-gray-400 line-through">
-                  {formatPrice(product.marketPrice)}
+              <div className="flex items-center justify-between gap-1 mb-1">
+                <span className="text-xs text-gray-400 line-through font-semibold">
+                  {formatPrice(effectiveMarketPrice)}
                 </span>
-              )}
-              <span className="text-base font-extrabold text-emerald-600">
+                {discountRate > 0 && (
+                  <span className="text-[11px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200">
+                    %{discountRate} İndirim
+                  </span>
+                )}
+              </div>
+              <span className="text-base sm:text-lg font-black text-emerald-600">
                 {formatPrice(product.price)}
               </span>
             </div>

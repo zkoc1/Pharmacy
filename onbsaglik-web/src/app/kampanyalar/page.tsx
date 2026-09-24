@@ -11,7 +11,7 @@ import { Zap, Gift, Tag, ShoppingCart, ArrowRight, ShieldCheck, Clock, Check } f
 import { useCampaignStore, Campaign } from "@/stores/campaignStore";
 import { useCartStore } from "@/stores/cartStore";
 import type { Product } from "@/types";
-import { formatPrice } from "@/lib/products";
+import { formatPrice, calcDiscount } from "@/lib/products";
 
 export default function KampanyalarSayfasi() {
   const { getActiveCampaigns } = useCampaignStore();
@@ -210,6 +210,11 @@ export default function KampanyalarSayfasi() {
                               <span className="text-base font-extrabold text-emerald-600">
                                 {camp.discountedPrice ? formatPrice(camp.discountedPrice) : formatPrice(mainProd.price)}
                               </span>
+                              {calcDiscount(camp.discountedPrice || mainProd.price, mainProd.marketPrice) > 0 && (
+                                <span className="text-xs font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                                  %{calcDiscount(camp.discountedPrice || mainProd.price, mainProd.marketPrice)} İndirim
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>

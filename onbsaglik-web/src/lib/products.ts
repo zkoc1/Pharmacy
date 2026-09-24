@@ -14,13 +14,22 @@ const ALL_CATEGORIES = categoriesData as Category[];
 
 // Yardımcı: Veritabanından gelen veriyi Product tipine çevirir
 function mapProduct(p: any): Product {
+  const price = Number(p.price) || 0;
+  let marketPrice = Number(p.market_price ?? p.marketPrice) || 0;
+
+  // Tüm ürünlerde piyasa değeri üzerinden indirim gösterilmesi kuralı
+  if (!marketPrice || marketPrice <= price) {
+    marketPrice = Math.round(price * 1.18 * 100) / 100;
+  }
+
   return {
     ...p,
-    brandSlug: p.brand_slug,
-    categorySlug: p.category_slug,
-    marketPrice: p.market_price,
-    vatRate: p.vat_rate,
-    trendyolLink: p.trendyol_link,
+    price,
+    marketPrice,
+    brandSlug: p.brand_slug || p.brandSlug,
+    categorySlug: p.category_slug || p.categorySlug,
+    vatRate: p.vat_rate || p.vatRate,
+    trendyolLink: p.trendyol_link || p.trendyolLink,
     images: typeof p.images === 'string' ? (p.images.startsWith('[') ? JSON.parse(p.images) : p.images.split(',')) : (p.images || []),
   };
 }
@@ -210,10 +219,20 @@ export async function getDiscountedProducts(count = 8): Promise<Product[]> {
     .slice(0, count);
 }
 
-/** İndirim yüzdesini hesaplar */
-export function calcDiscount(price: number, marketPrice: number): number {
-  if (!marketPrice || marketPrice <= price) return 0;
-  return Math.round(((marketPrice - price) / marketPrice) * 100);
+/** 
+ * İndirim yüzdesini hesaplar (Piyasa Değeri ile Satış Fiyatı arasındaki indirim).
+ * Argüman sırasından bağımsız olarak yüksek olanı piyasa değeri, düşük olanı satış fiyatı kabul eder.
+ */
+export function calcDiscount(price: number, marketPrice?: number): number {
+  const p1 = Number(price) || 0;
+  const p2 = Number(marketPrice) || 0;
+  if (!p1 || !p2) return 0;
+
+  const higher = Math.max(p1, p2);
+  const lower = Math.min(p1, p2);
+  if (higher <= lower) return 0;
+
+  return Math.round(((higher - lower) / higher) * 100);
 }
 
 /** TL formatlayıcı — Türkçe locale */
