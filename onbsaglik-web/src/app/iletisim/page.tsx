@@ -241,9 +241,9 @@ export default function IletisimSayfasi() {
             {
               icon: <Mail size={22} />,
               title: "E-posta",
-              value: "destek@onbsaglik.com.tr",
+              value: "saglikonb@gmail.com",
               sub: "1 iş günü içinde yanıt",
-              href: "mailto:destek@onbsaglik.com.tr",
+              href: "mailto:saglikonb@gmail.com",
             },
             {
               icon: <Phone size={22} />,
