@@ -73,14 +73,29 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Favori Butonu */}
+        {/* %100 Orijinal Ürün Amblemi - Sağ Üst */}
+        <div 
+          className="absolute top-2.5 right-2.5 z-10 w-9 h-9 sm:w-10 sm:h-10 transition-transform duration-300 group-hover:scale-110 pointer-events-none drop-shadow-md"
+          title="%100 Orijinal Ürün Garantisi"
+        >
+          <Image
+            src="/orijinal-urun-badge.png"
+            alt="%100 Orijinal Ürün"
+            width={40}
+            height={40}
+            className="w-full h-full object-contain"
+            unoptimized={true}
+          />
+        </div>
+
+        {/* Favori Butonu - Amblemin Altında */}
         <button
           onClick={handleToggleFavorite}
-          className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all duration-200 flex items-center justify-center cursor-pointer"
+          className="absolute top-[48px] sm:top-[52px] right-2.5 z-10 p-1.5 sm:p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all duration-200 flex items-center justify-center cursor-pointer hover:shadow-md"
           aria-label={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
         >
           <Heart
-            size={18}
+            size={16}
             className={isFavorite ? "text-rose-500" : "text-gray-400 hover:text-rose-500"}
             fill={isFavorite ? "#f43f5e" : "none"}
           />

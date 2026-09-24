@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Ürün detay istemci bileşeni.
  * Galeri, sepete ekle, miktar seçimi ve OnbSağlık Combo Teklif kutusunu yönetir.
  */
@@ -152,9 +152,28 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                 %{discountRate} İndirim
               </span>
             )}
+
+            {/* %100 Orijinal Ürün Amblemi - Sağ Üst */}
+            <div 
+              className="absolute top-3.5 right-3.5 z-10 w-14 h-14 sm:w-16 sm:h-16 transition-transform duration-300 hover:scale-105 pointer-events-none drop-shadow-md"
+              title="%100 Orijinal Eczane Ürünü Garantisi"
+            >
+              <Image
+                src="/orijinal-urun-badge.png"
+                alt="%100 Orijinal Ürün"
+                width={64}
+                height={64}
+                className="w-full h-full object-contain"
+                unoptimized={true}
+                priority
+              />
+            </div>
+
+            {/* Favori Butonu - Amblemin Altında */}
             <button
               onClick={handleToggleFavorite}
-              className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-md transition-all cursor-pointer"
+              className="absolute top-20 right-4 z-10 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-md transition-all cursor-pointer"
+              aria-label={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
             >
               <Heart size={20} className={isFavorite ? "text-rose-500" : "text-gray-400"} fill={isFavorite ? "#f43f5e" : "none"} />
             </button>
@@ -197,9 +216,15 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
         {/* Sağ: Ürün Bilgileri ve İşlemler */}
         <div className="flex flex-col justify-between space-y-6">
           <div>
-            <span className="text-xs font-bold text-emerald-600 tracking-wider uppercase mb-1 block">
-              {product.brand}
-            </span>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-bold text-emerald-600 tracking-wider uppercase block">
+                {product.brand}
+              </span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-extrabold shadow-xs">
+                <Image src="/orijinal-urun-badge.png" alt="Orijinal" width={18} height={18} className="w-4 h-4 object-contain" unoptimized={true} />
+                <span>%100 Orijinal Ürün Garantisi</span>
+              </div>
+            </div>
             <h1 className="text-xl md:text-2xl font-extrabold text-gray-900 leading-snug mb-4">
               {product.name}
             </h1>
