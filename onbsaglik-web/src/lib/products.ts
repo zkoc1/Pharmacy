@@ -18,8 +18,10 @@ function mapProduct(p: any): Product {
   let marketPrice = Number(p.market_price ?? p.marketPrice) || 0;
 
   // Tüm ürünlerde piyasa değeri üzerinden indirim gösterilmesi kuralı
-  if (!marketPrice || marketPrice <= price) {
-    marketPrice = Math.round(price * 1.18 * 100) / 100;
+  // Eğer marketPrice yoksa veya satış fiyatından en az %8 yüksek değilse (örn. 1 TL fark veya 0%),
+  // gerçekçi bir perakende piyasa fiyatı oluştur (%25 fazlası -> yaklaşık %20 indirim).
+  if (!marketPrice || marketPrice < price * 1.08) {
+    marketPrice = Math.round(price * 1.25 * 100) / 100;
   }
 
   return {
@@ -226,13 +228,15 @@ export async function getDiscountedProducts(count = 8): Promise<Product[]> {
 export function calcDiscount(price: number, marketPrice?: number): number {
   const p1 = Number(price) || 0;
   const p2 = Number(marketPrice) || 0;
-  if (!p1 || !p2) return 0;
+  if (!p1 && !p2) return 0;
+  if (!p1 || !p2) return 20;
 
   const higher = Math.max(p1, p2);
   const lower = Math.min(p1, p2);
-  if (higher <= lower) return 0;
+  if (higher <= lower) return 20;
 
-  return Math.round(((higher - lower) / higher) * 100);
+  const rate = Math.round(((higher - lower) / higher) * 100);
+  return rate >= 5 ? rate : 20;
 }
 
 /** TL formatlayıcı — Türkçe locale */

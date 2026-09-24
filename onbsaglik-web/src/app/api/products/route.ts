@@ -18,8 +18,8 @@ export async function GET(req: Request) {
     
     const price = Number(data.price) || 0;
     let marketPrice = Number(data.market_price) || 0;
-    if (!marketPrice || marketPrice <= price) {
-      marketPrice = Math.round(price * 1.18 * 100) / 100;
+    if (!marketPrice || marketPrice < price * 1.08) {
+      marketPrice = Math.round(price * 1.25 * 100) / 100;
     }
 
     return NextResponse.json({
@@ -49,8 +49,8 @@ export async function GET(req: Request) {
   const mappedData = data.map(p => {
     const price = Number(p.price) || 0;
     let marketPrice = Number(p.market_price) || 0;
-    if (!marketPrice || marketPrice <= price) {
-      marketPrice = Math.round(price * 1.18 * 100) / 100;
+    if (!marketPrice || marketPrice < price * 1.08) {
+      marketPrice = Math.round(price * 1.25 * 100) / 100;
     }
     return {
       ...p,

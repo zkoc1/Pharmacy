@@ -30,10 +30,15 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const isOutOfStock = product.stock === 0;
 
-  const effectiveMarketPrice = (product.marketPrice && product.marketPrice > product.price)
-    ? product.marketPrice
-    : Math.round(product.price * 1.18 * 100) / 100;
-  const discountRate = calcDiscount(product.price, effectiveMarketPrice);
+  const numPrice = Number(product.price) || 0;
+  const rawMarket = Number(product.marketPrice) || 0;
+  const effectiveMarketPrice = (rawMarket >= numPrice * 1.08)
+    ? rawMarket
+    : Math.round(numPrice * 1.25 * 100) / 100;
+  let discountRate = calcDiscount(numPrice, effectiveMarketPrice);
+  if (discountRate <= 0 && numPrice > 0) {
+    discountRate = 20;
+  }
   const imageUrl = (product.images && product.images.length > 0 && product.images[0]) ? product.images[0] : '/placeholder.png';
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -150,7 +155,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 )}
               </div>
               <span className="text-base sm:text-lg font-black text-emerald-600">
-                {formatPrice(product.price)}
+                {formatPrice(numPrice)}
               </span>
             </div>
             

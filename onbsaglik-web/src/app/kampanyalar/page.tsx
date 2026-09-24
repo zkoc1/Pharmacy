@@ -204,15 +204,17 @@ export default function KampanyalarSayfasi() {
                             <span className="text-xs font-bold text-gray-500 uppercase">{mainProd.brand}</span>
                             <h4 className="text-sm font-bold text-gray-900 line-clamp-2">{mainProd.name}</h4>
                             <div className="flex items-center gap-2 mt-2">
-                              {mainProd.marketPrice > mainProd.price && (
-                                <span className="text-xs text-gray-400 line-through">{formatPrice(mainProd.marketPrice)}</span>
+                              {Number(mainProd.marketPrice) > Number(camp.discountedPrice || mainProd.price) && (
+                                <span className="text-xs text-gray-400 line-through">
+                                  {formatPrice(Number(mainProd.marketPrice))}
+                                </span>
                               )}
                               <span className="text-base font-extrabold text-emerald-600">
-                                {camp.discountedPrice ? formatPrice(camp.discountedPrice) : formatPrice(mainProd.price)}
+                                {formatPrice(Number(camp.discountedPrice || mainProd.price))}
                               </span>
-                              {calcDiscount(camp.discountedPrice || mainProd.price, mainProd.marketPrice) > 0 && (
+                              {calcDiscount(Number(camp.discountedPrice || mainProd.price), Number(mainProd.marketPrice)) > 0 && (
                                 <span className="text-xs font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                                  %{calcDiscount(camp.discountedPrice || mainProd.price, mainProd.marketPrice)} İndirim
+                                  %{calcDiscount(Number(camp.discountedPrice || mainProd.price), Number(mainProd.marketPrice))} İndirim
                                 </span>
                               )}
                             </div>

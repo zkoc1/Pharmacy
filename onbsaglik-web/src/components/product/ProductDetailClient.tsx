@@ -142,11 +142,16 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
   const comboTotal = product.price + comboPrice;
 
   // Piyasa Değeri ve Büyük Punto Yüzde İndirimi Hesaplaması
-  const effectiveMarketPrice = (product.marketPrice && product.marketPrice > product.price)
-    ? product.marketPrice
-    : Math.round(product.price * 1.18 * 100) / 100;
-  const effectiveDiscountRate = discountRate > 0 ? discountRate : calcDiscount(product.price, effectiveMarketPrice);
-  const savings = Math.max(0, effectiveMarketPrice - product.price);
+  const numPrice = Number(product.price) || 0;
+  const rawMarket = Number(product.marketPrice) || 0;
+  const effectiveMarketPrice = (rawMarket >= numPrice * 1.08)
+    ? rawMarket
+    : Math.round(numPrice * 1.25 * 100) / 100;
+  let effectiveDiscountRate = calcDiscount(numPrice, effectiveMarketPrice);
+  if (effectiveDiscountRate <= 0 && numPrice > 0) {
+    effectiveDiscountRate = 20;
+  }
+  const savings = Math.max(0, effectiveMarketPrice - numPrice);
 
   return (
     <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
@@ -268,7 +273,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
                     Bizim Satış Fiyatımız
                   </span>
                   <span className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tight">
-                    {formatPrice(product.price)}
+                    {formatPrice(numPrice)}
                   </span>
                 </div>
 
