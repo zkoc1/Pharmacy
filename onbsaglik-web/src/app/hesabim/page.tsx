@@ -54,7 +54,7 @@ import { useAccountExtrasStore } from '@/stores/accountExtrasStore';
 import { useFavoritesStore } from '@/stores/favoritesStore';
 import { useCartStore } from '@/stores/cartStore';
 import { formatPrice } from '@/lib/products';
-import { clearUserSession } from '@/lib/authUtils';
+import { clearUserSession, getValidAdminSession } from '@/lib/authUtils';
 import { ALL_81_PROVINCES } from '@/lib/turkeyLocations';
 import Image from 'next/image';
 
@@ -217,21 +217,12 @@ export default function HesabimPage() {
       return;
     }
 
-    const adminSessionRaw = localStorage.getItem('admin_session');
+    const adminSession = getValidAdminSession();
 
     if (currentUserEmail === 'admin@onbsaglik.com.tr') {
       setIsAdminUser(true);
-    } else if (adminSessionRaw) {
-      try {
-        const parsed = JSON.parse(adminSessionRaw);
-        if (parsed.email === currentUserEmail && (parsed.role === 'admin' || parsed.role === 'super_admin')) {
-          setIsAdminUser(true);
-        } else {
-          setIsAdminUser(false);
-        }
-      } catch {
-        setIsAdminUser(false);
-      }
+    } else if (adminSession && adminSession.email === currentUserEmail) {
+      setIsAdminUser(true);
     } else {
       setIsAdminUser(false);
     }

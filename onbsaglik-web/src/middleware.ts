@@ -98,6 +98,8 @@ export function middleware(request: NextRequest) {
     let isValidAdmin = false;
     let userRole = "none";
 
+    let isExpiredToken = false;
+
     if (adminToken) {
       try {
         // Token formatı: base64(email:role:timestamp)
@@ -106,9 +108,11 @@ export function middleware(request: NextRequest) {
         if (parts.length >= 3) {
           const [email, role, timeStr] = parts;
           const timestamp = parseInt(timeStr, 10);
-          // Token 7 gün geçerli olsun
-          const isExpired = Date.now() - timestamp > 7 * 24 * 60 * 60 * 1000;
-          if (!isExpired && (role === "super_admin" || role === "admin")) {
+          // Token 4 saat geçerli olsun (oturum zaman aşımı)
+          const isExpired = Date.now() - timestamp > 4 * 60 * 60 * 1000;
+          if (isExpired) {
+            isExpiredToken = true;
+          } else if (role === "super_admin" || role === "admin") {
             isValidAdmin = true;
             userRole = role;
           }
@@ -122,14 +126,26 @@ export function middleware(request: NextRequest) {
     // Yetkisiz Admin Sayfası Erişimi -> Sunucuda Anında Giriş Sayfasına Yönlendir
     if (isAdminPage && !isValidAdmin) {
       const loginUrl = new URL("/admin/giris", request.url);
-      loginUrl.searchParams.set("unauthorized", "1");
-      return NextResponse.redirect(loginUrl);
+      if (isExpiredToken) {
+        loginUrl.searchParams.set("expired", "1");
+      } else {
+        loginUrl.searchParams.set("unauthorized", "1");
+      }
+      const res = NextResponse.redirect(loginUrl);
+      if (isExpiredToken || adminToken) {
+        res.cookies.delete("admin_token");
+      }
+      return res;
     }
 
     // Yetkisiz Admin API Erişimi -> 401 Unauthorized Dön
     if (isAdminApi && !isValidAdmin) {
       return new NextResponse(
-        JSON.stringify({ error: "Yetkisiz erişim. Yönetici oturumu gereklidir." }),
+        JSON.stringify({ 
+          error: isExpiredToken 
+            ? "Oturum süreniz doldu. Lütfen tekrar giriş yapın." 
+            : "Yetkisiz erişim. Yönetici oturumu gereklidir." 
+        }),
         { status: 401, headers: { "Content-Type": "application/json" } }
       );
     }

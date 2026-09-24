@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings as SettingsIcon, Ticket, Plus, Trash2, ToggleLeft, ToggleRight, Save } from "lucide-react";
 import { formatPrice } from "@/lib/products";
+import { getValidAdminSession } from "@/lib/authUtils";
 
 export default function AyarlarSayfasi() {
   const router = useRouter();
@@ -25,8 +26,11 @@ export default function AyarlarSayfasi() {
   });
 
   useEffect(() => {
-    const session = localStorage.getItem("admin_session");
-    if (!session) router.replace("/admin/giris");
+    const session = getValidAdminSession();
+    if (!session) {
+      router.replace("/admin/giris?expired=1");
+      return;
+    }
 
     // Fetch Settings
     fetch("/api/admin/settings")

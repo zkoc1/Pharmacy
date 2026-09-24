@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { X, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { setAdminSession, setUserSession } from "@/lib/authUtils";
 
 interface Props {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
     // Mock admin logic
     if (cleanEmail === "admin@onbsaglik.com.tr") {
-      localStorage.setItem("admin_session", JSON.stringify({ email: cleanEmail, role: "super_admin" }));
+      setAdminSession({ email: cleanEmail, role: "super_admin" });
     }
 
     const res = await signIn("credentials", {
@@ -66,6 +67,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
     if (res?.error) {
       setError("E-posta adresi veya şifre hatalı.");
     } else {
+      setUserSession({ email: cleanEmail });
       handleClose();
       router.push("/hesabim");
       router.refresh();
@@ -143,6 +145,7 @@ export default function LoginModal({ isOpen, onClose }: Props) {
         password: newPassword,
       });
       if (!loginRes?.error) {
+         setUserSession({ email: cleanEmail });
          handleClose();
          router.push("/hesabim");
          router.refresh();

@@ -5,17 +5,20 @@
 
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Shield, Eye, EyeOff } from "lucide-react";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Shield, Eye, EyeOff, Clock } from "lucide-react";
+import { setAdminSession } from "@/lib/authUtils";
 
-export default function AdminGiris() {
+function AdminGirisForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isExpired = searchParams.get("expired") === "1";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +35,8 @@ export default function AdminGiris() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // İstemci state'i ve localStorage yedekliği
-        localStorage.setItem("admin_session", JSON.stringify(data.user));
+        // Oturum süresiyle (4 saat) güvenli kayıt
+        setAdminSession(data.user);
         router.push("/admin");
       } else {
         setError(data.error || "Giriş başarısız.");
@@ -89,6 +92,31 @@ export default function AdminGiris() {
             onbsaglik.com.tr yönetim sistemi
           </p>
         </div>
+
+        {/* Oturum Süresi Doldu Uyarısı */}
+        {isExpired && (
+          <div
+            style={{
+              marginBottom: "20px",
+              padding: "12px 14px",
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              borderRadius: "var(--radius-md)",
+              color: "#92400e",
+              fontSize: "13px",
+              lineHeight: 1.5,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+            }}
+          >
+            <Clock size={18} style={{ color: "#d97706", flexShrink: 0, marginTop: "2px" }} />
+            <div>
+              <span style={{ fontWeight: 600, display: "block" }}>Oturum Süresi Doldu</span>
+              Güvenliğiniz için 4 saatlik oturum süresi dolmuştur. Lütfen tekrar giriş yapın.
+            </div>
+          </div>
+        )}
 
         {/* Giriş formu */}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -196,5 +224,13 @@ export default function AdminGiris() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AdminGiris() {
+  return (
+    <Suspense fallback={null}>
+      <AdminGirisForm />
+    </Suspense>
   );
 }

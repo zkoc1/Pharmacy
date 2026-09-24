@@ -5,6 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+import { setUserSession } from '@/lib/authUtils';
 
 export default function GirisPage() {
   const [email, setEmail] = useState('');
@@ -35,6 +36,7 @@ export default function GirisPage() {
     if (res?.error) {
       setError('E-posta adresi veya şifre hatalı.');
     } else {
+      setUserSession({ email: cleanEmail });
       router.push('/hesabim');
       router.refresh();
     }

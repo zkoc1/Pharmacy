@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60, // 7 gün
+      maxAge: 4 * 60 * 60, // 4 saat (güvenlik için sınırlandırıldı)
     });
 
     return NextResponse.json({

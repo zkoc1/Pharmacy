@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
+import { getValidAdminSession } from "@/lib/authUtils";
 import { formatPrice } from "@/lib/products";
 import CargoLabelPrint from "@/components/admin/CargoLabelPrint";
 import CustomCarrierModal from "@/components/admin/CustomCarrierModal";
@@ -62,22 +63,13 @@ export default function AdminSiparislerTrendyol() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    const raw = localStorage.getItem("admin_session");
-    if (!raw) {
-      router.replace("/admin/giris");
+    const session = getValidAdminSession();
+    if (!session) {
+      router.replace("/admin/giris?expired=1");
       return;
     }
-    try {
-      const p = JSON.parse(raw);
-      if (p.role === "super_admin" || p.role === "admin") {
-        setIsAuthorized(true);
-        fetchOrders();
-      } else {
-        router.replace("/admin/giris");
-      }
-    } catch {
-      router.replace("/admin/giris");
-    }
+    setIsAuthorized(true);
+    fetchOrders();
   }, [router, fetchOrders]);
 
   const filteredOrders = useMemo(() => {

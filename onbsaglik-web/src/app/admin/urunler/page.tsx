@@ -8,6 +8,7 @@ import {
   XCircle, Package, TrendingUp, Filter, Eye, EyeOff 
 } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
+import { getValidAdminSession } from "@/lib/authUtils";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
 
@@ -69,22 +70,13 @@ export default function AdminUrunlerPage() {
   };
 
   useEffect(() => {
-    const rawSession = localStorage.getItem("admin_session");
-    if (!rawSession) {
-      router.replace("/admin/giris");
+    const session = getValidAdminSession();
+    if (!session) {
+      router.replace("/admin/giris?expired=1");
       return;
     }
-    try {
-      const parsed = JSON.parse(rawSession);
-      if (parsed.role === "super_admin" || parsed.role === "admin") {
-        setIsAuthorized(true);
-        fetchProducts(); // Login ise ürünleri çek
-      } else {
-        router.replace("/admin/giris");
-      }
-    } catch {
-      router.replace("/admin/giris");
-    }
+    setIsAuthorized(true);
+    fetchProducts();
   }, [router, setProducts]);
 
   const showToast = (msg: string) => {

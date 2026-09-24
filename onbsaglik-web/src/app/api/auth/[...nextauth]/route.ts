@@ -73,7 +73,11 @@ export const authOptions: AuthOptions = {
     signIn: '/hesabim/giris',
     error: '/hesabim/giris',
   },
-  session: { strategy: 'jwt' },
+  session: { 
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 saat (oturum 1 gün sonra otomatik düşer)
+    updateAge: 60 * 60, // Kullanıcı aktifse saatte bir oturumu tazele
+  },
   secret: process.env.NEXTAUTH_SECRET || 'onbsaglik-secret-key-development-only',
   useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
@@ -84,6 +88,7 @@ export const authOptions: AuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60, // 24 saat
       },
     },
   },

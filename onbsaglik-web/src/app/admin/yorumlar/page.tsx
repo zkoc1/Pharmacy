@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star, Trash2, ArrowLeft, Search, CheckCircle, XCircle, ExternalLink, MessageCircle } from "lucide-react";
+import { getValidAdminSession } from "@/lib/authUtils";
 
 interface DbReview {
   id: string;
@@ -43,22 +44,13 @@ export default function AdminYorumlar() {
   };
 
   useEffect(() => {
-    const raw = localStorage.getItem("admin_session");
-    if (!raw) {
-      router.replace("/admin/giris");
+    const session = getValidAdminSession();
+    if (!session) {
+      router.replace("/admin/giris?expired=1");
       return;
     }
-    try {
-      const p = JSON.parse(raw);
-      if (p.role === "super_admin" || p.role === "admin") {
-        setIsAuthorized(true);
-        fetchReviews();
-      } else {
-        router.replace("/admin/giris");
-      }
-    } catch {
-      router.replace("/admin/giris");
-    }
+    setIsAuthorized(true);
+    fetchReviews();
   }, [router]);
 
   const handleToggleApproval = async (id: string, currentStatus: boolean) => {
