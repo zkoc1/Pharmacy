@@ -3,8 +3,8 @@
  * Her tip tek bir sorumluluğu temsil eder (SOLID - Single Responsibility).
  */
 
-/** Ürün durumu: aktif (satışta), taslak (admin onayı bekliyor) */
-export type ProductStatus = "active" | "draft";
+/** Ürün durumu: aktif (satışta), pasif / taslak (satışa kapalı) */
+export type ProductStatus = "active" | "draft" | "passive";
 
 /** Ürün veri modeli — Trendyol Excel'inden türetilmiş yapı */
 export interface Product {

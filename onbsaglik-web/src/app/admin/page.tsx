@@ -82,7 +82,7 @@ export default function AdminPaneli() {
   };
 
   const activeCount = products.filter((p) => p.status === "active").length;
-  const draftCount = products.filter((p) => p.status === "draft").length;
+  const draftCount = products.filter((p) => p.status === "draft" || p.status === "passive").length;
 
   if (!isAuthorized) {
     return (
@@ -168,10 +168,10 @@ export default function AdminPaneli() {
 
           <div className="card p-5">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl"><EyeOff size={24} /></div>
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-xl"><EyeOff size={24} /></div>
               <div>
-                <span className="text-xs text-gray-500 font-bold uppercase">Taslaklar</span>
-                <h3 className="text-2xl font-extrabold text-amber-600">{draftCount}</h3>
+                <span className="text-xs text-gray-500 font-bold uppercase">Pasif / Gizli</span>
+                <h3 className="text-2xl font-extrabold text-rose-600">{draftCount}</h3>
               </div>
             </div>
           </div>

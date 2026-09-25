@@ -83,7 +83,12 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  
+  // Durum Değişikliği Logu
+  if (updateData.status !== undefined) {
+    const statusLabel = updateData.status === "active" ? "Aktif" : "Pasif";
+    await logAction(adminEmail, "DURUM GÜNCELLENDİ", `${data.name} (#${id}) durumu "${statusLabel}" yapıldı.`);
+  }
+
   // Fiyat Düşüşü Bildirimi
   if (oldProduct && updateData.price && updateData.price < oldProduct.price) {
     const { data: priceAlarms } = await supabase.from("price_alarms").select("user_email, target_price").eq("product_id", id);

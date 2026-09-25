@@ -11,7 +11,7 @@ export async function GET(req: Request) {
       .from("products")
       .select("*")
       .eq("slug", slug)
-      .eq("status", "active")
+      .or("status.eq.active,status.is.null")
       .single();
       
     if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,7 +39,7 @@ export async function GET(req: Request) {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("status", "active")
+    .or("status.eq.active,status.is.null")
     .order("id", { ascending: false });
 
   if (error) {

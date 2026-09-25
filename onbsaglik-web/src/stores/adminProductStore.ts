@@ -7,7 +7,7 @@ interface AdminProductState {
   addProduct: (product: Product) => void;
   updateProduct: (id: number, updates: Partial<Product>) => void;
   deleteProduct: (id: number) => void;
-  toggleStatus: (id: number) => void;
+  toggleStatus: (id: number, newStatus?: "active" | "draft" | "passive") => void;
 }
 
 export const useAdminProductStore = create<AdminProductState>((set) => ({
@@ -22,11 +22,11 @@ export const useAdminProductStore = create<AdminProductState>((set) => ({
   deleteProduct: (id) => set((state) => ({
     products: state.products.filter(p => p.id !== id)
   })),
-  toggleStatus: (id) => set((state) => ({
-    products: state.products.map(p => 
-      p.id === id 
-        ? { ...p, status: p.status === "active" ? "draft" : "active" } 
-        : p
-    )
+  toggleStatus: (id, newStatus) => set((state) => ({
+    products: state.products.map(p => {
+      if (p.id !== id) return p;
+      const target = newStatus ?? (p.status === "active" ? "passive" : "active");
+      return { ...p, status: target };
+    })
   })),
 }));
