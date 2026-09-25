@@ -9,7 +9,7 @@ import {
   Barcode, ArrowUpDown, ArrowUp, ArrowDown, Check, X, RefreshCw
 } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
-import { getValidAdminSession } from "@/lib/authUtils";
+import { ensureAdminAuth } from "@/lib/authUtils";
 import type { Product, ProductStatus } from "@/types";
 import { formatPrice } from "@/lib/products";
 
@@ -97,14 +97,12 @@ export default function AdminUrunlerPage() {
   };
 
   useEffect(() => {
-    const session = getValidAdminSession();
-    if (!session) {
-      router.replace("/admin/giris?expired=1");
-      return;
-    }
-    setIsAuthorized(true);
-    fetchProducts();
-  }, [router, setProducts]);
+    ensureAdminAuth().then((valid) => {
+      if (!valid) return;
+      setIsAuthorized(true);
+      fetchProducts();
+    });
+  }, [setProducts]);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);

@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-import { setUserSession } from '@/lib/authUtils';
+import { setUserSession, setAdminSession } from '@/lib/authUtils';
 
 export default function GirisPage() {
   const [email, setEmail] = useState('');
@@ -37,6 +37,24 @@ export default function GirisPage() {
       setError('E-posta adresi veya şifre hatalı.');
     } else {
       setUserSession({ email: cleanEmail });
+
+      // Eğer admin e-postası ise admin çerezi ve oturumunu da otomatik senkronize et
+      if (cleanEmail === 'admin@onbsaglik.com.tr' || cleanEmail === 'osman_nuri38@hotmail.com') {
+        try {
+          const adminAuthRes = await fetch('/api/admin/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail, password }),
+          });
+          if (adminAuthRes.ok) {
+            const adminData = await adminAuthRes.json();
+            if (adminData.success) {
+              setAdminSession(adminData.user);
+            }
+          }
+        } catch {}
+      }
+
       router.push('/hesabim');
       router.refresh();
     }

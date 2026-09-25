@@ -5,10 +5,10 @@
 
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Eye, EyeOff, Clock } from "lucide-react";
-import { setAdminSession } from "@/lib/authUtils";
+import { setAdminSession, restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 
 function AdminGirisForm() {
   const [email, setEmail] = useState("");
@@ -19,6 +19,15 @@ function AdminGirisForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("expired") === "1";
+
+  // Zaten geçerli oturum varsa doğrudan Admin Paneline aktar
+  useEffect(() => {
+    restoreAdminSessionIfNeeded().then((session) => {
+      if (session) {
+        window.location.href = "/admin";
+      }
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,11 +44,12 @@ function AdminGirisForm() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // Oturum süresiyle (4 saat) güvenli kayıt
+        // Oturum süresiyle (24 saat) güvenli kayıt
         setAdminSession(data.user);
-        router.push("/admin");
+        // Tam sayfa yenileme ile çerezlerin middleware'e kesin iletilmesini sağla
+        window.location.href = "/admin";
       } else {
-        setError(data.error || "Giriş başarısız.");
+        setError(data.error || "Giriş başarısız. Lütfen bilgilerinizi kontrol ediniz.");
       }
     } catch {
       setError("Bağlantı hatası oluştu. Lütfen tekrar deneyin.");
@@ -113,7 +123,7 @@ function AdminGirisForm() {
             <Clock size={18} style={{ color: "#d97706", flexShrink: 0, marginTop: "2px" }} />
             <div>
               <span style={{ fontWeight: 600, display: "block" }}>Oturum Süresi Doldu</span>
-              Güvenliğiniz için 4 saatlik oturum süresi dolmuştur. Lütfen tekrar giriş yapın.
+              Güvenliğiniz için 24 saatlik oturum süresi dolmuştur. Lütfen tekrar giriş yapın.
             </div>
           </div>
         )}

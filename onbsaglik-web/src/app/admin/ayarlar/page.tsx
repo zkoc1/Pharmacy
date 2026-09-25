@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings as SettingsIcon, Ticket, Plus, Trash2, ToggleLeft, ToggleRight, Save } from "lucide-react";
 import { formatPrice } from "@/lib/products";
-import { getValidAdminSession } from "@/lib/authUtils";
+import { ensureAdminAuth } from "@/lib/authUtils";
 
 export default function AyarlarSayfasi() {
   const router = useRouter();
@@ -26,14 +26,11 @@ export default function AyarlarSayfasi() {
   });
 
   useEffect(() => {
-    const session = getValidAdminSession();
-    if (!session) {
-      router.replace("/admin/giris?expired=1");
-      return;
-    }
+    ensureAdminAuth().then((valid) => {
+      if (!valid) return;
 
-    // Fetch Settings
-    fetch("/api/admin/settings")
+      // Fetch Settings
+      fetch("/api/admin/settings")
       .then((res) => res.json())
       .then((data) => {
         if (data.free_shipping_threshold) {
@@ -47,7 +44,8 @@ export default function AyarlarSayfasi() {
 
     // Fetch Coupons
     fetchCoupons();
-  }, [router]);
+    });
+  }, []);
 
   const fetchCoupons = () => {
     fetch("/api/admin/coupons")

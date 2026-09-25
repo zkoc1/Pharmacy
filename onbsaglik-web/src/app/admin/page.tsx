@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Package, TrendingUp, ShoppingBag, Eye, EyeOff, Search, Shield, UserPlus, Gift, ArrowRight, X } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
-import { getValidAdminSession } from "@/lib/authUtils";
+import { ensureAdminAuth } from "@/lib/authUtils";
 import type { Product } from "@/types";
 
 export default function AdminPaneli() {
@@ -31,23 +31,20 @@ export default function AdminPaneli() {
   const [newCouponAmount, setNewCouponAmount] = useState("");
   const [couponNotice, setCouponNotice] = useState("");
 
-  // Oturum ve Rol kontrolü (4 saatlik süre kontrolüyle)
+  // Oturum ve Rol kontrolü (Sunucu çerezi ve 24 saatlik süre ile senkronize)
   useEffect(() => {
-    const session = getValidAdminSession();
-    if (!session) {
-      router.replace("/admin/giris?expired=1");
-      return;
-    }
+    ensureAdminAuth().then((valid) => {
+      if (!valid) return;
+      setIsAuthorized(true);
 
-    setIsAuthorized(true);
-
-    fetch("/api/admin/products")
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setProducts(data);
-      })
-      .catch(err => console.error("Dashboard fetch error:", err));
-  }, [router, setProducts]);
+      fetch("/api/admin/products")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setProducts(data);
+        })
+        .catch(err => console.error("Dashboard fetch error:", err));
+    });
+  }, [setProducts]);
 
   const handleAddAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();

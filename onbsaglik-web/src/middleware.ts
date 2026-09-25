@@ -87,68 +87,66 @@ export function middleware(request: NextRequest) {
   }
 
   // =========================================================================
-  // 2. SUNUCU TARAFLI ADMİN PANELİ KORUMASI (Madde 3, 4, 18)
+  // 2. SUNUCU TARAFLI ADMİN PANELİ KORUMASI & YÖNLENDİRME (Madde 3, 4, 18)
   // =========================================================================
-  const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/giris";
+  const isAdminLogin = pathname === "/admin/giris";
+  const isAdminPage = pathname.startsWith("/admin") && !isAdminLogin;
   const isAdminApi = pathname.startsWith("/api/admin") && pathname !== "/api/admin/auth";
 
-  if (isAdminPage || isAdminApi) {
-    const adminToken = request.cookies.get("admin_token")?.value;
+  const adminToken = request.cookies.get("admin_token")?.value;
+  let isValidAdmin = false;
+  let isExpiredToken = false;
 
-    let isValidAdmin = false;
-    let userRole = "none";
-
-    let isExpiredToken = false;
-
-    if (adminToken) {
-      try {
-        // Token formatı: base64(email:role:timestamp)
-        const decoded = atob(adminToken);
-        const parts = decoded.split(":");
-        if (parts.length >= 3) {
-          const [email, role, timeStr] = parts;
-          const timestamp = parseInt(timeStr, 10);
-          // Token 4 saat geçerli olsun (oturum zaman aşımı)
-          const isExpired = Date.now() - timestamp > 4 * 60 * 60 * 1000;
-          if (isExpired) {
-            isExpiredToken = true;
-          } else if (role === "super_admin" || role === "admin") {
-            isValidAdmin = true;
-            userRole = role;
-          }
+  if (adminToken) {
+    try {
+      // Token formatı: base64(email:role:timestamp)
+      const decoded = atob(adminToken);
+      const parts = decoded.split(":");
+      if (parts.length >= 3) {
+        const [, role, timeStr] = parts;
+        const timestamp = parseInt(timeStr, 10);
+        // Token 24 saat geçerli (oturum zaman aşımı)
+        const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000;
+        if (isExpired) {
+          isExpiredToken = true;
+        } else if (role === "super_admin" || role === "admin") {
+          isValidAdmin = true;
         }
-      } catch (err) {
-        console.error("Middleware decode error:", err);
-        isValidAdmin = false;
       }
+    } catch {
+      isValidAdmin = false;
     }
+  }
 
-    // Yetkisiz Admin Sayfası Erişimi -> Sunucuda Anında Giriş Sayfasına Yönlendir
-    if (isAdminPage && !isValidAdmin) {
-      const loginUrl = new URL("/admin/giris", request.url);
-      if (isExpiredToken) {
-        loginUrl.searchParams.set("expired", "1");
-      } else {
-        loginUrl.searchParams.set("unauthorized", "1");
-      }
-      const res = NextResponse.redirect(loginUrl);
-      if (isExpiredToken || adminToken) {
-        res.cookies.delete("admin_token");
-      }
-      return res;
-    }
+  // A) Giriş yapmış admin /admin/giris sayfasına gelirse doğrudan /admin sayfasına yönlendir
+  if (isAdminLogin && isValidAdmin) {
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
 
-    // Yetkisiz Admin API Erişimi -> 401 Unauthorized Dön
-    if (isAdminApi && !isValidAdmin) {
-      return new NextResponse(
-        JSON.stringify({ 
-          error: isExpiredToken 
-            ? "Oturum süreniz doldu. Lütfen tekrar giriş yapın." 
-            : "Yetkisiz erişim. Yönetici oturumu gereklidir." 
-        }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+  // B) Yetkisiz Admin Sayfası Erişimi -> Sunucuda Anında Giriş Sayfasına Yönlendir
+  if (isAdminPage && !isValidAdmin) {
+    const loginUrl = new URL("/admin/giris", request.url);
+    if (isExpiredToken) {
+      loginUrl.searchParams.set("expired", "1");
     }
+    const res = NextResponse.redirect(loginUrl);
+    if (isExpiredToken || (adminToken && !isValidAdmin)) {
+      res.cookies.delete("admin_token");
+      res.cookies.delete("admin_session_active");
+    }
+    return res;
+  }
+
+  // C) Yetkisiz Admin API Erişimi -> 401 Unauthorized Dön
+  if (isAdminApi && !isValidAdmin) {
+    return new NextResponse(
+      JSON.stringify({ 
+        error: isExpiredToken 
+          ? "Oturum süreniz doldu. Lütfen tekrar giriş yapın." 
+          : "Yetkisiz erişim. Yönetici oturumu gereklidir." 
+      }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
   }
 
   return NextResponse.next();

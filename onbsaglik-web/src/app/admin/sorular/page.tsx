@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageCircle, Check, X, Search, Trash2, Send } from "lucide-react";
+import { ensureAdminAuth } from "@/lib/authUtils";
 
 interface DbQuestion {
   id: string;
@@ -22,26 +23,27 @@ export default function AdminQuestionsPage() {
   const [answeringId, setAnsweringId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const res = await fetch(`/api/admin/questions?t=${Date.now()}`);
-        const data = await res.json();
-        if (res.ok) {
-          setQuestions(data.questions || data);
-        } else {
-          console.error("API Hatası:", data.error);
-          if (res.status === 401) {
-            alert("Oturum süreniz dolmuş olabilir. Lütfen Admin sayfasına tekrar giriş yapın.");
-          }
-        }
-      } catch (err) {
-        console.error("Fetch hatası", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchQuestions();
+    ensureAdminAuth().then((valid) => {
+      if (!valid) return;
+      fetchQuestions();
+    });
   }, []);
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await fetch(`/api/admin/questions?t=${Date.now()}`);
+      const data = await res.json();
+      if (res.ok) {
+        setQuestions(data.questions || data);
+      } else {
+        console.error("API Hatası:", data.error);
+      }
+    } catch (err) {
+      console.error("Fetch hatası", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleToggleApproval = async (id: string, currentStatus: boolean) => {
     try {

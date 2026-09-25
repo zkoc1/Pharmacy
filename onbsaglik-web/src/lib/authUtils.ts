@@ -4,7 +4,7 @@
  */
 
 // Oturum Süreleri
-export const ADMIN_SESSION_HOURS = 4; // Admin oturumu 4 saat geçerlidir
+export const ADMIN_SESSION_HOURS = 24; // Admin oturumu 24 saat geçerlidir
 export const ADMIN_SESSION_MS = ADMIN_SESSION_HOURS * 60 * 60 * 1000;
 
 export const USER_SESSION_HOURS = 24; // Müşteri oturumu 24 saat geçerlidir
@@ -18,7 +18,7 @@ export interface AdminSessionData {
 }
 
 /**
- * Admin oturumunu 4 saatlik son kullanma tarihiyle birlikte kaydeder.
+ * Admin oturumunu 24 saatlik son kullanma tarihiyle birlikte kaydeder.
  */
 export function setAdminSession(user: { email: string; role?: string }) {
   if (typeof window === "undefined") return;
@@ -63,7 +63,61 @@ export function getValidAdminSession(): AdminSessionData | null {
 }
 
 /**
- * Admin oturumunu sonlandırır.
+ * İstemci oturumu ile sunucu çerezi senkronizasyonu:
+ * LocalStorage boşsa veya temizlendiyse sunucudan çerez durumunu (/api/admin/auth) sorgular.
+ * Çerez geçerliyse oturumu otomatik re-hydrate eder (kurtarır).
+ */
+export async function restoreAdminSessionIfNeeded(): Promise<AdminSessionData | null> {
+  if (typeof window === "undefined") return null;
+
+  const local = getValidAdminSession();
+  if (local) return local;
+
+  try {
+    const res = await fetch("/api/admin/auth");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setAdminSession(data.user);
+        return getValidAdminSession();
+      }
+    }
+  } catch (err) {
+    console.error("Admin oturumu geri yükleme hatası:", err);
+  }
+  return null;
+}
+
+/**
+ * Sayfa ilk yüklendiğinde oturumu doğrular.
+ * Oturum yoksa login sayfasına yönlendirir.
+ */
+export async function ensureAdminAuth(): Promise<boolean> {
+  const session = await restoreAdminSessionIfNeeded();
+  if (!session) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/admin/giris?expired=1";
+    }
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Admin oturumunu sonlandırır ve çerezleri sunucudan siler.
+ */
+export async function logoutAdmin() {
+  try {
+    await fetch("/api/admin/auth", { method: "DELETE" });
+  } catch {}
+  clearAdminSession();
+  if (typeof window !== "undefined") {
+    window.location.href = "/admin/giris";
+  }
+}
+
+/**
+ * Admin oturumunu yerel depolamadan temizler.
  */
 export function clearAdminSession() {
   if (typeof window === "undefined") return;

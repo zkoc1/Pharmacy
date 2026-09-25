@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star, Trash2, ArrowLeft, Search, CheckCircle, XCircle, ExternalLink, MessageCircle } from "lucide-react";
-import { getValidAdminSession } from "@/lib/authUtils";
+import { ensureAdminAuth } from "@/lib/authUtils";
 
 interface DbReview {
   id: string;
@@ -44,14 +44,12 @@ export default function AdminYorumlar() {
   };
 
   useEffect(() => {
-    const session = getValidAdminSession();
-    if (!session) {
-      router.replace("/admin/giris?expired=1");
-      return;
-    }
-    setIsAuthorized(true);
-    fetchReviews();
-  }, [router]);
+    ensureAdminAuth().then((valid) => {
+      if (!valid) return;
+      setIsAuthorized(true);
+      fetchReviews();
+    });
+  }, []);
 
   const handleToggleApproval = async (id: string, currentStatus: boolean) => {
     try {
