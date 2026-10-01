@@ -8,7 +8,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Eye, EyeOff, Clock } from "lucide-react";
-import { setAdminSession, restoreAdminSessionIfNeeded } from "@/lib/authUtils";
+import { setAdminSession, clearAdminSession } from "@/lib/authUtils";
 
 function AdminGirisForm() {
   const [email, setEmail] = useState("");
@@ -20,13 +20,9 @@ function AdminGirisForm() {
   const searchParams = useSearchParams();
   const isExpired = searchParams.get("expired") === "1";
 
-  // Zaten geçerli oturum varsa doğrudan Admin Paneline aktar
+  // Giriş sayfasında eski/geçersiz istemci oturumunu temizle, döngüyü tamamen engelle
   useEffect(() => {
-    restoreAdminSessionIfNeeded().then((session) => {
-      if (session) {
-        window.location.href = "/admin";
-      }
-    });
+    clearAdminSession();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

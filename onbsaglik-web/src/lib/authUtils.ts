@@ -4,7 +4,7 @@
  */
 
 // Oturum Süreleri
-export const ADMIN_SESSION_HOURS = 24; // Admin oturumu 24 saat geçerlidir
+export const ADMIN_SESSION_HOURS = 24 * 7; // Admin oturumu 7 gün geçerlidir
 export const ADMIN_SESSION_MS = ADMIN_SESSION_HOURS * 60 * 60 * 1000;
 
 export const USER_SESSION_HOURS = 24; // Müşteri oturumu 24 saat geçerlidir

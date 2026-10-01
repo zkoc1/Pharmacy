@@ -9,7 +9,7 @@ import {
   Barcode, ArrowUpDown, ArrowUp, ArrowDown, Check, X, RefreshCw
 } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 import type { Product, ProductStatus } from "@/types";
 import { formatPrice } from "@/lib/products";
 
@@ -25,7 +25,7 @@ type SortOption =
 
 export default function AdminUrunlerPage() {
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
   
   const { products, setProducts, addProduct, updateProduct, deleteProduct, toggleStatus } = useAdminProductStore();
   
@@ -87,6 +87,11 @@ export default function AdminUrunlerPage() {
   const fetchProducts = async () => {
     try {
       const res = await fetch("/api/admin/products");
+      if (res.status === 401) {
+        setIsAuthorized(false);
+        window.location.href = "/admin/giris?expired=1";
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setProducts(data);
@@ -97,11 +102,8 @@ export default function AdminUrunlerPage() {
   };
 
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
-      setIsAuthorized(true);
-      fetchProducts();
-    });
+    restoreAdminSessionIfNeeded();
+    fetchProducts();
   }, [setProducts]);
 
   const showToast = (msg: string) => {

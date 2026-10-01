@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Settings as SettingsIcon, Ticket, Plus, Trash2, ToggleLeft, ToggleRight, Save } from "lucide-react";
 import { formatPrice } from "@/lib/products";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 
 export default function AyarlarSayfasi() {
   const router = useRouter();
@@ -26,14 +26,19 @@ export default function AyarlarSayfasi() {
   });
 
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
+    restoreAdminSessionIfNeeded();
 
-      // Fetch Settings
-      fetch("/api/admin/settings")
-      .then((res) => res.json())
+    // Fetch Settings
+    fetch("/api/admin/settings")
+      .then((res) => {
+        if (res.status === 401) {
+          window.location.href = "/admin/giris?expired=1";
+          return null;
+        }
+        return res.json();
+      })
       .then((data) => {
-        if (data.free_shipping_threshold) {
+        if (data && data.free_shipping_threshold) {
           setSettings({
             freeShippingThreshold: Number(data.free_shipping_threshold),
             shippingCost: Number(data.shipping_cost)
@@ -44,7 +49,6 @@ export default function AyarlarSayfasi() {
 
     // Fetch Coupons
     fetchCoupons();
-    });
   }, []);
 
   const fetchCoupons = () => {

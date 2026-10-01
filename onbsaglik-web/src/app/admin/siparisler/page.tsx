@@ -17,7 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { useOrderStore, OrderRecord, OrderStatus } from "@/stores/orderStore";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 import { formatPrice } from "@/lib/products";
 import CargoLabelPrint from "@/components/admin/CargoLabelPrint";
 import CustomCarrierModal from "@/components/admin/CustomCarrierModal";
@@ -45,7 +45,7 @@ export default function AdminSiparislerTrendyol() {
     updateTrackingNumber,
   } = useOrderStore();
 
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
   
   // Modals
   const [cargoLabelOrder, setCargoLabelOrder] = useState<OrderRecord | null>(null);
@@ -63,11 +63,8 @@ export default function AdminSiparislerTrendyol() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
-      setIsAuthorized(true);
-      fetchOrders();
-    });
+    restoreAdminSessionIfNeeded();
+    fetchOrders();
   }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {

@@ -100,13 +100,13 @@ export function middleware(request: NextRequest) {
   if (adminToken) {
     try {
       // Token formatı: base64(email:role:timestamp)
-      const decoded = atob(adminToken);
+      const decoded = atob(decodeURIComponent(adminToken));
       const parts = decoded.split(":");
       if (parts.length >= 3) {
         const [, role, timeStr] = parts;
         const timestamp = parseInt(timeStr, 10);
-        // Token 24 saat geçerli (oturum zaman aşımı)
-        const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000;
+        // Token 7 gün geçerli (oturum zaman aşımı)
+        const isExpired = Date.now() - timestamp > 7 * 24 * 60 * 60 * 1000;
         if (isExpired) {
           isExpiredToken = true;
         } else if (role === "super_admin" || role === "admin") {
@@ -118,8 +118,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // A) Giriş yapmış admin /admin/giris sayfasına gelirse doğrudan /admin sayfasına yönlendir
-  if (isAdminLogin && isValidAdmin) {
+  // A) Giriş yapmış admin /admin/giris sayfasına gelirse doğrudan /admin sayfasına yönlendir (eğer açık bir hata/expired sorgusu yoksa)
+  const hasAuthQuery = request.nextUrl.searchParams.has("expired") || request.nextUrl.searchParams.has("unauthorized");
+  if (isAdminLogin && isValidAdmin && !hasAuthQuery) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 

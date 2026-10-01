@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star, Trash2, ArrowLeft, Search, CheckCircle, XCircle, ExternalLink, MessageCircle } from "lucide-react";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 
 interface DbReview {
   id: string;
@@ -24,7 +24,7 @@ interface DbReview {
 
 export default function AdminYorumlar() {
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
   const [search, setSearch] = useState("");
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +32,11 @@ export default function AdminYorumlar() {
   const fetchReviews = async () => {
     try {
       const res = await fetch("/api/admin/reviews");
+      if (res.status === 401) {
+        setIsAuthorized(false);
+        window.location.href = "/admin/giris?expired=1";
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setReviews(data);
@@ -44,11 +49,8 @@ export default function AdminYorumlar() {
   };
 
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
-      setIsAuthorized(true);
-      fetchReviews();
-    });
+    restoreAdminSessionIfNeeded();
+    fetchReviews();
   }, []);
 
   const handleToggleApproval = async (id: string, currentStatus: boolean) => {

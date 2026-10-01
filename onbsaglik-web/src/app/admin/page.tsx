@@ -9,13 +9,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Package, TrendingUp, ShoppingBag, Eye, EyeOff, Search, Shield, UserPlus, Gift, ArrowRight, X } from "lucide-react";
 import { useAdminProductStore } from "@/stores/adminProductStore";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 import type { Product } from "@/types";
 
 export default function AdminPaneli() {
 
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(true);
   
   const { products, setProducts } = useAdminProductStore();
 
@@ -31,19 +31,23 @@ export default function AdminPaneli() {
   const [newCouponAmount, setNewCouponAmount] = useState("");
   const [couponNotice, setCouponNotice] = useState("");
 
-  // Oturum ve Rol kontrolü (Sunucu çerezi ve 24 saatlik süre ile senkronize)
+  // Oturum ve Veri Yükleme
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
-      setIsAuthorized(true);
+    restoreAdminSessionIfNeeded();
 
-      fetch("/api/admin/products")
-        .then(res => res.json())
-        .then(data => {
-          if (Array.isArray(data)) setProducts(data);
-        })
-        .catch(err => console.error("Dashboard fetch error:", err));
-    });
+    fetch("/api/admin/products")
+      .then(res => {
+        if (res.status === 401) {
+          setIsAuthorized(false);
+          window.location.href = "/admin/giris?expired=1";
+          return null;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) setProducts(data);
+      })
+      .catch(err => console.error("Dashboard fetch error:", err));
   }, [setProducts]);
 
   const handleAddAdminSubmit = (e: React.FormEvent) => {

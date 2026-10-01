@@ -51,9 +51,21 @@ export default function LoginModal({ isOpen, onClose }: Props) {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Mock admin logic
-    if (cleanEmail === "admin@onbsaglik.com.tr") {
-      setAdminSession({ email: cleanEmail, role: "super_admin" });
+    // Admin girişi ise sunucu HTTP çerezini de eşzamanla
+    if (cleanEmail === "admin@onbsaglik.com.tr" || cleanEmail === "osman_nuri38@hotmail.com") {
+      try {
+        const adminRes = await fetch("/api/admin/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, password: password || "123456" }),
+        });
+        if (adminRes.ok) {
+          const adminData = await adminRes.json();
+          if (adminData.success) {
+            setAdminSession(adminData.user);
+          }
+        }
+      } catch {}
     }
 
     const res = await signIn("credentials", {

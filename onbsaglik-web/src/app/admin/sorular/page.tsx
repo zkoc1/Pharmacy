@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MessageCircle, Check, X, Search, Trash2, Send } from "lucide-react";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 
 interface DbQuestion {
   id: string;
@@ -23,15 +23,17 @@ export default function AdminQuestionsPage() {
   const [answeringId, setAnsweringId] = useState<string | null>(null);
 
   useEffect(() => {
-    ensureAdminAuth().then((valid) => {
-      if (!valid) return;
-      fetchQuestions();
-    });
+    restoreAdminSessionIfNeeded();
+    fetchQuestions();
   }, []);
 
   const fetchQuestions = async () => {
     try {
       const res = await fetch(`/api/admin/questions?t=${Date.now()}`);
+      if (res.status === 401) {
+        window.location.href = "/admin/giris?expired=1";
+        return;
+      }
       const data = await res.json();
       if (res.ok) {
         setQuestions(data.questions || data);

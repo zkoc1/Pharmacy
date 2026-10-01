@@ -11,7 +11,7 @@ import { Zap, Gift, Tag, Truck, Trash2, ToggleLeft, ToggleRight, Plus, ArrowLeft
 import Link from "next/link";
 import type { Product } from "@/types";
 import { formatPrice } from "@/lib/products";
-import { ensureAdminAuth } from "@/lib/authUtils";
+import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
 
 const CAMPAIGN_LABELS: Record<CampaignType, { label: string; icon: React.ReactNode; color: string }> = {
   flash:        { label: "⚡ Flash Kampanya", icon: <Zap size={16} />,      color: "#ef4444" },
@@ -40,7 +40,7 @@ export default function KampanyalarSayfasi() {
 
   // Oturum kontrolü
   useEffect(() => {
-    ensureAdminAuth();
+    restoreAdminSessionIfNeeded();
   }, []);
 
   // Ürünleri yükle
