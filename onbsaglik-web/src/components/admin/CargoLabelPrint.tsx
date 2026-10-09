@@ -135,7 +135,7 @@ export default function CargoLabelPrint({ order, onClose }: Props) {
                 <div className="box-title" style={{ fontSize: "10px", fontWeight: "bold", textTransform: "uppercase", borderBottom: "1px solid #ccc", paddingBottom: "2px", marginBottom: "4px", color: "#666" }}>GÖNDERİCİ BİLGİLERİ</div>
                 <div className="address-content" style={{ fontSize: "12px", lineHeight: 1.3, color: "#333" }}>
                   <strong>OnbSağlık E-Ticaret</strong>
-                  <div>Kayseri / Kocasinan / Yeni Mah. - Yeni Mahalle 12. Cadde Toktay Apartmanı No:95/4 Kocasinan Kayseri</div>
+                  <div>Kayseri / Türkiye</div>
                 </div>
               </div>
             </div>

@@ -56,7 +56,7 @@ export default function IadeKosullari() {
 
         <div className="space-y-2 pt-2 border-t">
           <h3 className="font-bold text-gray-900">İade Adresi & Destek:</h3>
-          <p><strong>Adres:</strong> Yeni Mahalle 12. Cadde Toktay Apartmanı No:95/4 Kocasinan / KAYSERİ</p>
+          <p><strong>İade Kabul:</strong> Kayseri / Türkiye (Müşteri Desteği ile Anlaşmalı Kargo Kodu Alınız)</p>
           <p><strong>E-posta:</strong> saglikonb@gmail.com</p>
         </div>
       </div>

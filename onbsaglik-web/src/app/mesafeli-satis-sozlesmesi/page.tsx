@@ -19,7 +19,7 @@ export default function MesafeliSatisSozlesmesi() {
           <div>
             <h3 className="font-semibold text-gray-800">1.1. SATICI:</h3>
             <p><strong>Unvan:</strong> ONB Sağlık E-Ticaret</p>
-            <p><strong>Adres:</strong> Yeni Mahalle 12. Cadde Toktay Apartmanı No:95/4 Kocasinan / KAYSERİ</p>
+            <p><strong>Konum:</strong> Kayseri / Türkiye</p>
             <p><strong>E-posta:</strong> saglikonb@gmail.com</p>
             <p><strong>Web:</strong> https://onbsaglik.com.tr</p>
           </div>

@@ -243,11 +243,11 @@ export default function IletisimSayfasi() {
               href: "mailto:saglikonb@gmail.com",
             },
             {
-              icon: <MapPin size={22} />,
-              title: "Açık Adres",
-              value: "Kocasinan / Kayseri",
-              sub: "Yeni Mahalle 12. Cadde Toktay Apt. No:95/4",
-              href: "https://maps.google.com/?q=Kocasinan+Kayseri",
+              icon: <Mail size={22} />,
+              title: "Müşteri Desteği",
+              value: "Hızlı Yanıt",
+              sub: "Haftanın 7 günü online destek",
+              href: "mailto:saglikonb@gmail.com",
             },
             {
               icon: <InstagramIcon size={22} />,

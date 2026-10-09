@@ -29,10 +29,6 @@ export default function Footer() {
               15 yıllık tecrübemiz ve eczane güvencemizle; orijinal dermokozmetik, vitamin ve takviye edici gıdaları en uygun fiyat garantisiyle kapınıza ulaştırıyoruz.
             </p>
             <div className="pt-2 text-xs text-emerald-200/90 space-y-1.5 border-t border-emerald-800/80">
-              <p className="flex items-start gap-1.5">
-                <MapPin size={15} className="shrink-0 text-amber-400 mt-0.5" />
-                <span>Yeni Mahalle 12. Cadde Toktay Apt. No:95/4 Kocasinan / Kayseri</span>
-              </p>
               <p className="flex items-center gap-1.5">
                 <Mail size={15} className="shrink-0 text-amber-400" />
                 <a href="mailto:saglikonb@gmail.com" className="hover:text-white transition-colors">saglikonb@gmail.com</a>

@@ -18,7 +18,7 @@ export default function OnBilgilendirmeFormu() {
           <h2 className="text-lg font-bold text-gray-900">1. SATICI BİLGİLERİ</h2>
           <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-1">
             <p><strong>Firma Unvanı:</strong> ONB Sağlık E-Ticaret</p>
-            <p><strong>Açık Adres:</strong> Yeni Mahalle 12. Cadde Toktay Apartmanı No:95/4 Kocasinan / KAYSERİ</p>
+            <p><strong>Konum:</strong> Kayseri / Türkiye</p>
             <p><strong>E-posta:</strong> saglikonb@gmail.com</p>
             <p><strong>Müşteri Hizmetleri:</strong> info@onbsaglik.com.tr / saglikonb@gmail.com</p>
             <p><strong>Web Sitesi:</strong> https://onbsaglik.com.tr</p>
