@@ -1165,8 +1165,26 @@ export default function OdemeSayfasi() {
                   className="mt-0.5 rounded text-rose-500"
                 />
                 <span className="text-[11px] text-gray-600 leading-tight">
-                  <strong className="underline">Ön Bilgilendirme Formunu</strong> ve{" "}
-                  <strong className="underline">Mesafeli Satış Sözleşmesini</strong> okudum, onaylıyorum.
+                  <Link
+                    href="/on-bilgilendirme-formu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-bold underline text-gray-800 hover:text-emerald-600"
+                  >
+                    Ön Bilgilendirme Formunu
+                  </Link>{" "}
+                  ve{" "}
+                  <Link
+                    href="/mesafeli-satis-sozlesmesi"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-bold underline text-gray-800 hover:text-emerald-600"
+                  >
+                    Mesafeli Satış Sözleşmesini
+                  </Link>{" "}
+                  okudum, onaylıyorum.
                 </span>
               </label>
 

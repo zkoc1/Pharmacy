@@ -59,34 +59,28 @@ export default function CategoryCards() {
   ];
 
   return (
-    <div className="py-12">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-8">Kategorileri Keşfet</h2>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-          {categories.map((cat) => (
-            <Link 
-              key={cat.id} 
-              href={cat.href}
-              className="group flex flex-col items-center p-6 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-emerald-400 hover:scale-105 transition-all duration-300 cursor-pointer"
-            >
-              {/* SVG ikonu — emoji yerine */}
-              <span
-                className="mb-4 group-hover:scale-110 transition-transform duration-300"
-                style={{ color: cat.color }}
-              >
-                {ICONS[cat.id]}
-              </span>
-              <h3 className="text-sm font-semibold text-gray-800 text-center mb-2">
-                {cat.name}
-              </h3>
-              <span className="text-xs font-medium text-emerald-600 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                İncele &rarr;
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+      {categories.map((cat) => (
+        <Link 
+          key={cat.id} 
+          href={cat.href}
+          className="group flex flex-col items-center p-4 sm:p-6 bg-white rounded-2xl border border-gray-100 shadow-xs hover:shadow-md hover:border-emerald-400 hover:scale-105 transition-all duration-300 cursor-pointer"
+        >
+          {/* SVG ikonu */}
+          <span
+            className="mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300"
+            style={{ color: cat.color }}
+          >
+            {ICONS[cat.id]}
+          </span>
+          <h3 className="text-xs sm:text-sm font-semibold text-gray-800 text-center mb-1">
+            {cat.name}
+          </h3>
+          <span className="text-[11px] font-medium text-emerald-600 opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 transition-all duration-300">
+            İncele &rarr;
+          </span>
+        </Link>
+      ))}
     </div>
   );
 }

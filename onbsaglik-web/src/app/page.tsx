@@ -65,11 +65,14 @@ export default async function AnaSayfa() {
       </section>
 
       {/* Marka şeridi — kaydırmalı */}
-      <section className="py-10 overflow-hidden" style={{ background: "var(--color-surface)", borderTop: "1px solid var(--color-border)", borderBottom: "1px solid var(--color-border)" }}>
-        <div className="container-custom mb-6">
-          <h2 className="text-xl font-bold text-center" style={{ color: "var(--color-text-muted)" }}>
+      <section className="py-8 overflow-hidden bg-white border-y border-gray-100">
+        <div className="container-custom mb-4 text-center">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-800 tracking-tight">
             Güvenilir Markalar
           </h2>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            %100 orijinal ürün garantisiyle Türkiye&apos;nin en seçkin eczane ve dermokozmetik markaları
+          </p>
         </div>
         <BrandStrip brands={brands} />
       </section>

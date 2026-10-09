@@ -216,32 +216,16 @@ export default function Header() {
         }}
         onMouseLeave={() => setActiveMegaCategory(null)}
       >
-        <div
-          className="container-custom"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "24px",
-            paddingTop: "14px",
-            paddingBottom: "14px",
-          }}
-        >
-          {/* Logo */}
+        <div className="container-custom flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2.5 gap-x-3 md:gap-x-6 py-2 md:py-3.5">
+          {/* Logo (Mobilde Sol, Masaüstünde Sol) */}
           <Link
             href="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              textDecoration: "none",
-              flexShrink: 0,
-            }}
+            className="order-1 flex items-center gap-2 text-decoration-none shrink-0"
           >
             <div
               style={{
-                width: "36px",
-                height: "36px",
+                width: "34px",
+                height: "34px",
                 borderRadius: "var(--radius-sm)",
                 background: "var(--color-primary)",
                 display: "flex",
@@ -249,14 +233,14 @@ export default function Header() {
                 justifyContent: "center",
                 color: "white",
                 fontWeight: 800,
-                fontSize: "18px",
+                fontSize: "17px",
               }}
             >
               🌿
             </div>
             <span
               style={{
-                fontSize: "22px",
+                fontSize: "20px",
                 fontWeight: 800,
                 color: "var(--color-text)",
                 letterSpacing: "-0.5px",
@@ -266,17 +250,66 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Arama Çubuğu */}
+          {/* İkonlar: Hesabım, Favoriler, Sepet (Mobilde Sağda, Masaüstünde Sağda) */}
+          <div className="order-2 md:order-3 flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0">
+            <button
+              onClick={handleHesabimClick}
+              className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-slate-700 hover:text-emerald-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors"
+              title="Hesabım"
+            >
+              <User size={20} />
+              <span className="icon-label-desktop">Hesabım</span>
+            </button>
+
+            <Link
+              href="/favoriler"
+              className="flex items-center gap-1.5 text-decoration-none text-slate-700 hover:text-rose-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors"
+              title="Favorilerim"
+            >
+              <Heart size={20} />
+              <span className="icon-label-desktop">Favoriler</span>
+            </Link>
+
+            {/* Sepet İkonu & Drawer Tetikleyici */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-slate-700 hover:text-emerald-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors relative"
+              title="Alışveriş Sepeti"
+            >
+              <div className="relative">
+                <ShoppingCart size={21} />
+                {totalItemCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "-8px",
+                      right: "-8px",
+                      background: "var(--color-primary)",
+                      color: "white",
+                      fontSize: "10px",
+                      fontWeight: 800,
+                      width: "18px",
+                      height: "18px",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {totalItemCount}
+                  </span>
+                )}
+              </div>
+              <span className="icon-label-desktop">Sepet</span>
+            </button>
+          </div>
+
+          {/* Arama Çubuğu (Mobilde 2. Satırda Tam Genişlik, Masaüstünde Ortada) */}
           <div
             ref={searchRef}
-            style={{
-              flex: 1,
-              maxWidth: "560px",
-              position: "relative",
-            }}
-            className="search-bar-desktop"
+            className="order-3 md:order-2 w-full md:flex-1 md:max-w-[560px] relative"
           >
-            <form onSubmit={handleSearchSubmit} style={{ position: "relative" }}>
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
               <input
                 type="search"
                 value={searchQuery}
@@ -287,8 +320,8 @@ export default function Header() {
                 placeholder="Ürün, marka veya kategori arayın..."
                 style={{
                   width: "100%",
-                  padding: "10px 48px 10px 18px",
-                  fontSize: "14px",
+                  padding: "9px 44px 9px 16px",
+                  fontSize: "13px",
                   borderRadius: "999px",
                   border: "2px solid var(--color-border)",
                   background: "var(--color-bg)",
@@ -303,8 +336,8 @@ export default function Header() {
                   right: "4px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  width: "36px",
-                  height: "36px",
+                  width: "32px",
+                  height: "32px",
                   borderRadius: "50%",
                   background: "var(--color-primary)",
                   border: "none",
@@ -315,7 +348,7 @@ export default function Header() {
                   cursor: "pointer",
                 }}
               >
-                <Search size={16} />
+                <Search size={15} />
               </button>
             </form>
 
@@ -333,6 +366,8 @@ export default function Header() {
                   border: "1px solid var(--color-border)",
                   overflow: "hidden",
                   zIndex: 200,
+                  maxHeight: "360px",
+                  overflowY: "auto",
                 }}
               >
                 {isSearching ? (
@@ -370,96 +405,16 @@ export default function Header() {
               </div>
             )}
           </div>
-
-          {/* İkonlar: Hesabım (Pop-up Modal Trigger), Favoriler, Sepet */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button
-              onClick={handleHesabimClick}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--color-text)",
-                fontSize: "13px",
-                fontWeight: 600,
-              }}
-            >
-              <User size={20} />
-              <span className="icon-label-desktop">Hesabım</span>
-            </button>
-
-            <Link
-              href="/favoriler"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                textDecoration: "none",
-                color: "var(--color-text)",
-                fontSize: "13px",
-                fontWeight: 600,
-              }}
-            >
-              <Heart size={20} />
-              <span className="icon-label-desktop">Favoriler</span>
-            </Link>
-
-            {/* Sepet İkonu & Drawer Tetikleyici */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "var(--color-text)",
-                fontSize: "13px",
-                fontWeight: 600,
-                position: "relative",
-              }}
-            >
-              <div style={{ position: "relative" }}>
-                <ShoppingCart size={22} />
-                {totalItemCount > 0 && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: "-8px",
-                      right: "-8px",
-                      background: "var(--color-primary)",
-                      color: "white",
-                      fontSize: "10px",
-                      fontWeight: 800,
-                      width: "18px",
-                      height: "18px",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {totalItemCount}
-                  </span>
-                )}
-              </div>
-              <span className="icon-label-desktop">Sepet</span>
-            </button>
-
-            {/* Mobil Menü Butonu (Kullanıcı istemediği için gizlendi/kaldırıldı) */}
-          </div>
         </div>
 
-        {/* Kategori Navigasyon Çubuğu — Masaüstü */}
+        {/* Kategori Navigasyon Çubuğu */}
         <div
           style={{
             borderTop: "1px solid var(--color-border)",
             background: "white",
             position: "relative",
+            width: "100%",
+            overflow: "hidden",
           }}
           className="desktop-nav"
         >
@@ -469,9 +424,11 @@ export default function Header() {
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              padding: "0 24px",
+              padding: "0 16px",
               overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
               scrollbarWidth: "none",
+              width: "100%",
             }}
           >
             {NAV_CATEGORIES.map((cat) => (

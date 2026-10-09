@@ -385,17 +385,36 @@ export default function HesabimPage() {
     setTimeout(() => setHavaleSuccess(false), 4000);
   };
 
-  // Üyelik İptali İşlemi
-  const handleDeleteAccount = () => {
+  // Üyelik İptali İşlemi (Veritabanından Gerçek Silme)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const handleDeleteAccount = async () => {
     if (deleteConfirmText.trim().toUpperCase() !== 'HESABIMI SİL') {
       alert('Lütfen onaylamak için kutuya "HESABIMI SİL" yazınız.');
       return;
     }
 
-    clearUserSession();
-    localStorage.clear();
-    alert('Hesabınız ve tüm kişisel verileriniz sistemimizden başarıyla silindi.');
-    signOut({ callbackUrl: '/' });
+    try {
+      setIsDeletingAccount(true);
+      const res = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: session?.user?.email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Hesap silinemedi.');
+      }
+
+      clearUserSession();
+      localStorage.clear();
+      alert('Hesabınız ve tüm kişisel verileriniz veritabanımızdan başarıyla silindi. Yeni bir hesap oluşturabilirsiniz.');
+      signOut({ callbackUrl: '/' });
+    } catch (err: any) {
+      alert('Hesap silinirken hata oluştu: ' + (err.message || 'Lütfen tekrar deneyiniz.'));
+    } finally {
+      setIsDeletingAccount(false);
+    }
   };
 
   // Dashboard 10 Kart Tanımı (Kullanıcıya Özel Sayaçlar)
@@ -1565,10 +1584,11 @@ export default function HesabimPage() {
             <div className="space-y-2 pt-2 border-t">
               <button
                 type="button"
+                disabled={isDeletingAccount}
                 onClick={handleDeleteAccount}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-md"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-md"
               >
-                ÜYELİĞİMİ VE TÜM VERİLERİMİ KALICI OLARAK SİL
+                {isDeletingAccount ? 'HESAP SİLİNİYOR, LÜTFEN BEKLEYİN...' : 'ÜYELİĞİMİ VE TÜM VERİLERİMİ KALICI OLARAK SİL'}
               </button>
               <button
                 type="button"

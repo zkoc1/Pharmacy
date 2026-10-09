@@ -6,14 +6,14 @@ import { ShieldCheck, Truck, Sparkles, Award } from 'lucide-react';
 
 export default function HeroBanner() {
   return (
-    <div className="relative overflow-hidden rounded-3xl mx-4 my-6 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 border border-emerald-700/30 shadow-2xl">
+    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl mx-2 sm:mx-4 my-4 sm:my-6 bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-800 border border-emerald-700/30 shadow-2xl">
       {/* Dekoratif Arka Plan Işıkları */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-25 pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-400 blur-3xl"></div>
         <div className="absolute top-1/2 right-10 w-96 h-96 rounded-full bg-emerald-400 blur-3xl"></div>
       </div>
       
-      <div className="container mx-auto px-4 sm:px-6 py-10 lg:py-14 relative z-10">
+      <div className="container mx-auto px-3 sm:px-6 py-8 sm:py-10 lg:py-14 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           {/* Sol Metin ve Eylemler */}
           <div className="w-full lg:w-7/12 text-white">
@@ -22,7 +22,7 @@ export default function HeroBanner() {
               <span>15. Yılımıza Özel Büyük Fırsat</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mb-4">
               Tüm Ürünlerde <br />
               <span className="text-amber-400">En Uygun Fiyat</span> Garantisi!
             </h1>

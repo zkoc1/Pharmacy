@@ -1,9 +1,8 @@
 "use client";
-// Server Component - Statik footer içeriği
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Mail } from 'lucide-react';
+import { Mail, MapPin, Phone, ShieldCheck, Lock } from 'lucide-react';
 
 const InstagramSvg = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -17,81 +16,100 @@ export default function Footer() {
   if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="bg-[#064e3b] text-emerald-50 pt-16 pb-8 mt-auto">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+    <footer className="bg-[#064e3b] text-emerald-50 pt-14 pb-8 mt-auto border-t-2 border-emerald-700/50">
+      <div className="container-custom">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Logo ve Hakkında */}
-          <div>
-            <div className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <span className="bg-emerald-500 p-2 rounded-lg inline-block">OnbSağlık 🌿</span>
-            </div>
-            <p className="text-emerald-100/80 text-sm leading-relaxed mb-6">
-              Sağlığınız ve güzelliğiniz için en güvenilir markaları, en uygun fiyatlarla kapınıza getiriyoruz. Müşteri memnuniyeti odaklı hizmet anlayışımızla yanınızdayız.
+          <div className="space-y-4">
+            <Link href="/" className="text-2xl font-black text-white flex items-center gap-2 text-decoration-none">
+              <span className="bg-emerald-500 p-2 rounded-xl inline-flex items-center justify-center shadow-xs">🌿</span>
+              <span>OnbSağlık</span>
+            </Link>
+            <p className="text-emerald-100/80 text-xs sm:text-sm leading-relaxed">
+              15 yıllık tecrübemiz ve eczane güvencemizle; orijinal dermokozmetik, vitamin ve takviye edici gıdaları en uygun fiyat garantisiyle kapınıza ulaştırıyoruz.
             </p>
+            <div className="pt-2 text-xs text-emerald-200/90 space-y-1.5 border-t border-emerald-800/80">
+              <p className="flex items-start gap-1.5">
+                <MapPin size={15} className="shrink-0 text-amber-400 mt-0.5" />
+                <span>Yeni Mahalle 12. Cadde Toktay Apt. No:95/4 Kocasinan / Kayseri</span>
+              </p>
+              <p className="flex items-center gap-1.5">
+                <Mail size={15} className="shrink-0 text-amber-400" />
+                <a href="mailto:saglikonb@gmail.com" className="hover:text-white transition-colors">saglikonb@gmail.com</a>
+              </p>
+            </div>
           </div>
 
           {/* Kategoriler */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Kategoriler</h3>
-            <ul className="space-y-2 text-sm text-emerald-100/80">
+            <h3 className="text-base font-bold text-white mb-3 sm:mb-4 border-b border-emerald-800/60 pb-2">
+              Kategoriler
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm text-emerald-100/80">
               <li><Link href="/kategori/vitamin-ve-takviye" className="hover:text-white transition-colors">Vitamin & Takviye</Link></li>
               <li><Link href="/kategori/gunes-bakimi" className="hover:text-white transition-colors">Güneş Bakımı</Link></li>
               <li><Link href="/kategori/sac-bakimi" className="hover:text-white transition-colors">Saç Bakımı</Link></li>
               <li><Link href="/kategori/cilt-bakimi" className="hover:text-white transition-colors">Cilt Bakımı</Link></li>
               <li><Link href="/kategori/anne-bebek" className="hover:text-white transition-colors">Anne & Bebek</Link></li>
-              <li><Link href="/urunler" className="hover:text-white transition-colors">Tüm Ürünler</Link></li>
+              <li><Link href="/urunler" className="hover:text-white transition-colors font-semibold text-amber-300">Tüm Ürünler →</Link></li>
             </ul>
           </div>
 
-          {/* Müşteri Hizmetleri */}
+          {/* Yasal & Müşteri Hizmetleri (Banka Denetimi İçin Zorunlu) */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Müşteri Hizmetleri</h3>
-            <ul className="space-y-2 text-sm text-emerald-100/80">
+            <h3 className="text-base font-bold text-white mb-3 sm:mb-4 border-b border-emerald-800/60 pb-2">
+              Kurumsal & Yasal
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm text-emerald-100/80">
+              <li><Link href="/mesafeli-satis-sozlesmesi" className="hover:text-white transition-colors">Mesafeli Satış Sözleşmesi</Link></li>
+              <li><Link href="/on-bilgilendirme-formu" className="hover:text-white transition-colors">Ön Bilgilendirme Formu</Link></li>
+              <li><Link href="/iade-kosullari" className="hover:text-white transition-colors">İptal ve İade Koşulları</Link></li>
+              <li><Link href="/gizlilik-politikasi" className="hover:text-white transition-colors">Gizlilik ve KVKK Politikası</Link></li>
+              <li><Link href="/kargo-ve-teslimat" className="hover:text-white transition-colors">Kargo ve Teslimat</Link></li>
               <li><Link href="/hakkimizda" className="hover:text-white transition-colors">Hakkımızda</Link></li>
               <li><Link href="/iletisim" className="hover:text-white transition-colors">İletişim</Link></li>
-              <li><Link href="/sepet" className="hover:text-white transition-colors">Alışveriş Sepeti</Link></li>
-              <li><Link href="/kargo-ve-teslimat" className="hover:text-white transition-colors">Kargo ve Teslimat</Link></li>
-              <li><Link href="/iade-kosullari" className="hover:text-white transition-colors">İade Koşulları</Link></li>
-              <li><Link href="/gizlilik-politikasi" className="hover:text-white transition-colors">Gizlilik Politikası</Link></li>
             </ul>
           </div>
 
-          {/* İletişim & Sosyal Medya */}
+          {/* Güvenli Ödeme & Sosyal Medya */}
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">İletişim</h3>
-            <div className="flex flex-col space-y-3 text-sm text-emerald-100/80">
-              <a
-                href="mailto:saglikonb@gmail.com"
-                className="hover:text-white transition-colors flex items-center gap-2 group"
-              >
-                <Mail size={16} className="text-emerald-400 shrink-0 group-hover:text-white transition-colors" />
-                <span>saglikonb@gmail.com</span>
-              </a>
+            <h3 className="text-base font-bold text-white mb-3 sm:mb-4 border-b border-emerald-800/60 pb-2">
+              Güvenli Ödeme
+            </h3>
+            <p className="text-xs text-emerald-100/80 mb-3">
+              Ödemeleriniz BDDK ve TCMB lisanslı banka 3D Secure güvenli ortak ödeme altyapısıyla korunmaktadır.
+            </p>
+
+            {/* Banka & Kart Güvenlik Rozetleri */}
+            <div className="grid grid-cols-3 gap-2 mb-4 text-center">
+              <span className="bg-white/10 border border-white/20 text-white rounded-lg py-1 px-2 text-xs font-bold">VISA</span>
+              <span className="bg-white/10 border border-white/20 text-white rounded-lg py-1 px-2 text-xs font-bold">Mastercard</span>
+              <span className="bg-white/10 border border-white/20 text-white rounded-lg py-1 px-2 text-xs font-bold">TROY</span>
+              <span className="bg-white/10 border border-white/20 text-amber-300 rounded-lg py-1 px-2 text-[11px] font-bold">3D Secure</span>
+              <span className="bg-white/10 border border-white/20 text-emerald-300 rounded-lg py-1 px-2 text-[11px] font-bold">256-Bit SSL</span>
+              <span className="bg-white/10 border border-white/20 text-white rounded-lg py-1 px-2 text-[11px] font-bold">VakıfBank</span>
+            </div>
+
+            <div className="pt-2">
               <a
                 href="https://www.instagram.com/onbsaglik"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-white transition-colors flex items-center gap-2 group"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
               >
                 <InstagramSvg size={16} />
-                <span>Instagram (@onbsaglik)</span>
+                <span>Instagram @onbsaglik</span>
               </a>
-            </div>
-            
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold text-white mb-2">Güvenli Alışveriş</h4>
-              <div className="flex gap-2 text-xs font-mono text-emerald-200">
-                <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">PayTR</span>
-                <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">SSL</span>
-                <span className="border border-emerald-700 px-2 py-1 rounded bg-emerald-800/50">3D Secure</span>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Alt Kısım */}
-        <div className="border-t border-emerald-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-emerald-200/60">
-          <p>© 2024 onbsaglik.com.tr. Tüm hakları saklıdır.</p>
+        {/* Alt Telif & Bilgi Bandı */}
+        <div className="border-t border-emerald-800/80 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-emerald-200/70">
+          <p>© {new Date().getFullYear()} ONB Sağlık E-Ticaret (onbsaglik.com.tr). Tüm hakları saklıdır.</p>
+          <p className="flex items-center gap-2 text-[11px]">
+            <Lock size={12} className="text-amber-400" /> 256-Bit SSL Sertifikalı Güvenli Alışveriş
+          </p>
         </div>
       </div>
     </footer>

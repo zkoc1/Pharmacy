@@ -69,12 +69,9 @@ export default function IletisimSayfasi() {
         </p>
       </div>
 
-      <div
-        className="grid gap-8"
-        style={{ gridTemplateColumns: "1fr 420px" }}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
         {/* Form */}
-        <div className="card" style={{ padding: "36px" }}>
+        <div className="card p-6 sm:p-9">
           {sent ? (
             // Gönderim başarı mesajı
             <div style={{ textAlign: "center", padding: "40px 20px" }}>
@@ -242,21 +239,21 @@ export default function IletisimSayfasi() {
               icon: <Mail size={22} />,
               title: "E-posta",
               value: "saglikonb@gmail.com",
-              sub: "1 iş günü içinde yanıt",
+              sub: "Haftanın 7 günü yazabilirsiniz",
               href: "mailto:saglikonb@gmail.com",
             },
             {
-              icon: <Phone size={22} />,
-              title: "Telefon",
-              value: "0850 XXX XX XX",
-              sub: "Hafta içi 09:00 – 18:00",
-              href: "tel:+908500000000",
+              icon: <MapPin size={22} />,
+              title: "Açık Adres",
+              value: "Kocasinan / Kayseri",
+              sub: "Yeni Mahalle 12. Cadde Toktay Apt. No:95/4",
+              href: "https://maps.google.com/?q=Kocasinan+Kayseri",
             },
             {
               icon: <InstagramIcon size={22} />,
               title: "Instagram",
               value: "@onbsaglik",
-              sub: "DM ile de ulaşabilirsiniz",
+              sub: "DM ile hızlı müşteri desteği",
               href: "https://www.instagram.com/onbsaglik",
             },
           ].map((item) => (
