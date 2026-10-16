@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Mail, MapPin, Phone, ShieldCheck, Lock } from 'lucide-react';
 
@@ -21,9 +22,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Logo ve Hakkında */}
           <div className="space-y-4">
-            <Link href="/" className="text-2xl font-black text-white flex items-center gap-2 text-decoration-none">
-              <span className="bg-emerald-500 p-2 rounded-xl inline-flex items-center justify-center shadow-xs">🌿</span>
-              <span>OnbSağlık</span>
+            <Link href="/" className="inline-block bg-white/95 px-3.5 py-2 rounded-xl shadow-xs hover:bg-white transition-colors">
+              <Image
+                src="/logo.png"
+                alt="ONBSAGLIK"
+                width={150}
+                height={43}
+                className="h-8 w-auto object-contain"
+              />
             </Link>
             <p className="text-emerald-100/80 text-xs sm:text-sm leading-relaxed">
               15 yıllık tecrübemiz ve eczane güvencemizle; orijinal dermokozmetik, vitamin ve takviye edici gıdaları en uygun fiyat garantisiyle kapınıza ulaştırıyoruz.

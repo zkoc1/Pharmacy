@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
@@ -24,33 +25,17 @@ import CartDrawer from "@/components/ui/CartDrawer";
 import LoginModal from "@/components/ui/LoginModal";
 import { isUserLoggedIn } from "@/lib/authUtils";
 
-// Mega Kategori navigasyonu — Alt kategorilerle birlikte (Görsel 5 Birebir)
+// Mega Kategori navigasyonu — WordPress menüsü ile birebir
 const NAV_CATEGORIES = [
-  { name: "⚡ KAMPANYALAR", href: "/kampanyalar", highlight: true },
+  { name: "Markalar", href: "/urunler", highlight: false },
   {
-    name: "Vitamin & Takviye",
-    href: "/kategori/vitamin-ve-takviye",
+    name: "Bebek & Çocuk",
+    href: "/kategori/anne-bebek",
     subcategories: [
-      { title: "Vitaminler", items: ["C Vitamini", "D3 Vitamini", "B Kompleks", "Multivitamin", "Tüm Ürünler"] },
-      { title: "Mineraller", items: ["Çinko", "Magnezyum", "Demir Takviyesi", "Kalsiyum", "Tüm Ürünler"] },
-      { title: "Omega & Balık Yağı", items: ["Çocuk Balık Yağı Şurubu", "Yetişkin Omega-3", "Krill Oil", "Tüm Ürünler"] },
-    ],
-  },
-  {
-    name: "Güneş Bakımı",
-    href: "/kategori/gunes-bakimi",
-    subcategories: [
-      { title: "Yüz Güneş Kremleri", items: ["SPF 50+ Yüz Kremi", "Renkli Güneş Kremi", "Leke Karşıtı Güneş Kremi", "Tüm Ürünler"] },
-      { title: "Vücut Güneş Kremleri", items: ["Güneş Spreyi", "Çocuk Güneş Kremi", "Hassas Cilt Güneş Spreyi", "Tüm Ürünler"] },
-      { title: "Güneş Sonrası", items: ["Bronzlaştırıcı Yağ", "After-Sun Jel", "Nemlendirici Losyon", "Tüm Ürünler"] },
-    ],
-  },
-  {
-    name: "Saç Bakımı",
-    href: "/kategori/sac-bakimi",
-    subcategories: [
-      { title: "Şampuan & Krem", items: ["Dökülme Karşıtı Şampuan", "Kepek Karşıtı Şampuan", "Saç Kremi", "Tüm Ürünler"] },
-      { title: "Özel Bakım", items: ["Saç Serumu", "Saç Maskesi", "Saç Toniği", "Tüm Ürünler"] },
+      { title: "Bebek Bakımı", items: ["Bebek Bezi", "Bebek Duş Jeli", "Bebek Güneş Kremi", "Bebek Yağı", "Islak Mendil", "Pişik Kremi", "Tüm Ürünler"] },
+      { title: "Bebek Beslenme Ürünleri", items: ["Bebek Maması", "Biberon", "Emzik", "Takviye Ürünler", "Tüm Ürünler"] },
+      { title: "Emzirme Ürünleri", items: ["Emziren Anne Besinleri", "Göğüs Pompası", "Süt Saklama Poşeti", "Tüm Ürünler"] },
+      { title: "Göğüs Bakımı", items: ["Göğüs Pedi", "Göğüs Ucu Koruyucu", "Göğüs Ucu Kremi", "Tüm Ürünler"] },
     ],
   },
   {
@@ -63,11 +48,12 @@ const NAV_CATEGORIES = [
     ],
   },
   {
-    name: "Makyaj",
-    href: "/kategori/makyaj",
+    name: "Güneş Koruma",
+    href: "/kategori/gunes-bakimi",
     subcategories: [
-      { title: "Ten Makyajı", items: ["BB & CC Krem", "Kapatıcı", "Pudra", "Tüm Ürünler"] },
-      { title: "Göz Makyajı", items: ["Maskara", "Eyeliner", "Tüm Ürünler"] },
+      { title: "Yüz Güneş Kremleri", items: ["SPF 50+ Yüz Kremi", "Renkli Güneş Kremi", "Leke Karşıtı Güneş Kremi", "Tüm Ürünler"] },
+      { title: "Vücut Güneş Kremleri", items: ["Güneş Spreyi", "Çocuk Güneş Kremi", "Hassas Cilt Güneş Spreyi", "Tüm Ürünler"] },
+      { title: "Güneş Sonrası", items: ["Bronzlaştırıcı Yağ", "After-Sun Jel", "Nemlendirici Losyon", "Tüm Ürünler"] },
     ],
   },
   {
@@ -79,13 +65,28 @@ const NAV_CATEGORIES = [
     ],
   },
   {
-    name: "Anne & Bebek",
-    href: "/kategori/anne-bebek",
+    name: "Saç Bakımı",
+    href: "/kategori/sac-bakimi",
     subcategories: [
-      { title: "Bebek Bakımı", items: ["Bebek Bezi", "Bebek Duş Jeli", "Bebek Güneş Kremi", "Bebek Yağı", "Islak Mendil", "Pişik Kremi", "Tüm Ürünler"] },
-      { title: "Bebek Beslenme Ürünleri", items: ["Bebek Maması", "Biberon", "Emzik", "Takviye Ürünler", "Tüm Ürünler"] },
-      { title: "Emzirme Ürünleri", items: ["Emziren Anne Besinleri", "Göğüs Pompası", "Süt Saklama Poşeti", "Tüm Ürünler"] },
-      { title: "Göğüs Bakımı", items: ["Göğüs Pedi", "Göğüs Ucu Koruyucu", "Göğüs Ucu Kremi", "Tüm Ürünler"] },
+      { title: "Şampuan & Krem", items: ["Dökülme Karşıtı Şampuan", "Kepek Karşıtı Şampuan", "Saç Kremi", "Tüm Ürünler"] },
+      { title: "Özel Bakım", items: ["Saç Serumu", "Saç Maskesi", "Saç Toniği", "Tüm Ürünler"] },
+    ],
+  },
+  {
+    name: "Takviye Gıda",
+    href: "/kategori/vitamin-ve-takviye",
+    subcategories: [
+      { title: "Vitaminler", items: ["C Vitamini", "D3 Vitamini", "B Kompleks", "Multivitamin", "Tüm Ürünler"] },
+      { title: "Mineraller", items: ["Çinko", "Magnezyum", "Demir Takviyesi", "Kalsiyum", "Tüm Ürünler"] },
+      { title: "Omega & Balık Yağı", items: ["Çocuk Balık Yağı Şurubu", "Yetişkin Omega-3", "Krill Oil", "Tüm Ürünler"] },
+    ],
+  },
+  {
+    name: "Yüz Bakımı",
+    href: "/kategori/cilt-bakimi",
+    subcategories: [
+      { title: "Temizleme & Tonik", items: ["Miselyar Su", "Yıkama Jeli", "Peeling", "Tüm Ürünler"] },
+      { title: "Nemlendirme & Onarım", items: ["Hyaluronik Asit", "C Vitamini Serumu", "Gece Kremi", "Tüm Ürünler"] },
     ],
   },
 ];
@@ -220,34 +221,16 @@ export default function Header() {
           {/* Logo (Mobilde Sol, Masaüstünde Sol) */}
           <Link
             href="/"
-            className="order-1 flex items-center gap-2 text-decoration-none shrink-0"
+            className="order-1 flex items-center text-decoration-none shrink-0 py-0.5"
           >
-            <div
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "var(--radius-sm)",
-                background: "var(--color-primary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: 800,
-                fontSize: "17px",
-              }}
-            >
-              🌿
-            </div>
-            <span
-              style={{
-                fontSize: "20px",
-                fontWeight: 800,
-                color: "var(--color-text)",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              Onb<span style={{ color: "var(--color-primary)" }}>Sağlık</span>
-            </span>
+            <Image
+              src="/logo.png"
+              alt="ONBSAGLIK"
+              width={160}
+              height={46}
+              priority
+              className="h-8 sm:h-9 md:h-10 w-auto object-contain hover:opacity-95 transition-opacity"
+            />
           </Link>
 
           {/* İkonlar: Hesabım, Favoriler, Sepet (Mobilde Sağda, Masaüstünde Sağda) */}
@@ -317,13 +300,13 @@ export default function Header() {
                 onFocus={() => {
                   if (searchResults.length > 0) setShowSearchDropdown(true);
                 }}
-                placeholder="Ürün, marka veya kategori arayın..."
+                placeholder="Ürün ara..."
                 style={{
                   width: "100%",
-                  padding: "9px 44px 9px 16px",
+                  padding: "9px 70px 9px 16px",
                   fontSize: "13px",
                   borderRadius: "999px",
-                  border: "2px solid var(--color-border)",
+                  border: "1.5px solid #fed7aa",
                   background: "var(--color-bg)",
                   outline: "none",
                   transition: "var(--transition)",
@@ -336,19 +319,20 @@ export default function Header() {
                   right: "4px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  background: "var(--color-primary)",
+                  padding: "6px 16px",
+                  borderRadius: "999px",
+                  background: "#FF8A00",
                   border: "none",
                   color: "white",
+                  fontSize: "13px",
+                  fontWeight: 700,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
                 }}
               >
-                <Search size={15} />
+                Ara
               </button>
             </form>
 
