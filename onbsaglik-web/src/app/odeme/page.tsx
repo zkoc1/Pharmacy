@@ -49,10 +49,15 @@ import { isUserLoggedIn } from "@/lib/authUtils";
 export default function OdemeSayfasi() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { addresses, addAddress, getUserAddresses } = useAddressStore();
+  const { addresses, addAddress, getUserAddresses, syncAddresses } = useAddressStore();
   const { cards, addCard, getUserCards } = useCardStore();
   const { addOrder } = useOrderStore();
   const { data: session, status } = useSession();
+
+  // Sayfa açıldığında kullanıcının kayıtlı adreslerini sunucudan eşitle
+  useEffect(() => {
+    syncAddresses();
+  }, [syncAddresses]);
 
   const currentUserEmail = session?.user?.email || "";
 
@@ -267,7 +272,22 @@ export default function OdemeSayfasi() {
         phone: def.phone || "",
         differentInvoice: false,
       });
+      setAddressError("");
     } else {
+      // Eğer localStorage'da kayıtlı son girilen adres varsa onu çek ve forma doldur
+      try {
+        const savedLocal = localStorage.getItem("onbsaglik_last_address");
+        if (savedLocal) {
+          const parsed = JSON.parse(savedLocal);
+          if (parsed && (parsed.fullName || parsed.city)) {
+            setAddressForm(prev => ({ ...prev, ...parsed }));
+            setIsAddingNewAddress(false);
+            setAddressError("");
+            return;
+          }
+        }
+      } catch {}
+
       setIsAddingNewAddress(true);
       if (session?.user?.name && !fetchedProfile) {
         setAddressForm((p) => ({ ...p, fullName: session.user?.name || "" }));
@@ -354,8 +374,13 @@ export default function OdemeSayfasi() {
       isDefault: true,
     });
 
+    try {
+      localStorage.setItem("onbsaglik_last_address", JSON.stringify(addressForm));
+    } catch {}
+
     setSelectedAddressId(saved.id);
     setIsAddingNewAddress(false);
+    setAddressError("");
     setActiveStep(2);
   };
 
@@ -481,10 +506,14 @@ export default function OdemeSayfasi() {
 
           <button
             onClick={() => {
-              if (addressForm.fullName && addressForm.city && addressForm.district) {
+              if (selectedAddressId || (addressForm.fullName && addressForm.city && addressForm.district)) {
                 setActiveStep(2);
+                setAddressError("");
               } else if (userAddresses.length > 0) {
+                const def = userAddresses.find((a) => a.isDefault) || userAddresses[0];
+                handleSelectSavedAddress(def);
                 setActiveStep(2);
+                setAddressError("");
               } else {
                 setAddressError("Lütfen önce teslimat adresi bilgilerinizi tamamlayınız.");
               }
@@ -512,7 +541,7 @@ export default function OdemeSayfasi() {
                 {addressError && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-700 font-bold text-xs">
                     <AlertCircle size={18} className="flex-shrink-0" />
-                    <span>âš ï¸ {addressError}</span>
+                    <span>{addressError}</span>
                   </div>
                 )}
 
@@ -1206,6 +1235,12 @@ export default function OdemeSayfasi() {
                   if (activeStep === 1) {
                     if (selectedAddressId || (addressForm.fullName && addressForm.city && addressForm.district)) {
                       setActiveStep(2);
+                      setAddressError("");
+                    } else if (userAddresses.length > 0) {
+                      const def = userAddresses.find((a) => a.isDefault) || userAddresses[0];
+                      handleSelectSavedAddress(def);
+                      setActiveStep(2);
+                      setAddressError("");
                     } else {
                       setAddressError("Lütfen önce teslimat adresi bilgilerinizi tamamlayınız.");
                     }
