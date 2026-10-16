@@ -425,8 +425,9 @@ export default function OdemeSayfasi() {
         const data = await response.json();
         setPaytrLoading(false);
         if (data.success && data.iframeUrl) {
-          setPaytrIframeUrl(data.iframeUrl);
-          setPaytrModalOpen(true);
+          // Ziraat ve diğer bankaların 3D Secure iframe güvenlik engeline (X-Frame-Options) takılmaması için
+          // kullanıcıyı doğrudan PayTR'nin güvenli 3D Secure sayfasına tam sayfa yönlendiriyoruz.
+          window.location.href = data.iframeUrl;
           return;
         } else {
           alert("PayTR Ödeme Başlatılamadı: " + (data.error || "Lütfen tekrar deneyin."));
@@ -1251,18 +1252,26 @@ export default function OdemeSayfasi() {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("Ödeme penceresini kapatmak istediğinize emin misiniz? Sepetiniz ve siparişiniz korunacaktır.")) {
-                    setPaytrModalOpen(false);
-                  }
-                }}
-                className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors text-lg font-bold shadow-sm cursor-pointer"
-                title="Pencereyi Kapat"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={paytrIframeUrl}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-xs inline-flex items-center gap-1"
+                >
+                  Banka Ekranını Aç ↗
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm("Ödeme penceresini kapatmak istediğinize emin misiniz? Sepetiniz ve siparişiniz korunacaktır.")) {
+                      setPaytrModalOpen(false);
+                    }
+                  }}
+                  className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors text-lg font-bold shadow-sm cursor-pointer"
+                  title="Pencereyi Kapat"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* iFrame Container */}
