@@ -35,10 +35,19 @@ export default async function AnaSayfa() {
       <HeroBanner />
 
       {/* Kategori kart grid'i */}
-      <section className="container-custom py-12">
-        <h2 className="text-2xl font-bold text-center mb-8" style={{ color: "var(--color-text)" }}>
-          Kategoriler
-        </h2>
+      <section className="container-custom py-12 sm:py-16">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/60 mb-3 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Eczane Güvencesiyle
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Popüler Kategoriler
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-500">
+            %100 orijinal ve dermatolojik onaylı ürünlerimizi kategorilere göre keşfedin
+          </p>
+        </div>
         <CategoryCards />
       </section>
 
