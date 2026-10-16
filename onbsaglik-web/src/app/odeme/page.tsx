@@ -140,6 +140,11 @@ export default function OdemeSayfasi() {
   const [couponCode, setCouponCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
+  // PayTR iFrame Gömülü Modal State
+  const [paytrModalOpen, setPaytrModalOpen] = useState(false);
+  const [paytrIframeUrl, setPaytrIframeUrl] = useState<string | null>(null);
+  const [paytrLoading, setPaytrLoading] = useState(false);
+
   const total = getTotalPrice();
   const multiBuyDiscount = calculateMultiBuyDiscount(items, total);
   
@@ -405,6 +410,7 @@ export default function OdemeSayfasi() {
 
     if (paymentMethod === "paytr") {
       try {
+        setPaytrLoading(true);
         const newOrderId = await addOrder(orderPayload);
         const response = await fetch("/api/checkout/paytr", {
           method: "POST",
@@ -417,15 +423,17 @@ export default function OdemeSayfasi() {
           })
         });
         const data = await response.json();
+        setPaytrLoading(false);
         if (data.success && data.iframeUrl) {
-          clearCart(); // Sadece başarılıysa temizle
-          window.location.href = data.iframeUrl; // Redirect to PayTR
+          setPaytrIframeUrl(data.iframeUrl);
+          setPaytrModalOpen(true);
           return;
         } else {
           alert("PayTR Ödeme Başlatılamadı: " + (data.error || "Lütfen tekrar deneyin."));
           return;
         }
       } catch (err) {
+        setPaytrLoading(false);
         alert("Ödeme servisine bağlanırken bir hata oluştu.");
         return;
       }
@@ -1189,8 +1197,10 @@ export default function OdemeSayfasi() {
               </label>
 
               {/* SİPARİŞİ TAMAMLA Butonu */}
+              {/* SİPARİŞİ TAMAMLA Butonu */}
               <button
                 type="button"
+                disabled={paytrLoading}
                 onClick={() => {
                   if (activeStep === 1) {
                     if (selectedAddressId || (addressForm.fullName && addressForm.city && addressForm.district)) {
@@ -1202,14 +1212,71 @@ export default function OdemeSayfasi() {
                     handleCompleteOrder();
                   }
                 }}
-                className="w-full bg-rose-400 hover:bg-rose-500 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+                className={`w-full ${
+                  paytrLoading ? "bg-gray-400 cursor-not-allowed" : "bg-rose-400 hover:bg-rose-500 cursor-pointer"
+                } text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2`}
               >
-                {activeStep === 1 ? "ÖDEME ADIMINA GEÇ >" : "SİPARİŞİ TAMAMLA"}
+                {paytrLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ÖDEME EKRANI AÇILIYOR...
+                  </span>
+                ) : activeStep === 1 ? (
+                  "ÖDEME ADIMINA GEÇ >"
+                ) : (
+                  "SİPARİŞİ TAMAMLA"
+                )}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* PayTR 3D Secure Gömülü Ödeme Penceresi (Modal - OnbSağlık İçinde) */}
+      {paytrModalOpen && paytrIframeUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[94vh]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-teal-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-gray-900 leading-tight">
+                    OnbSağlık Güvenli Ödeme
+                  </h3>
+                  <p className="text-[11px] text-gray-500">
+                    PayTR 256-Bit SSL & 3D Secure Koruması
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Ödeme penceresini kapatmak istediğinize emin misiniz? Sepetiniz ve siparişiniz korunacaktır.")) {
+                    setPaytrModalOpen(false);
+                  }
+                }}
+                className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors text-lg font-bold shadow-sm cursor-pointer"
+                title="Pencereyi Kapat"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* iFrame Container */}
+            <div className="flex-1 w-full overflow-y-auto bg-gray-50 p-1 sm:p-2">
+              <iframe
+                src={paytrIframeUrl}
+                id="paytriframe"
+                className="w-full rounded-2xl border-0 shadow-inner bg-white"
+                style={{ minHeight: "680px", width: "100%" }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

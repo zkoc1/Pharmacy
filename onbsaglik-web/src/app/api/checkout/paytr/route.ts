@@ -71,7 +71,15 @@ export async function POST(req: Request) {
     ]);
     const user_basket = Buffer.from(JSON.stringify(basketArray)).toString("base64");
 
-    const baseUrl = (process.env.NEXTAUTH_URL || "https://onbsaglik.com.tr").replace(/\/$/, "");
+    const originHeader = req.headers.get("origin") || req.headers.get("referer") || "";
+    let baseUrl = "https://onbsaglik.com.tr";
+    if (originHeader.includes("onbsaglik.com") && !originHeader.includes("onbsaglik.com.tr")) {
+      baseUrl = "https://onbsaglik.com";
+    } else if (originHeader.startsWith("http://localhost")) {
+      baseUrl = "http://localhost:3000";
+    } else if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
+      baseUrl = process.env.NEXTAUTH_URL.replace(/\/$/, "");
+    }
     const merchant_ok_url = `${baseUrl}/odeme/basarili?orderId=${merchant_oid}`;
     const merchant_fail_url = `${baseUrl}/odeme?status=fail`;
 
