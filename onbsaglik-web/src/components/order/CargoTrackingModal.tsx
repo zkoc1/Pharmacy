@@ -389,16 +389,9 @@ export default function CargoTrackingModal({
 
         {/* Alt Aksiyon Butonları */}
         <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs text-gray-500 w-full sm:w-auto">
-            <div className="flex items-center gap-1.5">
-              <Phone size={14} className="text-gray-400" />
-              <span>{carrierInfo.name} Çağrı Merkezi: <strong className="text-gray-800">{carrierInfo.phone}</strong></span>
-            </div>
-            <span className="hidden sm:inline text-gray-300">|</span>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck size={14} className="text-emerald-600" />
-              <span>OnbSağlık Destek: <strong className="text-emerald-700">0553 272 38 58</strong></span>
-            </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 w-full sm:w-auto">
+            <Phone size={14} className="text-gray-400" />
+            <span>{carrierInfo.name} Çağrı Merkezi: <strong className="text-gray-800">{carrierInfo.phone}</strong></span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
