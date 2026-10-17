@@ -50,14 +50,15 @@ export default function OdemeSayfasi() {
   const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
   const { addresses, addAddress, getUserAddresses, syncAddresses } = useAddressStore();
-  const { cards, addCard, getUserCards } = useCardStore();
+  const { cards, addCard, getUserCards, syncCards, removeCard } = useCardStore();
   const { addOrder } = useOrderStore();
   const { data: session, status } = useSession();
 
-  // Sayfa açıldığında kullanıcının kayıtlı adreslerini sunucudan eşitle
+  // Sayfa açıldığında kullanıcının kayıtlı adreslerini ve kartlarını sunucudan eşitle
   useEffect(() => {
     syncAddresses();
-  }, [syncAddresses]);
+    syncCards();
+  }, [syncAddresses, syncCards]);
 
   const currentUserEmail = session?.user?.email || "";
 
@@ -172,6 +173,10 @@ export default function OdemeSayfasi() {
   let tempGrandTotal = Math.max(0, total - multiBuyDiscount - discount + shippingCost);
   const eftDiscount = paymentMethod === "eft" ? calculateEftDiscount(tempGrandTotal) : 0;
   const grandTotal = Math.max(0, tempGrandTotal - eftDiscount);
+
+  const hasOutOfStockItems = items.some(
+    (i) => !i.product || (typeof i.product.stock === "number" && i.product.stock <= 0) || (i.product.status && i.product.status !== "active")
+  );
 
   // 1. API'den Şehir İsimlerini Çek ve Kargo Ayarlarını Al
   useEffect(() => {
@@ -394,7 +399,10 @@ export default function OdemeSayfasi() {
       return;
     }
 
-
+    if (hasOutOfStockItems) {
+      alert("Sepetinizdeki bazı ürünlerin stoğu tükenmiş veya satışı durdurulmuştur. Lütfen sepetinize dönüp sepetinizi güncelleyiniz.");
+      return;
+    }
 
     // SİPARİŞİ MERKEZİ SİPARİŞ STORE'UNA KAYDET (SLUG DAHİL)
     const userSession = JSON.parse(localStorage.getItem("user_session") || "{}");
@@ -407,6 +415,25 @@ export default function OdemeSayfasi() {
     const userName = addressForm.fullName || userSession.name || "Değerli Müşterimiz";
     const userPhone = addressForm.phone || "05555555555";
     const userAddress = `${addressForm.city} / ${addressForm.district} / ${addressForm.neighborhood} - ${addressForm.fullAddress}`;
+
+    // Eğer kullanıcı yeni kart girmiş ve kartı kaydet işaretliyse kartı profilinde sakla
+    if (paymentMethod === "paytr" && selectedCardId === "new" && saveCardCheckbox && cardForm.cardNumber) {
+      const cleanNum = cardForm.cardNumber.replace(/\s+/g, "");
+      if (cleanNum.length >= 12) {
+        const brand = cleanNum.startsWith("4") ? "Visa" : cleanNum.startsWith("5") ? "Mastercard" : cleanNum.startsWith("9") ? "Troy" : "Diğer";
+        const masked = cleanNum.length >= 16 ? `${cleanNum.slice(0, 4)} **** **** ${cleanNum.slice(-4)}` : `**** **** **** ${cleanNum.slice(-4)}`;
+        addCard({
+          userEmail: userEmail,
+          cardName: cardForm.cardName || userName || "Kayıtlı Kartım",
+          cardNumberMasked: masked,
+          cardLast4: cleanNum.slice(-4),
+          expireMonth: cardForm.expireMonth || "12",
+          expireYear: cardForm.expireYear || "2028",
+          cardType: brand as any,
+          isDefault: true
+        });
+      }
+    }
 
     const orderPayload = {
       items: items.map((i) => ({
@@ -1003,30 +1030,181 @@ export default function OdemeSayfasi() {
                   </div>
 
                   {paymentMethod === "paytr" && (
-                    <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-blue-200 p-6 rounded-3xl space-y-4 text-xs">
-                      <div className="flex items-center justify-between border-b border-blue-200 pb-3">
-                        <div className="flex items-center gap-2 text-blue-900 font-extrabold text-sm">
-                          <ShieldCheck size={22} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
+                    <div className="space-y-4">
+                      {/* Kayıtlı Kartlar Listesi (Varsa) */}
+                      {userCards.length > 0 && (
+                        <div className="space-y-3">
+                          <label className="text-xs font-bold text-gray-800 uppercase tracking-wide block">
+                            Kayıtlı Kartlarım ({userCards.length})
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {userCards.map((c) => {
+                              const isSelected = selectedCardId === c.id;
+                              return (
+                                <div
+                                  key={c.id}
+                                  onClick={() => setSelectedCardId(c.id)}
+                                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                                    isSelected
+                                      ? "border-blue-500 bg-blue-50/30 shadow-xs"
+                                      : "border-gray-200 hover:border-gray-300 bg-white"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                                      💳
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-extrabold text-gray-900">{c.cardName}</p>
+                                      <p className="font-mono text-xs font-bold text-gray-600 tracking-wider">
+                                        {c.cardNumberMasked}
+                                      </p>
+                                      <span className="text-[10px] text-gray-400 font-semibold">{c.cardType}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                        isSelected ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300 bg-white"
+                                      }`}
+                                    >
+                                      {isSelected && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm("Bu kayıtlı kartı silmek istediğinize emin misiniz?")) {
+                                          removeCard(c.id);
+                                          if (selectedCardId === c.id) setSelectedCardId("new");
+                                        }
+                                      }}
+                                      className="text-gray-400 hover:text-red-500 p-1 text-xs"
+                                      title="Kartı Sil"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+
+                            <div
+                              onClick={() => setSelectedCardId("new")}
+                              className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${
+                                selectedCardId === "new"
+                                  ? "border-blue-500 bg-blue-50/20 text-blue-700 font-extrabold"
+                                  : "border-gray-300 hover:border-gray-400 text-gray-600 font-bold"
+                              } text-xs`}
+                            >
+                              <Plus size={16} /> + Farklı Bir Kart ile Öde
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full">
-                          3D Secure Korumalı
-                        </span>
-                      </div>
+                      )}
 
-                      <div className="space-y-2 text-gray-700">
-                        <p className="font-semibold text-blue-950">
-                          Tüm bankaların Kredi Kartı ve Banka (Debit) Kartları ile tek çekim veya taksitli ödeme yapabilirsiniz.
-                        </p>
+                      {/* Yeni Kart Giriş Alanı */}
+                      {(selectedCardId === "new" || userCards.length === 0) && (
+                        <div className="bg-white border border-gray-200 p-5 rounded-3xl space-y-4">
+                          <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                            <CreditCard size={16} className="text-blue-600" /> Kart Bilgileri
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div className="sm:col-span-2">
+                              <label className="block text-gray-600 font-bold mb-1">Kart Üzerindeki İsim</label>
+                              <input
+                                type="text"
+                                placeholder="Kart Sahibi Ad Soyad"
+                                value={cardForm.cardName}
+                                onChange={(e) => setCardForm({ ...cardForm, cardName: e.target.value })}
+                                className="w-full p-2.5 bg-gray-50 border rounded-xl font-bold uppercase"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-gray-600 font-bold mb-1">Kart Numarası</label>
+                              <input
+                                type="text"
+                                maxLength={19}
+                                placeholder="0000 0000 0000 0000"
+                                value={cardForm.cardNumber}
+                                onChange={(e) => {
+                                  const v = e.target.value.replace(/\D/g, "").replace(/(\d{4})/g, "$1 ").trim();
+                                  setCardForm({ ...cardForm, cardNumber: v });
+                                }}
+                                className="w-full p-2.5 bg-gray-50 border rounded-xl font-mono font-bold tracking-wider"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-gray-600 font-bold mb-1">Son Kullanma Tarihi</label>
+                              <div className="flex gap-2">
+                                <select
+                                  value={cardForm.expireMonth}
+                                  onChange={(e) => setCardForm({ ...cardForm, expireMonth: e.target.value })}
+                                  className="w-full p-2.5 bg-gray-50 border rounded-xl font-bold"
+                                >
+                                  <option value="">Ay</option>
+                                  {months.map((m) => (
+                                    <option key={m} value={m}>{m}</option>
+                                  ))}
+                                </select>
+                                <select
+                                  value={cardForm.expireYear}
+                                  onChange={(e) => setCardForm({ ...cardForm, expireYear: e.target.value })}
+                                  className="w-full p-2.5 bg-gray-50 border rounded-xl font-bold"
+                                >
+                                  <option value="">Yıl</option>
+                                  {years.map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-gray-600 font-bold mb-1">Güvenlik Kodu (CVV)</label>
+                              <input
+                                type="password"
+                                maxLength={4}
+                                placeholder="•••"
+                                value={cardForm.cvc}
+                                onChange={(e) => setCardForm({ ...cardForm, cvc: e.target.value.replace(/\D/g, "") })}
+                                className="w-full p-2.5 bg-gray-50 border rounded-xl font-mono font-bold tracking-widest text-center"
+                              />
+                            </div>
+                          </div>
+
+                          <label className="flex items-center gap-2 cursor-pointer pt-1 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={saveCardCheckbox}
+                              onChange={(e) => setSaveCardCheckbox(e.target.checked)}
+                              className="rounded text-blue-600"
+                            />
+                            <span className="font-semibold text-gray-700">
+                              Bu kartımı sonraki alışverişlerim için güvenle kaydet
+                            </span>
+                          </label>
+                        </div>
+                      )}
+
+                      {/* PayTR Bilgilendirme Kutusu */}
+                      <div className="bg-gradient-to-br from-blue-50/70 to-indigo-50/50 border border-blue-200 p-5 rounded-3xl space-y-3 text-xs">
+                        <div className="flex items-center justify-between border-b border-blue-200 pb-2.5">
+                          <div className="flex items-center gap-2 text-blue-900 font-extrabold text-xs">
+                            <ShieldCheck size={18} className="text-blue-600" /> PayTR 256-Bit SSL Güvenli Sanal POS
+                          </div>
+                          <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                            3D Secure Korumalı
+                          </span>
+                        </div>
                         <p className="text-gray-600 text-[11px] leading-relaxed">
-                          Aşağıdaki <strong>Siparişi Tamamla</strong> butonuna tıkladığınızda, PayTR güvencesiyle bankanızın 3D Secure SMS şifresi onay ekranı açılacaktır. Kart bilgileriniz kesinlikle sitemizde tutulmaz.
+                          Siparişinizi tamamladığınızda bankanızın 3D Secure SMS onay ekranına yönlendirileceksiniz. Ödemeniz ancak banka SMS şifrenizi doğruladıktan sonra gerçekleşir.
                         </p>
-                      </div>
-
-                      <div className="pt-2 flex flex-wrap items-center gap-3 text-[11px] font-bold text-gray-500">
-                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Visa</span>
-                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Mastercard</span>
-                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">💳 Troy</span>
-                        <span className="bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-xs">🔒 256-Bit SSL</span>
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-gray-500 pt-1">
+                          <span className="bg-white px-2.5 py-1 rounded-lg border border-gray-200">💳 Visa</span>
+                          <span className="bg-white px-2.5 py-1 rounded-lg border border-gray-200">💳 Mastercard</span>
+                          <span className="bg-white px-2.5 py-1 rounded-lg border border-gray-200">💳 Troy</span>
+                          <span className="bg-white px-2.5 py-1 rounded-lg border border-gray-200">🔒 256-Bit SSL</span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1110,48 +1288,73 @@ export default function OdemeSayfasi() {
               </div>
 
               {/* İndirim Kodu Kutu */}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="İndirim Kodu"
-                  className="flex-1 p-2.5 border rounded-xl text-xs bg-gray-50 uppercase font-bold"
-                />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const userEmail = session?.user?.email;
-                    const isFirstOrder = userEmail ? useOrderStore.getState().getOrdersByEmail(userEmail).length === 0 : true;
-                    
-                    try {
-                      const res = await fetch("/api/checkout/coupon", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          code: couponCode.trim(),
-                          cartTotal: total,
-                          isFirstOrder
-                        })
-                      });
+              {discount > 0 ? (
+                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-800 uppercase block">
+                      Uygulanan Kupon: <strong className="font-mono">{couponCode.toUpperCase()}</strong>
+                    </span>
+                    <span className="text-xs font-black text-emerald-700">-{formatPrice(discount)} İndirim</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDiscount(0);
+                      setCouponCode("");
+                    }}
+                    className="text-xs font-bold text-red-500 hover:text-red-700 bg-white px-2.5 py-1 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer"
+                  >
+                    Kaldır ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    placeholder="İndirim Kodu"
+                    className="flex-1 p-2.5 border rounded-xl text-xs bg-gray-50 uppercase font-bold"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!couponCode.trim()) {
+                        alert("Lütfen bir indirim kodu giriniz.");
+                        return;
+                      }
+                      const userEmail = session?.user?.email;
+                      const isFirstOrder = userEmail ? useOrderStore.getState().getOrdersByEmail(userEmail).length === 0 : true;
                       
-                      const data = await res.json();
-                      if (data.success) {
-                        setDiscount(data.discountAmount);
-                      } else {
-                        alert(data.error || "Kupon uygulanamadı.");
+                      try {
+                        const res = await fetch("/api/checkout/coupon", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            code: couponCode.trim(),
+                            cartTotal: total,
+                            isFirstOrder
+                          })
+                        });
+                        
+                        const data = await res.json();
+                        if (data.success) {
+                          setDiscount(data.discountAmount);
+                        } else {
+                          alert(data.error || "Kupon uygulanamadı.");
+                          setDiscount(0);
+                        }
+                      } catch (e: any) {
+                        alert("Sunucuyla iletişim kurulamadı.");
                         setDiscount(0);
                       }
-                    } catch (e: any) {
-                      alert("Sunucuyla iletişim kurulamadı.");
-                      setDiscount(0);
-                    }
-                  }}
-                  className="bg-gray-400 hover:bg-gray-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer"
-                >
-                  Uygula
-                </button>
-              </div>
+                    }}
+                    className="bg-gray-800 hover:bg-black text-white font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer transition-colors"
+                  >
+                    Uygula
+                  </button>
+                </div>
+              )}
 
               {/* Fiyat Detayları */}
               <div className="space-y-2 text-xs border-t pt-3">
@@ -1226,12 +1429,23 @@ export default function OdemeSayfasi() {
                 </span>
               </label>
 
-              {/* SİPARİŞİ TAMAMLA Butonu */}
+              {/* Stok Uyarısı */}
+              {hasOutOfStockItems && (
+                <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 font-bold flex items-start gap-2.5">
+                  <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
+                  <span>Sepetinizdeki bazı ürünlerin stoğu tükenmiş veya satışı durdurulmuştur. Satın alma işlemine devam etmek için lütfen sepetinizi güncelleyiniz.</span>
+                </div>
+              )}
+
               {/* SİPARİŞİ TAMAMLA Butonu */}
               <button
                 type="button"
-                disabled={paytrLoading}
+                disabled={paytrLoading || hasOutOfStockItems}
                 onClick={() => {
+                  if (hasOutOfStockItems) {
+                    alert("Sepetinizde tükenmiş ürünler bulunmaktadır. Lütfen sepetinize dönerek ürünleri güncelleyiniz.");
+                    return;
+                  }
                   if (activeStep === 1) {
                     if (selectedAddressId || (addressForm.fullName && addressForm.city && addressForm.district)) {
                       setActiveStep(2);
@@ -1249,7 +1463,7 @@ export default function OdemeSayfasi() {
                   }
                 }}
                 className={`w-full ${
-                  paytrLoading ? "bg-gray-400 cursor-not-allowed" : "bg-rose-400 hover:bg-rose-500 cursor-pointer"
+                  paytrLoading || hasOutOfStockItems ? "bg-gray-400 cursor-not-allowed" : "bg-rose-400 hover:bg-rose-500 cursor-pointer"
                 } text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md transition-all text-xs uppercase tracking-wider flex items-center justify-center gap-2`}
               >
                 {paytrLoading ? (
@@ -1257,6 +1471,8 @@ export default function OdemeSayfasi() {
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                     ÖDEME EKRANI AÇILIYOR...
                   </span>
+                ) : hasOutOfStockItems ? (
+                  "TÜKENEN ÜRÜNLERİ SEPETTEN ÇIKARINIZ"
                 ) : activeStep === 1 ? (
                   "ÖDEME ADIMINA GEÇ >"
                 ) : (

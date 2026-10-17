@@ -17,6 +17,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Geçersiz sepet veya tutar verisi." }, { status: 400 });
     }
 
+    // Ürün Stok & Aktiflik Doğrulaması: Para çekilmeden önce stok kontrolü yapılır
+    try {
+      const { getServiceSupabase } = await import("@/lib/supabase");
+      const supabase = getServiceSupabase();
+      for (const item of items) {
+        const prodId = item.id || item.product?.id;
+        if (!prodId) continue;
+        const { data: dbProd } = await supabase.from("products").select("name, stock, status").eq("id", prodId).single();
+        if (!dbProd) {
+          return NextResponse.json({ error: `Sepetinizdeki '${item.name || "Bir ürün"}' sistemde bulunamadı veya satıştan kaldırılmıştır.` }, { status: 400 });
+        }
+        if (dbProd.status && dbProd.status !== "active") {
+          return NextResponse.json({ error: `'${dbProd.name}' şu anda satışa kapalıdır.` }, { status: 400 });
+        }
+        const stock = typeof dbProd.stock === "number" ? dbProd.stock : 0;
+        if (stock <= 0) {
+          return NextResponse.json({ error: `'${dbProd.name}' ürününün stoğu tükenmiştir. Ödeme başlatılamaz.` }, { status: 400 });
+        }
+        if ((item.quantity || 1) > stock) {
+          return NextResponse.json({ error: `'${dbProd.name}' için talep edilen adet (${item.quantity || 1}), mevcut stoktan (${stock}) fazladır.` }, { status: 400 });
+        }
+      }
+    } catch (stockCheckErr) {
+      console.warn("PayTR stock check bypass warning:", stockCheckErr);
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const email = customerInfo?.email && emailRegex.test(customerInfo.email)
       ? customerInfo.email

@@ -33,32 +33,47 @@ export async function GET() {
   }
 
   // Frontend'e uydurmak için veriyi maple
-  const mapped = ordersData.map((o) => ({
-    id: o.id,
-    invoiceNo: o.invoice_no,
-    date: new Date(o.created_at).toLocaleString("tr-TR"),
-    customerEmail: o.customer_email,
-    customerName: o.customer_name,
-    customerPhone: o.customer_phone,
-    total: Number(o.total),
-    carrier: o.carrier,
-    paymentMethod: o.payment_method,
-    status: o.status,
-    deliveryAddress: o.delivery_address,
-    billingAddress: o.billing_address,
-    trackingNumber: o.tracking_number,
-    adminNote: o.admin_note,
-    customerNote: o.customer_note,
-    items: o.items.map((i: any) => ({
-      id: i.product_id,
-      slug: i.slug,
-      name: i.name,
-      brand: i.brand,
-      price: Number(i.price),
-      quantity: i.quantity,
-      image: i.image
-    }))
-  }));
+  const { formatTurkeyDateTime } = await import("@/lib/dateUtils");
+  const mapped = ordersData.map((o) => {
+    let timeline: any[] = [];
+    let cleanAdminNote = o.admin_note || "";
+
+    if (cleanAdminNote.startsWith("{") && cleanAdminNote.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(cleanAdminNote);
+        if (Array.isArray(parsed.timeline)) timeline = parsed.timeline;
+        cleanAdminNote = parsed.note || "";
+      } catch {}
+    }
+
+    return {
+      id: o.id,
+      invoiceNo: o.invoice_no,
+      date: formatTurkeyDateTime(o.created_at),
+      customerEmail: o.customer_email,
+      customerName: o.customer_name,
+      customerPhone: o.customer_phone,
+      total: Number(o.total),
+      carrier: o.carrier,
+      paymentMethod: o.payment_method,
+      status: o.status,
+      deliveryAddress: o.delivery_address,
+      billingAddress: o.billing_address,
+      trackingNumber: o.tracking_number,
+      adminNote: cleanAdminNote,
+      customerNote: o.customer_note,
+      timeline,
+      items: o.items.map((i: any) => ({
+        id: i.product_id,
+        slug: i.slug,
+        name: i.name,
+        brand: i.brand,
+        price: Number(i.price),
+        quantity: i.quantity,
+        image: i.image
+      }))
+    };
+  });
 
   return NextResponse.json(mapped);
 }

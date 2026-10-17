@@ -25,10 +25,12 @@ import {
 } from "lucide-react";
 import { useOrderStore, OrderStatus, OrderRecord } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
+import { formatTurkeyDateTime } from "@/lib/dateUtils";
 import CargoTrackingModal from "@/components/order/CargoTrackingModal";
 
 const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: React.ReactNode }> = {
   "Ödeme Bekliyor":      { color: "#f59e0b", bg: "#fef3c7", icon: <Clock size={14} /> },
+  "PayTR Ödeme Bekliyor":{ color: "#f59e0b", bg: "#fef3c7", icon: <CreditCard size={14} /> },
   "Mail Order Bekliyor": { color: "#ea580c", bg: "#ffedd5", icon: <CreditCard size={14} /> },
   "Hazırlanıyor":        { color: "#3b82f6", bg: "#dbeafe", icon: <Package size={14} /> },
   "Kargoda":             { color: "#8b5cf6", bg: "#ede9fe", icon: <Truck size={14} /> },
@@ -157,8 +159,8 @@ export default function SiparislerimSayfasi() {
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
                     <div>
                       <span className="font-extrabold text-sm text-gray-900 block">{ord.id}</span>
-                      <span className="text-xs text-gray-500 font-medium">
-                        Sipariş Tarihi: {ord.date}
+                      <span className="text-xs text-gray-500 font-medium flex items-center gap-1 mt-0.5">
+                        Sipariş Tarihi: <strong className="text-gray-700">{formatTurkeyDateTime(ord.date) || ord.date}</strong>
                       </span>
                     </div>
 

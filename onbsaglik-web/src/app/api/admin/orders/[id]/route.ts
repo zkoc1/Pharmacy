@@ -34,8 +34,55 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ success: true });
   }
 
-  const { data: order } = await supabase.from("orders").select("customer_email, customer_name, status, tracking_number, payment_method, total").eq("id", id).single();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("customer_email, customer_name, status, tracking_number, payment_method, total, admin_note, carrier")
+    .eq("id", id)
+    .single();
   const oldStatus = order?.status;
+
+  let timeline: any[] = [];
+  let existingAdminNote = "";
+  if (order?.admin_note) {
+    try {
+      const parsed = JSON.parse(order.admin_note);
+      timeline = parsed.timeline || [];
+      existingAdminNote = parsed.note || "";
+    } catch {
+      existingAdminNote = order.admin_note;
+    }
+  }
+
+  const { formatTurkeyDateTime } = await import("@/lib/dateUtils");
+  const nowTurkey = formatTurkeyDateTime(new Date());
+
+  if (body.status && body.status !== oldStatus) {
+    let statusNote = `Sipariş durumu '${body.status}' olarak güncellendi.`;
+    if (body.status === "Hazırlanıyor") statusNote = "Depoda ürünler kontrol edilip hazırlanmaya başlandı.";
+    else if (body.status === "Kargoda") statusNote = `${body.carrier || order?.carrier || "Kargo"} yetkilisine teslim edildi.`;
+    else if (body.status === "Teslim Edildi") statusNote = "Paket alıcıya başarıyla teslim edildi.";
+    else if (body.status === "İptal / İade") statusNote = "Sipariş yönetici tarafından iptal edildi.";
+
+    timeline.push({
+      status: body.status,
+      date: nowTurkey,
+      note: statusNote
+    });
+  }
+
+  if (body.trackingNumber && body.trackingNumber !== order?.tracking_number) {
+    timeline.push({
+      status: (body.status || oldStatus || "Kargoda") as any,
+      date: nowTurkey,
+      note: `Kargo takip numarası sisteme işlendi: ${body.trackingNumber}`
+    });
+  }
+
+  const finalAdminNote = body.adminNote !== undefined ? body.adminNote : existingAdminNote;
+  updates.admin_note = JSON.stringify({
+    note: finalAdminNote,
+    timeline
+  });
 
   const { error } = await supabase.from("orders").update(updates).eq("id", id);
 

@@ -28,7 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const isOutOfStock = product.stock === 0;
+  const isOutOfStock = !product || (typeof product.stock === 'number' && product.stock <= 0) || (product.status && product.status !== 'active');
 
   const numPrice = Number(product.price) || 0;
   const rawMarket = Number(product.marketPrice) || 0;

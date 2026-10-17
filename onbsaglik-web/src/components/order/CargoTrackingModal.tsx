@@ -149,46 +149,81 @@ export default function CargoTrackingModal({
     currentStep = 4;
   }
 
-  // Tarih biçimlendirme & tahmini teslimat hesabı
   const orderDateStr = order.date || '';
 
-  const trackingEvents = [
-    {
-      title: 'Siparişiniz Alındı & Onaylandı',
-      desc: 'Siparişiniz OnbSağlık sistemine ulaştı, ödemeniz onaylandı ve faturalandırıldı.',
-      time: orderDateStr || '16.10.2026 20:07',
-      icon: <PackageCheck size={18} />,
-      stepIndex: 0
-    },
-    {
-      title: 'Depoda Hazırlanıyor & Barkodlandı',
-      desc: 'Orijinal eczane ürünleriniz özenle koruyucu ambalajla paketlendi, kargo sevk etiketi oluşturuldu.',
-      time: orderDateStr ? `${orderDateStr.split(' ')[0]} 21:15` : '16.10.2026 21:15',
-      icon: <Clock size={18} />,
-      stepIndex: 1
-    },
-    {
-      title: `Kargoya Teslim Edildi (${carrierInfo.name})`,
-      desc: `Paketiniz ${carrierInfo.name} yetkilisine teslim edildi ve takip barkodu sisteme işlendi.`,
-      time: currentStep >= 2 ? '17.10.2026 10:30' : 'İşlem bekleniyor',
-      icon: <Truck size={18} />,
-      stepIndex: 2
-    },
-    {
-      title: 'Transfer Merkezinde / Yolda',
-      desc: `Gönderiniz varış transfer merkezine ulaştı ve dağıtım şubesine sevk ediliyor.`,
-      time: currentStep >= 3 ? '17.10.2026 14:45' : 'İşlem bekleniyor',
-      icon: <Building2 size={18} />,
-      stepIndex: 3
-    },
-    {
-      title: 'Kurye Dağıtımda & Teslimat',
-      desc: `Kuryemiz paketinizi teslim etmek üzere adresinize yönlendirildi.`,
-      time: currentStep >= 4 ? 'Teslim Edildi' : 'Teslimat bekleniyor',
-      icon: <MapPin size={18} />,
-      stepIndex: 4
-    }
-  ];
+  // Gerçek Veritabanı Timeline Verisi
+  const realTimeline = Array.isArray(order.timeline) ? order.timeline : [];
+  const hasRealTimeline = realTimeline.length > 0;
+
+  const trackingEvents = hasRealTimeline
+    ? realTimeline.map((evt, idx) => {
+        let icon = <PackageCheck size={18} />;
+        if (evt.status === 'Hazırlanıyor') icon = <Clock size={18} />;
+        else if (evt.status === 'Kargoda') icon = <Truck size={18} />;
+        else if (evt.status === 'Teslim Edildi') icon = <MapPin size={18} />;
+        else if (evt.status === 'İptal / İade') icon = <AlertCircle size={18} />;
+
+        return {
+          title: evt.status === 'Ödeme Bekliyor' ? 'Siparişiniz Alındı & Kaydedildi'
+               : evt.status === 'Hazırlanıyor' ? 'Depoda Hazırlanıyor & Paketleniyor'
+               : evt.status === 'Kargoda' ? `Kargoya Teslim Edildi (${carrierInfo.name})`
+               : evt.status === 'Teslim Edildi' ? 'Siparişiniz Teslim Edildi'
+               : evt.status,
+          desc: evt.note || `${evt.status} aşamasına geçildi.`,
+          time: evt.date,
+          icon,
+          isPassed: true,
+          isCurrent: idx === realTimeline.length - 1 && order.status !== 'Teslim Edildi',
+          stepIndex: idx
+        };
+      })
+    : [
+        {
+          title: 'Siparişiniz Alındı & Onaylandı',
+          desc: 'Siparişiniz OnbSağlık sistemine ulaştı, ödemeniz onaylandı ve faturalandırıldı.',
+          time: orderDateStr || '16.10.2026 20:07',
+          icon: <PackageCheck size={18} />,
+          isPassed: 0 < currentStep,
+          isCurrent: 0 === currentStep,
+          stepIndex: 0
+        },
+        {
+          title: 'Depoda Hazırlanıyor & Barkodlandı',
+          desc: 'Orijinal eczane ürünleriniz özenle koruyucu ambalajla paketlendi, kargo sevk etiketi oluşturuldu.',
+          time: orderDateStr ? `${orderDateStr.split(' ')[0]} 21:15` : '16.10.2026 21:15',
+          icon: <Clock size={18} />,
+          isPassed: 1 < currentStep,
+          isCurrent: 1 === currentStep,
+          stepIndex: 1
+        },
+        {
+          title: `Kargoya Teslim Edildi (${carrierInfo.name})`,
+          desc: `Paketiniz ${carrierInfo.name} yetkilisine teslim edildi ve takip barkodu sisteme işlendi.`,
+          time: currentStep >= 2 ? (orderDateStr || '17.10.2026 10:30') : 'İşlem bekleniyor',
+          icon: <Truck size={18} />,
+          isPassed: 2 < currentStep,
+          isCurrent: 2 === currentStep,
+          stepIndex: 2
+        },
+        {
+          title: 'Transfer Merkezinde / Yolda',
+          desc: `Gönderiniz varış transfer merkezine ulaştı ve dağıtım şubesine sevk ediliyor.`,
+          time: currentStep >= 3 ? '17.10.2026 14:45' : 'İşlem bekleniyor',
+          icon: <Building2 size={18} />,
+          isPassed: 3 < currentStep,
+          isCurrent: 3 === currentStep,
+          stepIndex: 3
+        },
+        {
+          title: 'Kurye Dağıtımda & Teslimat',
+          desc: `Kuryemiz paketinizi teslim etmek üzere adresinize yönlendirildi.`,
+          time: currentStep >= 4 ? 'Teslim Edildi' : 'Teslimat bekleniyor',
+          icon: <MapPin size={18} />,
+          isPassed: 4 < currentStep,
+          isCurrent: 4 === currentStep,
+          stepIndex: 4
+        }
+      ];
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
@@ -354,9 +389,16 @@ export default function CargoTrackingModal({
 
         {/* Alt Aksiyon Butonları */}
         <div className="p-4 sm:p-5 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-gray-500 w-full sm:w-auto">
-            <Phone size={14} className="text-gray-400" />
-            <span>Kargo Çağrı Merkezi: <strong className="text-gray-800">{carrierInfo.phone}</strong></span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-xs text-gray-500 w-full sm:w-auto">
+            <div className="flex items-center gap-1.5">
+              <Phone size={14} className="text-gray-400" />
+              <span>{carrierInfo.name} Çağrı Merkezi: <strong className="text-gray-800">{carrierInfo.phone}</strong></span>
+            </div>
+            <span className="hidden sm:inline text-gray-300">|</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck size={14} className="text-emerald-600" />
+              <span>OnbSağlık Destek: <strong className="text-emerald-700">0553 272 38 58</strong></span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">

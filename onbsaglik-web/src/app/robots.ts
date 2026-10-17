@@ -11,8 +11,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Admin paneli, API ve arama sayfaları indexlenmez
-        disallow: ["/admin", "/api/", "/ara"],
+        // Admin paneli, API, arama, sepet ve ödeme sayfaları indexlenmez
+        disallow: ["/admin", "/admin/", "/api/", "/ara", "/odeme", "/hesabim"],
       },
     ],
     sitemap: "https://onbsaglik.com.tr/sitemap.xml",

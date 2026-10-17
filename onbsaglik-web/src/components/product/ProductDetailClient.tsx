@@ -46,7 +46,7 @@ export default function ProductDetailClient({ product, discountRate }: Props) {
 
   const isFavorite = favItems.some((i) => i.id === product.id);
   const activeCampaign = getProductCampaign(product.id);
-  const isOutOfStock = product.stock === 0;
+  const isOutOfStock = !product || (typeof product.stock === "number" && product.stock <= 0) || (product.status && product.status !== "active");
 
   useEffect(() => {
     fetch("/api/products")

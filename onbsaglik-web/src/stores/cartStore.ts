@@ -80,10 +80,32 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: (product, quantity = 1) => {
+        // Ürün silinmiş / aktif değil kontrolü
+        if (!product || (product.status && product.status !== "active")) {
+          alert("Üzgünüz, bu ürün şu anda satışta değildir.");
+          return;
+        }
+
+        // Stok bitmiş kontrolü
+        if (typeof product.stock === "number" && product.stock <= 0) {
+          alert("Üzgünüz, bu ürünün stoğu tükenmiştir.");
+          return;
+        }
+
+        const currentEmail = get().userEmail || "guest";
+        const currentItems = get().cartsByUser[currentEmail] || get().items || [];
+        const existing = currentItems.find((i) => i.product.id === product.id);
+
+        if (existing && typeof product.stock === "number") {
+          if (existing.quantity + quantity > product.stock) {
+            alert(`Stok limiti aşıldı! Bu üründen en fazla ${product.stock} adet ekleyebilirsiniz.`);
+            return;
+          }
+        }
+
         // Stok Alarm Kontrolü
         if (product.stock < 10) {
           const { addStockAlert, stockAlerts } = useAccountExtrasStore.getState();
-          const currentEmail = get().userEmail || "guest";
           const alreadyExists = stockAlerts.some(
             (a) => a.productId === product.id && a.userEmail === currentEmail
           );
@@ -101,25 +123,25 @@ export const useCartStore = create<CartStore>()(
         }
 
         set((state) => {
-          const currentEmail = state.userEmail || "guest";
-          const currentItems = state.cartsByUser[currentEmail] || state.items || [];
+          const curEmail = state.userEmail || "guest";
+          const curItems = state.cartsByUser[curEmail] || state.items || [];
           
-          const existing = currentItems.find((i) => i.product.id === product.id);
+          const ex = curItems.find((i) => i.product.id === product.id);
           let newItems: CartItem[];
 
-          if (existing) {
-            newItems = currentItems.map((i) =>
+          if (ex) {
+            newItems = curItems.map((i) =>
               i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
             );
           } else {
-            newItems = [...currentItems, { product, quantity }];
+            newItems = [...curItems, { product, quantity }];
           }
 
           return {
             items: newItems,
             cartsByUser: {
               ...state.cartsByUser,
-              [currentEmail]: newItems,
+              [curEmail]: newItems,
             },
           };
         });
@@ -157,18 +179,30 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
+        const currentEmail = get().userEmail || "guest";
+        const currentItems = get().cartsByUser[currentEmail] || get().items || [];
+        const targetItem = currentItems.find((i) => i.product.id === productId);
+
+        let finalQuantity = quantity;
+        if (targetItem && typeof targetItem.product.stock === "number") {
+          if (quantity > targetItem.product.stock) {
+            alert(`Bu ürün için maksimum mevcut stok: ${targetItem.product.stock} adet.`);
+            finalQuantity = targetItem.product.stock;
+          }
+        }
+
         set((state) => {
-          const currentEmail = state.userEmail || "guest";
-          const currentItems = state.cartsByUser[currentEmail] || state.items || [];
-          const newItems = currentItems.map((i) =>
-            i.product.id === productId ? { ...i, quantity } : i
+          const curEmail = state.userEmail || "guest";
+          const curItems = state.cartsByUser[curEmail] || state.items || [];
+          const newItems = curItems.map((i) =>
+            i.product.id === productId ? { ...i, quantity: finalQuantity } : i
           );
 
           return {
             items: newItems,
             cartsByUser: {
               ...state.cartsByUser,
-              [currentEmail]: newItems,
+              [curEmail]: newItems,
             },
           };
         });
@@ -217,9 +251,16 @@ export const useCartStore = create<CartStore>()(
           const currentItems = state.cartsByUser[currentEmail] || state.items || [];
           
           let changed = false;
-          const newItems = currentItems.map(item => {
+          const newItems: CartItem[] = [];
+
+          for (const item of currentItems) {
             const realProduct = allProducts.find((p) => p.id === item.product.id);
-            if (!realProduct) return item;
+            
+            // Eğer ürün DB'de yoksa (silinmişse) veya durumu pasif/draft ise veya stoğu bitmişse sepetten temizle
+            if (!realProduct || (realProduct.status && realProduct.status !== "active") || realProduct.stock <= 0) {
+              changed = true;
+              continue;
+            }
 
             let correctPrice = realProduct.price;
 
@@ -233,20 +274,22 @@ export const useCartStore = create<CartStore>()(
                }
             }
 
-            if (item.product.price !== correctPrice || item.product.stock !== realProduct.stock) {
+            const validQuantity = Math.min(item.quantity, realProduct.stock);
+            if (validQuantity !== item.quantity || item.product.price !== correctPrice || item.product.stock !== realProduct.stock) {
                changed = true;
-               return {
-                 ...item,
-                 product: {
-                    ...item.product,
-                    price: correctPrice,
-                    stock: realProduct.stock,
-                    marketPrice: realProduct.marketPrice
-                 }
-               };
             }
-            return item;
-          });
+
+            newItems.push({
+              ...item,
+              quantity: validQuantity,
+              product: {
+                ...item.product,
+                price: correctPrice,
+                stock: realProduct.stock,
+                marketPrice: realProduct.marketPrice
+              }
+            });
+          }
 
           if (!changed) return state;
 

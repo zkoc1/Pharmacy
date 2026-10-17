@@ -61,6 +61,58 @@ export const metadata: Metadata = {
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import MetaPixel from "@/components/analytics/MetaPixel";
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Pharmacy",
+      "@id": "https://onbsaglik.com.tr/#pharmacy",
+      "name": "OnbSağlık",
+      "url": "https://onbsaglik.com.tr",
+      "logo": "https://onbsaglik.com.tr/logo.png",
+      "image": "https://onbsaglik.com.tr/hero-banner.jpg",
+      "description": "Orijinal eczane güvencesiyle vitamin, gıda takviyesi, dermokozmetik ve saç bakım ürünleri.",
+      "telephone": "+905532723858",
+      "priceRange": "₺₺",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Yeni Mahalle 12. Cadde No:95",
+        "addressLocality": "Kocasinan",
+        "addressRegion": "Kayseri",
+        "postalCode": "38000",
+        "addressCountry": "TR"
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "08:30",
+          "closes": "19:00"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/onbsaglik"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://onbsaglik.com.tr/#website",
+      "url": "https://onbsaglik.com.tr",
+      "name": "OnbSağlık",
+      "description": "Vitamin, Takviye ve Dermokozmetik E-Ticaret Sitesi",
+      "publisher": { "@id": "https://onbsaglik.com.tr/#pharmacy" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://onbsaglik.com.tr/ara?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -68,6 +120,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" className={inter.variable}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body>
         <MetaPixel />
         <SessionWrapper>

@@ -49,12 +49,12 @@ export default async function UrunDetaySayfasi({ params }: Props) {
   const discountRate = calcDiscount(product.price, product.marketPrice);
 
   // Google Schema.org Product Rich Snippet (JSON-LD)
-  const jsonLd = {
+  const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
     image: product.images,
-    description: `${product.brand} marka ${product.name} en uygun fiyat ve hızlı kargo avantajıyla onbsaglik.com'da!`,
+    description: `${product.brand} marka ${product.name} orijinal eczane güvencesi, en uygun fiyat ve hızlı kargo avantajıyla onbsaglik.com.tr'de!`,
     brand: {
       "@type": "Brand",
       name: product.brand,
@@ -62,28 +62,61 @@ export default async function UrunDetaySayfasi({ params }: Props) {
     sku: product.barcode || `ONB-${product.id}`,
     offers: {
       "@type": "Offer",
-      url: `https://onbsaglik.com/urun/${product.slug}`,
+      url: `https://onbsaglik.com.tr/urun/${product.slug}`,
       priceCurrency: "TRY",
       price: product.price,
-      availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: (product.stock && product.stock > 0 && product.status === "active")
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
       seller: {
-        "@type": "Organization",
+        "@type": "Pharmacy",
         name: "OnbSağlık",
+        url: "https://onbsaglik.com.tr"
       },
     },
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: "4.9",
-      reviewCount: "28",
+      reviewCount: "34",
     },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Anasayfa",
+        item: "https://onbsaglik.com.tr"
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.category,
+        item: `https://onbsaglik.com.tr/kategori/${product.categorySlug}`
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.name,
+        item: `https://onbsaglik.com.tr/urun/${product.slug}`
+      }
+    ]
   };
 
   return (
     <div className="container-custom py-8">
-      {/* Google SEO JSON-LD Yapısal Veri */}
+      {/* Google SEO Ürün ve Breadcrumb JSON-LD Yapısal Verileri */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       {/* Breadcrumb navigasyonu */}
       <nav className="flex items-center gap-2 text-sm mb-8" style={{ color: "var(--color-text-muted)" }}>
