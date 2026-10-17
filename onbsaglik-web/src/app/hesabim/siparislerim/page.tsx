@@ -23,8 +23,9 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { useOrderStore, OrderStatus } from "@/stores/orderStore";
+import { useOrderStore, OrderStatus, OrderRecord } from "@/stores/orderStore";
 import { formatPrice } from "@/lib/products";
+import CargoTrackingModal from "@/components/order/CargoTrackingModal";
 
 const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: React.ReactNode }> = {
   "Ödeme Bekliyor":      { color: "#f59e0b", bg: "#fef3c7", icon: <Clock size={14} /> },
@@ -41,6 +42,7 @@ export default function SiparislerimSayfasi() {
   const { orders, fetchUserOrders } = useOrderStore();
   const [cancelOrderId, setCancelOrderId] = React.useState<string | null>(null);
   const [isCancelling, setIsCancelling] = React.useState(false);
+  const [trackingOrder, setTrackingOrder] = React.useState<OrderRecord | null>(null);
 
   const handleCancel = async (id: string) => {
     setIsCancelling(true);
@@ -256,9 +258,6 @@ export default function SiparislerimSayfasi() {
                         else if (ord.status === "Hazırlanıyor") currentStepIndex = 1;
                         else if (ord.status === "Kargoda") currentStepIndex = 2; // Kargoya Verildi
                         else if (ord.status === "Teslim Edildi") currentStepIndex = 4;
-                        
-                        // Kargo takibi için
-                        if (ord.trackingNumber && ord.status === "Hazırlanıyor") currentStepIndex = 2; // Takip no girildiyse kargoya verilmiştir
 
                         return (
                           <div className="relative flex items-center justify-between">
@@ -293,22 +292,22 @@ export default function SiparislerimSayfasi() {
 
                   {/* Kargo Takip Linki Varsa */}
                   {ord.trackingNumber && ord.status !== "İptal / İade" && (
-                    <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-blue-50/80 border border-blue-100 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                       <div>
-                        <p className="text-[11px] font-bold text-blue-800/60 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
-                          <Truck size={14} /> Kargo Takip Numarası
+                        <p className="text-[11px] font-bold text-blue-800/70 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">
+                          <Truck size={14} className="text-blue-600" /> Kargo Takip Numarası
                         </p>
-                        <p className="font-extrabold text-blue-900 text-sm">
+                        <p className="font-extrabold text-blue-900 text-sm font-mono tracking-tight">
                           {ord.trackingNumber}
                         </p>
                       </div>
-                      <a 
-                        href={`https://www.google.com/search?q=${ord.carrier}+kargo+sorgulama+${ord.trackingNumber}`}
-                        target="_blank" rel="noreferrer"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm whitespace-nowrap"
+                      <button 
+                        type="button"
+                        onClick={() => setTrackingOrder(ord)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap cursor-pointer"
                       >
-                        Kargomu Takip Et <ExternalLink size={14} />
-                      </a>
+                        <Truck size={15} /> Kargomu Takip Et <ExternalLink size={13} />
+                      </button>
                     </div>
                   )}
 
@@ -381,6 +380,13 @@ export default function SiparislerimSayfasi() {
           </div>
         </div>
       )}
+
+      {/* Trendyol Tarzı Kargo Takip Modalı */}
+      <CargoTrackingModal
+        isOpen={!!trackingOrder}
+        onClose={() => setTrackingOrder(null)}
+        order={trackingOrder}
+      />
 
       </div>
     </div>
