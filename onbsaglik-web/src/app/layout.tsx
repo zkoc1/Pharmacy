@@ -16,42 +16,56 @@ const inter = Inter({
   display: "swap",
 });
 
-// Site geneli meta veriler — SEO için kritik
+// Site geneli meta veriler — Google Arama Motoru ve Satın Alma Odaklı SEO
 export const metadata: Metadata = {
   metadataBase: new URL("https://onbsaglik.com.tr"),
   title: {
-    default: "OnbSağlık | Vitamin, Takviye ve Kozmetik Ürünler",
+    default: "OnbSağlık | Orijinal Eczane Ürünleri, Vitamin & Kozmetik Satın Al",
     template: "%s | OnbSağlık",
   },
   description:
-    "Vitamin, takviye besin, güneş kremi, saç ve cilt bakım ürünlerini güvenle satın alın. Ocean, Dermoskin, Nutraxin, Bioxcin ve daha fazlası.",
+    "Orijinal eczane güvencesiyle vitamin, besin takviyeleri, güneş kremi, saç dökülmesi ve cilt bakım ürünlerini en uygun fiyatlarla satın alın. Bioxcin, Alopexy, Minoxil, Ocean, Dermoskin, Bioderma ve 500+ ürün OnbSağlık'ta!",
   keywords: [
-    "vitamin",
-    "takviye",
-    "güneş kremi",
-    "saç bakımı",
-    "cilt bakımı",
-    "kozmetik",
-    "onbsaglik",
     "online eczane",
+    "eczane satın al",
+    "bioxcin satın al",
+    "alopexy 5 sprey",
+    "minoxil eczane",
+    "ocean balık yağı satın al",
+    "dermoskin satın al",
+    "vitamin satın al",
+    "takviye edici gıda",
+    "saç dökülmesi şampuanı",
+    "güneş kremi en ucuz",
+    "cilt bakımı",
+    "onbsaglik",
+    "orijinal ecza deposu",
+    "hızlı kargo eczane"
   ],
   openGraph: {
     type: "website",
     locale: "tr_TR",
     url: "https://onbsaglik.com.tr",
     siteName: "OnbSağlık",
-    title: "OnbSağlık | Vitamin, Takviye ve Kozmetik Ürünler",
+    title: "OnbSağlık | Orijinal Eczane Ürünleri, Vitamin & Kozmetik Satın Al",
     description:
-      "Vitamin, takviye besin, güneş kremi, saç ve cilt bakım ürünlerini güvenle satın alın.",
+      "Orijinal eczane güvencesiyle vitamin, besin takviyeleri, güneş kremi, saç ve cilt bakım ürünlerini en uygun fiyatlarla güvenle satın alın.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OnbSağlık | Vitamin, Takviye ve Kozmetik",
+    title: "OnbSağlık | Orijinal Eczane Ürünleri & Kozmetik",
+    description: "En uygun fiyatlı orijinal eczane ürünleri, aynı gün kargo avantajıyla OnbSağlık'ta.",
   },
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   alternates: {
     canonical: "https://onbsaglik.com.tr",

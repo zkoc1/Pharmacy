@@ -1,14 +1,15 @@
 /**
  * Kategori sayfası — /kategori/[slug] rotası.
  * Kategori ürünlerini filtreli ve sıralı gösterir.
+ * Google SEO, CollectionPage & ItemList JSON-LD ile zenginleştirilmiştir.
  */
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getAllCategories, getCategoryBySlug, filterProducts } from "@/lib/products";
 import ProductGrid from "@/components/product/ProductGrid";
 import SortSelect from "@/components/product/SortSelect";
 import type { ProductFilter } from "@/types";
+import { ShieldCheck } from "lucide-react";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -34,9 +35,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
   const catName = cat ? cat.name : slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const title = `${catName} Çeşitleri, En Uygun Fiyatlar & Satın Al | OnbSağlık`;
+  const description = `Orijinal ${catName} ürünleri indirimli fiyatlar, %100 eczane güvencesi ve aynı gün kargo fırsatıyla onbsaglik.com.tr'de! Kampanyalı ${catName} çeşitlerini inceleyin, güvenle satın alın.`;
+
   return {
-    title: `${catName} | OnbSağlık`,
-    description: `${catName} kategorisindeki ürünleri inceleyin. En uygun fiyatlar OnbSağlık'ta.`,
+    title,
+    description,
+    keywords: [
+      catName,
+      `${catName} satın al`,
+      `${catName} fiyatları`,
+      `${catName} çeşitleri`,
+      `${catName} eczane`,
+      `${catName} tavsiye`,
+      `${catName} en ucuz`,
+      "orijinal eczane ürünleri",
+      "hızlı kargo",
+      "sağlık takviyeleri"
+    ],
+    alternates: {
+      canonical: `https://onbsaglik.com.tr/kategori/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `https://onbsaglik.com.tr/kategori/${slug}`,
+      siteName: "OnbSağlık",
+      locale: "tr_TR",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -50,7 +82,6 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
     categories.flatMap((c) => c.children ?? []).find((c) => c.slug === slug);
 
   if (!category) {
-    // Veritabanında tam eşleşen slug yoksa, sayfayı çökertmemek için geçici bir kategori oluştur
     category = {
       id: 9999,
       name: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
@@ -71,20 +102,69 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
 
   const { products, total } = await filterProducts(filter);
 
+  // Google Schema.org CollectionPage & ItemList JSON-LD
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${category.name} Ürünleri ve Çeşitleri`,
+    description: `${category.name} kategorisindeki tüm orijinal ürünler en avantajlı fiyatlarla OnbSağlık'ta.`,
+    url: `https://onbsaglik.com.tr/kategori/${category.slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: products.map((p, idx) => ({
+        "@type": "ListItem",
+        position: idx + 1,
+        url: `https://onbsaglik.com.tr/urun/${p.slug}`,
+        name: p.name,
+      }))
+    }
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Anasayfa",
+        item: "https://onbsaglik.com.tr"
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: category.name,
+        item: `https://onbsaglik.com.tr/kategori/${category.slug}`
+      }
+    ]
+  };
+
   return (
     <div className="container-custom py-8">
+      {/* Schema.org Yapısal Verileri */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: "var(--color-text-muted)" }}>
-        <a href="/" style={{ color: "var(--color-primary)" }}>Anasayfa</a>
+      <nav className="flex items-center gap-2 text-sm mb-6 flex-wrap" style={{ color: "var(--color-text-muted)" }}>
+        <a href="/" style={{ color: "var(--color-primary)" }} className="hover:underline">Anasayfa</a>
         <span>/</span>
-        <span>{category.name}</span>
+        <span className="font-semibold text-gray-800">{category.name}</span>
       </nav>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold">{category.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2.5">
+            {category.name} <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Eczane Garantili</span>
+          </h1>
           <p style={{ fontSize: "14px", color: "var(--color-text-muted)", marginTop: "4px" }}>
-            {total} ürün bulundu
+            Toplam <strong>{total}</strong> orijinal ürün listeleniyor
           </p>
         </div>
 

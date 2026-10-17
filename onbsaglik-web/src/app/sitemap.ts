@@ -1,7 +1,7 @@
 /**
  * Sitemap — /sitemap.xml
  * Tüm aktif ürün, kategori ve marka sayfalarını Google'a bildirir.
- * SSG ile statik olarak üretilir — her deploy'da yenilenir.
+ * Google botunun ürünleri ve markaları en yüksek öncelikle indexlemesini sağlar.
  */
 
 import { MetadataRoute } from "next";
@@ -14,7 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categories = await getAllCategories();
   const brands = await getAllBrands();
 
-  // Statik sayfalar
+  // Statik ana sayfalar
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
@@ -26,13 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/urunler`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 0.9,
+      priority: 0.95,
     },
     {
       url: `${BASE_URL}/kampanyalar`,
       lastModified: new Date(),
       changeFrequency: "daily",
-      priority: 0.85,
+      priority: 0.9,
     },
     {
       url: `${BASE_URL}/hakkimizda`,
@@ -48,12 +48,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Ürün sayfaları
+  // Ürün sayfaları — Arama motoru için en yüksek öncelik
   const productPages: MetadataRoute.Sitemap = products.map((p) => ({
     url: `${BASE_URL}/urun/${p.slug}`,
     lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
+    changeFrequency: "daily" as const,
+    priority: 0.95,
   }));
 
   // Kategori sayfaları
@@ -62,8 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       {
         url: `${BASE_URL}/kategori/${cat.slug}`,
         lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.7,
+        changeFrequency: "daily" as const,
+        priority: 0.85,
       },
     ];
     if (cat.children) {
@@ -71,20 +71,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         pages.push({
           url: `${BASE_URL}/kategori/${child.slug}`,
           lastModified: new Date(),
-          changeFrequency: "weekly" as const,
-          priority: 0.6,
+          changeFrequency: "daily" as const,
+          priority: 0.8,
         });
       });
     }
     return pages;
   });
 
-  // Marka sayfaları
+  // Marka sayfaları (Bioxcin, Alopexy, Ocean vb.)
   const brandPages: MetadataRoute.Sitemap = brands.map((b) => ({
     url: `${BASE_URL}/marka/${b.slug}`,
     lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
+    changeFrequency: "daily" as const,
+    priority: 0.9,
   }));
 
   return [...staticPages, ...productPages, ...categoryPages, ...brandPages];
