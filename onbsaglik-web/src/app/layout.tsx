@@ -18,7 +18,7 @@ const inter = Inter({
 
 // Site geneli meta veriler — Google Arama Motoru ve Satın Alma Odaklı SEO
 export const metadata: Metadata = {
-  metadataBase: new URL("https://onbsaglik.com.tr"),
+  metadataBase: new URL("https://www.onbsaglik.com.tr"),
   title: {
     default: "OnbSağlık | Orijinal Eczane Ürünleri, Vitamin & Kozmetik Satın Al",
     template: "%s | OnbSağlık",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "tr_TR",
-    url: "https://onbsaglik.com.tr",
+    url: "https://www.onbsaglik.com.tr",
     siteName: "OnbSağlık",
     title: "OnbSağlık | Orijinal Eczane Ürünleri, Vitamin & Kozmetik Satın Al",
     description:
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://onbsaglik.com.tr",
+    canonical: "https://www.onbsaglik.com.tr",
   },
   verification: {
     google: "googlef78446fc680a2d1e",
@@ -83,11 +83,11 @@ const organizationSchema = {
   "@graph": [
     {
       "@type": "Pharmacy",
-      "@id": "https://onbsaglik.com.tr/#pharmacy",
+      "@id": "https://www.onbsaglik.com.tr/#pharmacy",
       "name": "OnbSağlık",
-      "url": "https://onbsaglik.com.tr",
-      "logo": "https://onbsaglik.com.tr/logo.png",
-      "image": "https://onbsaglik.com.tr/hero-banner.jpg",
+      "url": "https://www.onbsaglik.com.tr",
+      "logo": "https://www.onbsaglik.com.tr/logo.png",
+      "image": "https://www.onbsaglik.com.tr/hero-banner.jpg",
       "description": "Orijinal eczane güvencesiyle vitamin, gıda takviyesi, dermokozmetik ve saç bakım ürünleri.",
       "telephone": "+905532723858",
       "priceRange": "₺₺",
@@ -113,16 +113,16 @@ const organizationSchema = {
     },
     {
       "@type": "WebSite",
-      "@id": "https://onbsaglik.com.tr/#website",
-      "url": "https://onbsaglik.com.tr",
+      "@id": "https://www.onbsaglik.com.tr/#website",
+      "url": "https://www.onbsaglik.com.tr",
       "name": "OnbSağlık",
       "description": "Vitamin, Takviye ve Dermokozmetik E-Ticaret Sitesi",
-      "publisher": { "@id": "https://onbsaglik.com.tr/#pharmacy" },
+      "publisher": { "@id": "https://www.onbsaglik.com.tr/#pharmacy" },
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": "https://onbsaglik.com.tr/ara?q={search_term_string}"
+          "urlTemplate": "https://www.onbsaglik.com.tr/ara?q={search_term_string}"
         },
         "query-input": "required name=search_term_string"
       }

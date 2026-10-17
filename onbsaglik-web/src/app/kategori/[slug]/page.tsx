@@ -54,12 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "sağlık takviyeleri"
     ],
     alternates: {
-      canonical: `https://onbsaglik.com.tr/kategori/${slug}`,
+      canonical: `https://www.onbsaglik.com.tr/kategori/${slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://onbsaglik.com.tr/kategori/${slug}`,
+      url: `https://www.onbsaglik.com.tr/kategori/${slug}`,
       siteName: "OnbSağlık",
       locale: "tr_TR",
       type: "website",
@@ -108,13 +108,13 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
     "@type": "CollectionPage",
     name: `${category.name} Ürünleri ve Çeşitleri`,
     description: `${category.name} kategorisindeki tüm orijinal ürünler en avantajlı fiyatlarla OnbSağlık'ta.`,
-    url: `https://onbsaglik.com.tr/kategori/${category.slug}`,
+    url: `https://www.onbsaglik.com.tr/kategori/${category.slug}`,
     mainEntity: {
       "@type": "ItemList",
       itemListElement: products.map((p, idx) => ({
         "@type": "ListItem",
         position: idx + 1,
-        url: `https://onbsaglik.com.tr/urun/${p.slug}`,
+        url: `https://www.onbsaglik.com.tr/urun/${p.slug}`,
         name: p.name,
       }))
     }
@@ -128,13 +128,13 @@ export default async function KategoriSayfasi({ params, searchParams }: Props) {
         "@type": "ListItem",
         position: 1,
         name: "Anasayfa",
-        item: "https://onbsaglik.com.tr"
+        item: "https://www.onbsaglik.com.tr"
       },
       {
         "@type": "ListItem",
         position: 2,
         name: category.name,
-        item: `https://onbsaglik.com.tr/kategori/${category.slug}`
+        item: `https://www.onbsaglik.com.tr/kategori/${category.slug}`
       }
     ]
   };

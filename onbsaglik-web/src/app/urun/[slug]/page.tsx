@@ -54,12 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "indirimli eczane fiyatı"
     ],
     alternates: {
-      canonical: `https://onbsaglik.com.tr/urun/${product.slug}`,
+      canonical: `https://www.onbsaglik.com.tr/urun/${product.slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://onbsaglik.com.tr/urun/${product.slug}`,
+      url: `https://www.onbsaglik.com.tr/urun/${product.slug}`,
       siteName: "OnbSağlık",
       locale: "tr_TR",
       type: "website",
@@ -106,7 +106,7 @@ export default async function UrunDetaySayfasi({ params }: Props) {
     sku: product.barcode || `ONB-${product.id}`,
     offers: {
       "@type": "Offer",
-      url: `https://onbsaglik.com.tr/urun/${product.slug}`,
+      url: `https://www.onbsaglik.com.tr/urun/${product.slug}`,
       priceCurrency: "TRY",
       price: product.price,
       priceValidUntil: "2027-12-31",
@@ -115,7 +115,7 @@ export default async function UrunDetaySayfasi({ params }: Props) {
       seller: {
         "@type": "Pharmacy",
         name: "OnbSağlık",
-        url: "https://onbsaglik.com.tr"
+        url: "https://www.onbsaglik.com.tr"
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -175,25 +175,25 @@ export default async function UrunDetaySayfasi({ params }: Props) {
         "@type": "ListItem",
         position: 1,
         name: "Anasayfa",
-        item: "https://onbsaglik.com.tr"
+        item: "https://www.onbsaglik.com.tr"
       },
       {
         "@type": "ListItem",
         position: 2,
         name: product.category,
-        item: `https://onbsaglik.com.tr/kategori/${product.categorySlug}`
+        item: `https://www.onbsaglik.com.tr/kategori/${product.categorySlug}`
       },
       {
         "@type": "ListItem",
         position: 3,
         name: product.brand,
-        item: `https://onbsaglik.com.tr/marka/${product.brandSlug}`
+        item: `https://www.onbsaglik.com.tr/marka/${product.brandSlug}`
       },
       {
         "@type": "ListItem",
         position: 4,
         name: product.name,
-        item: `https://onbsaglik.com.tr/urun/${product.slug}`
+        item: `https://www.onbsaglik.com.tr/urun/${product.slug}`
       }
     ]
   };

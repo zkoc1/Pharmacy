@@ -46,12 +46,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "dermatolojik bakım"
     ],
     alternates: {
-      canonical: `https://onbsaglik.com.tr/marka/${slug}`,
+      canonical: `https://www.onbsaglik.com.tr/marka/${slug}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://onbsaglik.com.tr/marka/${slug}`,
+      url: `https://www.onbsaglik.com.tr/marka/${slug}`,
       siteName: "OnbSağlık",
       locale: "tr_TR",
       type: "website",
@@ -84,13 +84,13 @@ export default async function MarkaSayfasi({ params }: Props) {
     "@type": "CollectionPage",
     name: `${brand.name} Ürünleri ve Fiyatları`,
     description: `${brand.name} marka tüm orijinal eczane ürünleri OnbSağlık'ta.`,
-    url: `https://onbsaglik.com.tr/marka/${brand.slug}`,
+    url: `https://www.onbsaglik.com.tr/marka/${brand.slug}`,
     mainEntity: {
       "@type": "ItemList",
       itemListElement: products.map((p, idx) => ({
         "@type": "ListItem",
         position: idx + 1,
-        url: `https://onbsaglik.com.tr/urun/${p.slug}`,
+        url: `https://www.onbsaglik.com.tr/urun/${p.slug}`,
         name: p.name,
       }))
     }
@@ -104,19 +104,19 @@ export default async function MarkaSayfasi({ params }: Props) {
         "@type": "ListItem",
         position: 1,
         name: "Anasayfa",
-        item: "https://onbsaglik.com.tr"
+        item: "https://www.onbsaglik.com.tr"
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Markalar",
-        item: "https://onbsaglik.com.tr/urunler"
+        item: "https://www.onbsaglik.com.tr/urunler"
       },
       {
         "@type": "ListItem",
         position: 3,
         name: brand.name,
-        item: `https://onbsaglik.com.tr/marka/${brand.slug}`
+        item: `https://www.onbsaglik.com.tr/marka/${brand.slug}`
       }
     ]
   };
