@@ -5,6 +5,7 @@
 
 import type { Metadata } from "next";
 import HeroBanner from "@/components/home/HeroBanner";
+import SecurityTrustBanner from "@/components/home/SecurityTrustBanner";
 import CategoryCards from "@/components/home/CategoryCards";
 import BrandStrip from "@/components/home/BrandStrip";
 import ProductGrid from "@/components/product/ProductGrid";
@@ -33,6 +34,9 @@ export default async function AnaSayfa() {
     <>
       {/* Büyük karşılama alanı */}
       <HeroBanner />
+
+      {/* Canlı SSL Sertifikası & Eczane Güvencesi Şeridi */}
+      <SecurityTrustBanner />
 
       {/* Kategori hızlı erişim şeridi */}
       <section className="container-custom py-3 sm:py-4">
