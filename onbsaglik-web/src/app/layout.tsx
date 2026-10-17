@@ -70,6 +70,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://onbsaglik.com.tr",
   },
+  verification: {
+    google: "googlef78446fc680a2d1e",
+  },
 };
 
 import SessionWrapper from "@/components/providers/SessionWrapper";
