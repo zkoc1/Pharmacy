@@ -9,13 +9,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Kupon kodu eksik" }, { status: 400 });
     }
 
+    const cleanCode = code.trim().toUpperCase();
+
+    // Özel Kargo İçi Teşekkür Kuponu: ONB10 (%10 İndirim)
+    if (cleanCode === "ONB10") {
+      const discount = Math.max(20, Math.round(cartTotal * 0.10));
+      return NextResponse.json({ success: true, discountAmount: discount });
+    }
+
     const supabase = getServiceSupabase();
 
     // Kuponu veritabanından bul
     const { data: coupon, error } = await supabase
       .from("coupons")
       .select("*")
-      .eq("code", code.toUpperCase())
+      .eq("code", cleanCode)
       .eq("is_active", true)
       .single();
 

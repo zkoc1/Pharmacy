@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Zustand ile Stok Alarmları, Fiyat Alarmları, Havale Bildirimleri ve Hediye Çekleri Yönetimi.
  * Kullanıcı kimliğine (userEmail) göre kişiye özel saklanır.
  * LocalStorage'a kalıcı kaydedilir (persist).
@@ -281,6 +281,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         }
 
         const validCoupons: Record<string, { amount: number; min: number; desc: string }> = {
+          ONB10: { amount: 50, min: 200, desc: "Kargo İçi Teşekkür %10 İndirim Kuponu" },
           ONB100: { amount: 100, min: 500, desc: "500 TL üzeri 100 TL İndirim Kuponu" },
           HOSGELDIN50: { amount: 50, min: 250, desc: "Hoş Geldin 50 TL İndirim Kuponu" },
           SAGLIK20: { amount: 20, min: 100, desc: "Tüm Ürünlerde Geçerli 20 TL İndirim Kuponu" },
