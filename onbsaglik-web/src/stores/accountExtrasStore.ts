@@ -281,6 +281,7 @@ export const useAccountExtrasStore = create<AccountExtrasState>()(
         }
 
         const validCoupons: Record<string, { amount: number; min: number; desc: string }> = {
+          ILK50: { amount: 50, min: 600, desc: "İlk Siparişe Özel 50 TL İndirim (Min. Sepet: 600 TL)" },
           ONB10: { amount: 50, min: 200, desc: "Kargo İçi Teşekkür %10 İndirim Kuponu" },
           ONB100: { amount: 100, min: 500, desc: "500 TL üzeri 100 TL İndirim Kuponu" },
           HOSGELDIN50: { amount: 50, min: 250, desc: "Hoş Geldin 50 TL İndirim Kuponu" },

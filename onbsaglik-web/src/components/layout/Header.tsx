@@ -201,7 +201,7 @@ export default function Header() {
           letterSpacing: "0.3px",
         }}
       >
-        🚚 500 TL ve üzeri siparişlerde ücretsiz kargo! | 📦 Hızlı teslimat
+        🚚 500 TL ve üzeri siparişlerde ücretsiz kargo! | 🎁 İlk siparişe özel 50 TL indirim kodu: ILK50
       </div>
 
       {/* Main Header */}

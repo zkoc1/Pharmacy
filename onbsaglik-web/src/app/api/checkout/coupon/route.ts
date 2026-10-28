@@ -11,10 +11,12 @@ export async function POST(req: Request) {
 
     const cleanCode = code.trim().toUpperCase();
 
-    // Özel Kargo İçi Teşekkür Kuponu: ONB10 (%10 İndirim)
-    if (cleanCode === "ONB10") {
-      const discount = Math.max(20, Math.round(cartTotal * 0.10));
-      return NextResponse.json({ success: true, discountAmount: discount });
+    // Özel İlk Sipariş Kuponu: ILK50 (600 TL ve üzeri 50 TL indirim)
+    if (cleanCode === "ILK50") {
+      if (cartTotal < 600) {
+        return NextResponse.json({ error: "Bu kupon minimum 600 TL alışverişlerde geçerlidir." }, { status: 400 });
+      }
+      return NextResponse.json({ success: true, discountAmount: 50 });
     }
 
     const supabase = getServiceSupabase();

@@ -70,6 +70,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.onbsaglik.com.tr",
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+      { url: '/favicon.png', type: 'image/png', sizes: '192x192' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/icon.png', sizes: '192x192', type: 'image/png' },
+    ],
+  },
   verification: {
     google: "googlef78446fc680a2d1e",
   },
