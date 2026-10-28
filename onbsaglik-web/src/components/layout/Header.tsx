@@ -327,7 +327,7 @@ export default function Header() {
                   transform: "translateY(-50%)",
                   padding: "6px 16px",
                   borderRadius: "999px",
-                  background: "#ea580c",
+                  background: "#c2410c",
                   border: "none",
                   color: "white",
                   fontSize: "13px",

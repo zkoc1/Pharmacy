@@ -97,8 +97,7 @@ export default function Footer() {
                 href="https://www.instagram.com/onbsaglik"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="OnbSağlık Instagram Sayfası"
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
               >
                 <InstagramSvg size={16} />
                 <span>Instagram @onbsaglik</span>

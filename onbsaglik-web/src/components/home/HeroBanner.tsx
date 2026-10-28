@@ -103,7 +103,7 @@ export default function HeroBanner() {
                 alt={slide.productAlt}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
-                decoding="async"
+                decoding={index === 0 ? "sync" : "async"}
                 className="w-full h-full object-cover object-right md:object-center"
               />
             </picture>
@@ -138,7 +138,6 @@ export default function HeroBanner() {
               <div className="mt-6 sm:mt-8">
                 <Link
                   href={slide.href}
-                  aria-label={`İnceleyin: ${slide.title}`}
                   className={`inline-flex items-center justify-center px-8 sm:px-10 py-3 sm:py-3.5 rounded-sm font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 ${slide.buttonBg}`}
                 >
                   {slide.buttonText}

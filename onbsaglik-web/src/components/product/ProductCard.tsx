@@ -130,6 +130,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
               className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
               unoptimized={true}
               onError={() => setImgError(true)}
             />
@@ -172,8 +173,8 @@ export default function ProductCard({ product }: ProductCardProps) {
                 isOutOfStock
                   ? 'bg-gray-100 text-slate-500 cursor-not-allowed border border-gray-200'
                   : added
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-transparent'
+                  ? 'bg-emerald-700 text-white shadow-md'
+                  : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs border border-transparent'
               }`}
             >
               {isOutOfStock ? (
