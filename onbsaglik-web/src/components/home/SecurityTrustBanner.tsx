@@ -24,9 +24,8 @@ export default function SecurityTrustBanner() {
           <div className="flex items-center gap-2.5">
             {/* Altın Madalyon & Canlı Sinyal */}
             <div className="relative flex items-center justify-center">
-              <span className="relative flex h-3 w-3 mr-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+              <span className="relative flex h-3 w-3 mr-1.5 items-center justify-center">
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
               </span>
               <div className="p-1 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-300 text-white shadow-xs">
                 <Award className="w-3.5 h-3.5" />

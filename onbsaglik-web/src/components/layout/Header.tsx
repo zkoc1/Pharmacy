@@ -528,6 +528,7 @@ export default function Header() {
             <form onSubmit={handleSearchSubmit} style={{ padding: "12px 16px" }}>
               <input
                 type="search"
+                aria-label="Ürün, marka veya kategori ara"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Ürün, marka veya kategori ara..."
@@ -563,9 +564,9 @@ export default function Header() {
         )}
       </header>
 
-      {/* Sepet Drawer & Üye Girişi Pop-up Modalı (Görsel 1 Birebir) */}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
+      {/* Sepet Drawer & Üye Girişi Pop-up Modalı (Yalnızca açıldığında mount edilir) */}
+      {isCartOpen && <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />}
+      {isLoginModalOpen && <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />}
     </>
   );
 }

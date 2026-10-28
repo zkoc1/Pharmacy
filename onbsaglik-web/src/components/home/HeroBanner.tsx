@@ -90,14 +90,14 @@ export default function HeroBanner() {
               isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
-            {/* Arka Plan Banner Görseli — LCP için Optimize Edilmiş WebP ve Boyutlar */}
+            {/* Arka Plan Banner Görseli — Doğrudan Edge CDN'den Anında Yüklenen 120KB WebP */}
             <Image
               src={slide.image}
               alt={slide.productAlt}
               fill
               priority={index === 0}
+              unoptimized={true}
               loading={index === 0 ? 'eager' : 'lazy'}
-              quality={85}
               className="object-cover object-right md:object-center"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1400px"
             />
@@ -109,7 +109,7 @@ export default function HeroBanner() {
             <div className="relative z-20 h-full flex flex-col justify-center px-6 sm:px-12 lg:px-20 max-w-xl lg:max-w-2xl text-white">
               {slide.badge && (
                 <div className="mb-2 sm:mb-3">
-                  <span className="inline-block px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-wider uppercase bg-emerald-500/25 text-emerald-300 border border-emerald-400/40 backdrop-blur-xs shadow-sm">
+                  <span className="inline-block px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold tracking-wider uppercase bg-emerald-500/25 text-emerald-200 border border-emerald-400/40 backdrop-blur-xs shadow-sm">
                     {slide.badge}
                   </span>
                 </div>
@@ -132,6 +132,7 @@ export default function HeroBanner() {
               <div className="mt-6 sm:mt-8">
                 <Link
                   href={slide.href}
+                  aria-label={`${slide.title} ürünlerini inceleyin`}
                   className={`inline-flex items-center justify-center px-8 sm:px-10 py-3 sm:py-3.5 rounded-sm font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 ${slide.buttonBg}`}
                 >
                   {slide.buttonText}

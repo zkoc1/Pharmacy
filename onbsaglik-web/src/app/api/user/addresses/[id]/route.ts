@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {

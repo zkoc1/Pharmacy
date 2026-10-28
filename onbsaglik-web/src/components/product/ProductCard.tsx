@@ -9,8 +9,11 @@ import type { Product } from '@/types';
 import { calcDiscount, formatPrice } from '@/lib/products';
 import { useCartStore } from '@/stores/cartStore';
 import { useFavoritesStore } from '@/stores/favoritesStore';
-import AddToCartModal from '@/components/ui/AddToCartModal';
-import LoginModal from '@/components/ui/LoginModal';
+import dynamic from 'next/dynamic';
+
+// Modalleri yalnizca tiklandiginda yukleyerek ilk sayfa DOM yukunu ve mobil JS boyutunu minimize ediyoruz
+const AddToCartModal = dynamic(() => import('@/components/ui/AddToCartModal'), { ssr: false });
+const LoginModal = dynamic(() => import('@/components/ui/LoginModal'), { ssr: false });
 import { isUserLoggedIn } from '@/lib/authUtils';
 
 interface ProductCardProps {
@@ -105,7 +108,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         >
           <Heart
             size={16}
-            className={isFavorite ? "text-rose-500" : "text-gray-400 hover:text-rose-500"}
+            className={isFavorite ? "text-rose-500" : "text-slate-500 hover:text-rose-500"}
             fill={isFavorite ? "#f43f5e" : "none"}
           />
         </button>
@@ -118,7 +121,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <Sparkles size={28} />
               </div>
               <span className="text-xs font-bold text-gray-800 line-clamp-1 uppercase">{product.brand}</span>
-              <span className="text-[10px] text-gray-400 font-medium mt-0.5">Orijinal Eczane Ürünü</span>
+              <span className="text-[10px] text-slate-500 font-medium mt-0.5">Orijinal Eczane Ürünü</span>
             </div>
           ) : (
             <Image 
@@ -135,7 +138,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* İçerik */}
         <div className="flex flex-col flex-grow">
-          <span className="text-xs text-gray-400 font-bold mb-1 uppercase tracking-wide">
+          <span className="text-xs text-slate-600 font-bold mb-1 uppercase tracking-wide">
             {product.brand}
           </span>
           
@@ -146,7 +149,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="mt-auto pt-3">
             <div className="flex flex-col mb-3">
               <div className="flex items-center justify-between gap-1 mb-1">
-                <span className="text-xs text-gray-400 line-through font-semibold">
+                <span className="text-xs text-slate-500 line-through font-semibold">
                   {formatPrice(effectiveMarketPrice)}
                 </span>
                 {discountRate > 0 && (
@@ -167,7 +170,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               aria-label={isOutOfStock ? `${product.name} tükendi` : `${product.name} sepete ekle`}
               className={`w-full py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
                 isOutOfStock
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                  ? 'bg-gray-100 text-slate-500 cursor-not-allowed border border-gray-200'
                   : added
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-transparent'
@@ -189,18 +192,22 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Ürün Sepete Eklendi Modalı */}
-      <AddToCartModal
-        product={product}
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
+      {/* Ürün Sepete Eklendi Modalı - Yalnızca tıklandığında DOM'a basılır */}
+      {showModal && (
+        <AddToCartModal
+          product={product}
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
-      {/* Giriş Yapılmamışsa Açılan Üye Girişi Modalı (Görsel 1 Birebir) */}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
+      {/* Giriş Yapılmamışsa Açılan Üye Girişi Modalı */}
+      {showLoginModal && (
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
     </>
   );
 }

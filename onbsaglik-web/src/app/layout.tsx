@@ -3,7 +3,7 @@
  * Google Fonts, metadata ve global bileşenleri buraya ekliyoruz.
  */
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
@@ -15,6 +15,13 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+
+// Mobil ve PWA icin viewport optimizasyonu
+export const viewport: Viewport = {
+  themeColor: "#064e3b",
+  width: "device-width",
+  initialScale: 1,
+};
 
 // Site geneli meta veriler — Google Arama Motoru ve Satın Alma Odaklı SEO
 export const metadata: Metadata = {
