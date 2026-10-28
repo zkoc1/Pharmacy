@@ -156,6 +156,22 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.variable}>
       <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/banners/banner-sac-bakimi-bioxcin-mobile.webp"
+          type="image/webp"
+          media="(max-width: 640px)"
+          fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/banners/banner-sac-bakimi-bioxcin.webp"
+          type="image/webp"
+          media="(min-width: 641px)"
+          fetchPriority="high"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

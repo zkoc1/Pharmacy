@@ -319,7 +319,7 @@ export default function Header() {
               />
               <button
                 type="submit"
-                aria-label="Arama yap"
+                aria-label="Ara"
                 style={{
                   position: "absolute",
                   right: "4px",
@@ -327,7 +327,7 @@ export default function Header() {
                   transform: "translateY(-50%)",
                   padding: "6px 16px",
                   borderRadius: "999px",
-                  background: "#FF8A00",
+                  background: "#ea580c",
                   border: "none",
                   color: "white",
                   fontSize: "13px",
@@ -490,9 +490,9 @@ export default function Header() {
               <div className="container-custom grid grid-cols-4 gap-8">
                 {activeMegaCategory.subcategories.map((sub, idx) => (
                   <div key={idx} className="space-y-3">
-                    <h4 className="font-extrabold text-xs text-gray-900 uppercase tracking-wider border-b pb-2 border-gray-100">
+                    <p className="font-extrabold text-xs text-gray-900 uppercase tracking-wider border-b pb-2 border-gray-100">
                       {sub.title}
-                    </h4>
+                    </p>
                     <ul className="space-y-2">
                       {sub.items.map((item, itemIdx) => (
                         <li key={itemIdx}>

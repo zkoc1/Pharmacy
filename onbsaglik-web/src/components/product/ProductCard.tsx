@@ -91,7 +91,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           title="%100 Orijinal Ürün Garantisi"
         >
           <Image
-            src="/orijinal-urun-badge.png"
+            src="/orijinal-urun-badge.webp"
             alt="%100 Orijinal Ürün"
             width={40}
             height={40}
@@ -153,12 +153,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                   {formatPrice(effectiveMarketPrice)}
                 </span>
                 {discountRate > 0 && (
-                  <span className="text-[11px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200">
+                  <span className="text-[11px] font-black text-rose-800 bg-rose-100/80 px-1.5 py-0.5 rounded-md border border-rose-300">
                     %{discountRate} İndirim
                   </span>
                 )}
               </div>
-              <span className="text-base sm:text-lg font-black text-emerald-600">
+              <span className="text-base sm:text-lg font-black text-emerald-700">
                 {formatPrice(numPrice)}
               </span>
             </div>
@@ -167,7 +167,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button 
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              aria-label={isOutOfStock ? `${product.name} tükendi` : `${product.name} sepete ekle`}
+              aria-label={isOutOfStock ? `Stokta Yok: ${product.name}` : added ? `Sepete Eklendi: ${product.name}` : `Sepete Ekle: ${product.name}`}
               className={`w-full py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
                 isOutOfStock
                   ? 'bg-gray-100 text-slate-500 cursor-not-allowed border border-gray-200'

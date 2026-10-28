@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 interface Slide {
   id: number;
   image: string;
+  mobileImage: string;
   badge?: string;
   title: string;
   subtitle: string;
@@ -21,6 +22,7 @@ const SLIDES: Slide[] = [
   {
     id: 1,
     image: '/banners/banner-sac-bakimi-bioxcin.webp',
+    mobileImage: '/banners/banner-sac-bakimi-bioxcin-mobile.webp',
     badge: '🌿 SAÇ BAKIMI & DÖKÜLME KARŞITI',
     title: 'Saç Dökülmesine Karşı Etkili Destek',
     subtitle: 'Yoğun bakım, güçlü bitkisel formül. Sağlıklı ve gür saçlar için profesyonel eczane bakımı.',
@@ -32,6 +34,7 @@ const SLIDES: Slide[] = [
   {
     id: 2,
     image: '/banners/banner-nutraxin-d3k2.webp',
+    mobileImage: '/banners/banner-nutraxin-d3k2-mobile.webp',
     badge: '☀️ GÜNLÜK VİTAMİN & ENERJİ',
     title: "D3 ve K2'nin Güçlü Uyumu",
     subtitle: "Vitamin D3 ve K2'nin sinerjik etkisiyle formüle edilen Nutraxin D3K2, aktif ve zinde bir yaşam için tasarlandı.",
@@ -43,6 +46,7 @@ const SLIDES: Slide[] = [
   {
     id: 3,
     image: '/banners/banner-cocuk-vitamin.webp',
+    mobileImage: '/banners/banner-cocuk-vitamin-mobile.webp',
     badge: '👶 ÇOCUK GELİŞİM & BAĞIŞIKLIK',
     title: 'Çocuklar İçin Günlük Vitamin Desteği',
     subtitle: 'Çocuklara özel dengeli formül, %100 orijinal güvence. Mutlu, enerjik ve sağlıklı günler için.',
@@ -90,17 +94,19 @@ export default function HeroBanner() {
               isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
-            {/* Arka Plan Banner Görseli — Doğrudan Edge CDN'den Anında Yüklenen 120KB WebP */}
-            <Image
-              src={slide.image}
-              alt={slide.productAlt}
-              fill
-              priority={index === 0}
-              unoptimized={true}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              className="object-cover object-right md:object-center"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1400px"
-            />
+            {/* Arka Plan Banner Görseli — Mobilde 23KB, Masaüstünde 120KB Doğrudan Edge CDN */}
+            <picture className="absolute inset-0 w-full h-full">
+              <source media="(max-width: 640px)" srcSet={slide.mobileImage} type="image/webp" />
+              <source media="(min-width: 641px)" srcSet={slide.image} type="image/webp" />
+              <img
+                src={slide.image}
+                alt={slide.productAlt}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                decoding="async"
+                className="w-full h-full object-cover object-right md:object-center"
+              />
+            </picture>
 
             {/* Metin Okunabilirliği İçin Zengin Gradyan Gölge (Sol Tarafı Açık ve Net Tutar) */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent sm:via-black/40 sm:to-transparent" />
@@ -132,7 +138,7 @@ export default function HeroBanner() {
               <div className="mt-6 sm:mt-8">
                 <Link
                   href={slide.href}
-                  aria-label={`${slide.title} ürünlerini inceleyin`}
+                  aria-label={`İnceleyin: ${slide.title}`}
                   className={`inline-flex items-center justify-center px-8 sm:px-10 py-3 sm:py-3.5 rounded-sm font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 ${slide.buttonBg}`}
                 >
                   {slide.buttonText}
@@ -160,17 +166,21 @@ export default function HeroBanner() {
         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
-      {/* Alt Gösterge Noktaları (Pagination Dots) */}
-      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+      {/* Alt Gösterge Noktaları (Pagination Dots) — 28px WCAG Touch Target */}
+      <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 sm:gap-2">
         {SLIDES.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrent(idx)}
             aria-label={`Slayt ${idx + 1}`}
-            className={`transition-all duration-300 rounded-full h-2 cursor-pointer ${
-              idx === current ? 'w-8 bg-white shadow-md' : 'w-2 bg-white/50 hover:bg-white/80'
-            }`}
-          />
+            className="p-2.5 flex items-center justify-center cursor-pointer group/dot"
+          >
+            <span
+              className={`block transition-all duration-300 rounded-full h-2 ${
+                idx === current ? 'w-8 bg-white shadow-md' : 'w-2 bg-white/60 group-hover/dot:bg-white'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

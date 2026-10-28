@@ -60,9 +60,9 @@ export default function SecurityTrustBanner() {
               <Lock className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <p className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
                 256-Bit SSL Koruma
-              </h4>
+              </p>
               <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-snug">
                 BKM ve PayTR 3D Secure onaylı, banka düzeyinde şifreli ödeme.
               </p>
@@ -75,9 +75,9 @@ export default function SecurityTrustBanner() {
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <p className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
                 Orijinallik Sertifikası
-              </h4>
+              </p>
               <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-snug">
                 Sağlık Bakanlığı İTS ve ecza deposu karekodlu %100 orijinal ürün.
               </p>
@@ -90,9 +90,9 @@ export default function SecurityTrustBanner() {
               <Truck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <p className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
                 Sigortalı Hızlı Kargo
-              </h4>
+              </p>
               <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-snug">
                 500 TL üzeri ücretsiz, hasara karşı tam korumalı ambalajla sevk.
               </p>
@@ -105,9 +105,9 @@ export default function SecurityTrustBanner() {
               <RefreshCcw className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <p className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
                 14 Gün İade & e-Fatura
-              </h4>
+              </p>
               <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-snug">
                 Adınıza resmi e-Arşiv faturalı, yasal iade ve değişim teminatı.
               </p>
