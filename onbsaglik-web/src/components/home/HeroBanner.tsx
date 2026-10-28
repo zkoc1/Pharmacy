@@ -90,8 +90,12 @@ export default function HeroBanner() {
         return (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+            className={`absolute inset-0 ${
+              index === 0 && current === 0
+                ? 'opacity-100 z-10'
+                : `transition-opacity duration-700 ease-in-out ${
+                    isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                  }`
             }`}
           >
             {/* Arka Plan Banner Görseli — Mobilde 23KB, Masaüstünde 120KB Doğrudan Edge CDN */}
@@ -101,6 +105,8 @@ export default function HeroBanner() {
               <img
                 src={slide.image}
                 alt={slide.productAlt}
+                width="750"
+                height="422"
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
                 decoding={index === 0 ? "sync" : "async"}
