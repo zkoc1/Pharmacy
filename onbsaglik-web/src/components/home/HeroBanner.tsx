@@ -20,7 +20,7 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     id: 1,
-    image: '/banners/banner-sac-bakimi-bioxcin.png',
+    image: '/banners/banner-sac-bakimi-bioxcin.webp',
     badge: '🌿 SAÇ BAKIMI & DÖKÜLME KARŞITI',
     title: 'Saç Dökülmesine Karşı Etkili Destek',
     subtitle: 'Yoğun bakım, güçlü bitkisel formül. Sağlıklı ve gür saçlar için profesyonel eczane bakımı.',
@@ -31,7 +31,7 @@ const SLIDES: Slide[] = [
   },
   {
     id: 2,
-    image: '/banners/banner-nutraxin-d3k2.png',
+    image: '/banners/banner-nutraxin-d3k2.webp',
     badge: '☀️ GÜNLÜK VİTAMİN & ENERJİ',
     title: "D3 ve K2'nin Güçlü Uyumu",
     subtitle: "Vitamin D3 ve K2'nin sinerjik etkisiyle formüle edilen Nutraxin D3K2, aktif ve zinde bir yaşam için tasarlandı.",
@@ -42,7 +42,7 @@ const SLIDES: Slide[] = [
   },
   {
     id: 3,
-    image: '/banners/banner-cocuk-vitamin.png',
+    image: '/banners/banner-cocuk-vitamin.webp',
     badge: '👶 ÇOCUK GELİŞİM & BAĞIŞIKLIK',
     title: 'Çocuklar İçin Günlük Vitamin Desteği',
     subtitle: 'Çocuklara özel dengeli formül, %100 orijinal güvence. Mutlu, enerjik ve sağlıklı günler için.',
@@ -90,14 +90,16 @@ export default function HeroBanner() {
               isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
-            {/* Arka Plan Banner Görseli */}
+            {/* Arka Plan Banner Görseli — LCP için Optimize Edilmiş WebP ve Boyutlar */}
             <Image
               src={slide.image}
               alt={slide.productAlt}
               fill
               priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              quality={85}
               className="object-cover object-right md:object-center"
-              sizes="(max-width: 768px) 100vw, (max-width: 1400px) 95vw, 1400px"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1400px"
             />
 
             {/* Metin Okunabilirliği İçin Zengin Gradyan Gölge (Sol Tarafı Açık ve Net Tutar) */}

@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 // onbsaglik.com.tr Next.js yapılandırması
 const nextConfig: NextConfig = {
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 86400,
     remotePatterns: [
       {
         // Trendyol ürün görselleri — geçici kaynak (Faz 2'de R2'ye taşınacak)
