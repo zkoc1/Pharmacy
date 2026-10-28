@@ -23,7 +23,7 @@ export default function CategoryCards() {
     <div className="w-full overflow-x-auto no-scrollbar py-3 sm:py-4">
       <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 justify-start lg:justify-center min-w-max mx-auto">
         {CATEGORIES.map((cat) => (
-          <Link
+          <Link prefetch={false}
             key={cat.name}
             href={cat.href}
             className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl bg-[#FFF9F6] border border-[#FFE8DC] text-[#B45309] hover:text-[#92400E] hover:bg-[#FFF2EB] hover:border-[#FFD2BC] font-bold text-xs sm:text-[14px] tracking-tight transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-95"

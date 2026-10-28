@@ -25,7 +25,7 @@ export default function BrandStrip({ brands }: BrandStripProps) {
         {/* Akıcı Kayan İçerik — Sakin ve profesyonel hız (65sn) */}
         <div className="flex gap-4 sm:gap-6 animate-scroll-smooth whitespace-nowrap px-4 py-2 hover:[animation-play-state:paused] active:[animation-play-state:paused]">
           {marqueeBrands.map((brand, idx) => (
-            <Link
+            <Link prefetch={false}
               key={`${brand.id || brand.slug}-${idx}`}
               href={`/marka/${brand.slug || ''}`}
               className="inline-flex items-center justify-center bg-white px-5 sm:px-7 py-3 rounded-xl shadow-xs border border-slate-200/80 min-w-[130px] sm:min-w-[150px] transition-all duration-200 hover:border-emerald-500 hover:shadow-sm hover:scale-105 group/item cursor-pointer text-decoration-none"

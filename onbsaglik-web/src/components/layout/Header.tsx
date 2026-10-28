@@ -427,8 +427,7 @@ export default function Header() {
                 onMouseEnter={() => setActiveMegaCategory(cat)}
                 style={{ position: "relative" }}
               >
-                <Link
-                  href={cat.href}
+                <Link prefetch={false} href={cat.href}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -451,7 +450,7 @@ export default function Header() {
               </div>
             ))}
 
-            <Link
+            <Link prefetch={false}
               href="/urunler"
               style={{
                 marginLeft: "auto",
@@ -543,9 +542,7 @@ export default function Header() {
             </form>
             <nav style={{ display: "flex", flexDirection: "column" }}>
               {NAV_CATEGORIES.map((cat) => (
-                <Link
-                  key={cat.href}
-                  href={cat.href}
+                <Link key={cat.href} prefetch={false} href={cat.href}
                   onClick={() => setIsMenuOpen(false)}
                   style={{
                     padding: "12px 20px",
