@@ -21,8 +21,9 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/stores/cartStore";
 import { useFavoritesStore } from "@/stores/favoritesStore";
-import CartDrawer from "@/components/ui/CartDrawer";
-import LoginModal from "@/components/ui/LoginModal";
+import dynamic from "next/dynamic";
+const CartDrawer = dynamic(() => import("@/components/ui/CartDrawer"), { ssr: false });
+const LoginModal = dynamic(() => import("@/components/ui/LoginModal"), { ssr: false });
 import { isUserLoggedIn } from "@/lib/authUtils";
 
 // Mega Kategori navigasyonu — WordPress menüsü ile birebir
@@ -239,6 +240,7 @@ export default function Header() {
               onClick={handleHesabimClick}
               className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-slate-700 hover:text-emerald-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors"
               title="Hesabım"
+              aria-label="Hesabım"
             >
               <User size={20} />
               <span className="icon-label-desktop">Hesabım</span>
@@ -248,6 +250,7 @@ export default function Header() {
               href="/favoriler"
               className="flex items-center gap-1.5 text-decoration-none text-slate-700 hover:text-rose-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors"
               title="Favorilerim"
+              aria-label="Favorilerim"
             >
               <Heart size={20} />
               <span className="icon-label-desktop">Favoriler</span>
@@ -258,6 +261,7 @@ export default function Header() {
               onClick={() => setIsCartOpen(true)}
               className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer text-slate-700 hover:text-emerald-600 text-xs sm:text-sm font-semibold p-1 sm:p-2 rounded-lg transition-colors relative"
               title="Alışveriş Sepeti"
+              aria-label="Alışveriş Sepeti"
             >
               <div className="relative">
                 <ShoppingCart size={21} />
@@ -295,6 +299,7 @@ export default function Header() {
             <form onSubmit={handleSearchSubmit} className="relative w-full">
               <input
                 type="search"
+                aria-label="Ürün, marka veya kategori ara"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => {
@@ -314,6 +319,7 @@ export default function Header() {
               />
               <button
                 type="submit"
+                aria-label="Arama yap"
                 style={{
                   position: "absolute",
                   right: "4px",

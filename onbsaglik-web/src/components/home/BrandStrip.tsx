@@ -12,7 +12,9 @@ export default function BrandStrip({ brands }: BrandStripProps) {
 
   // Kusursuz döngü (infinite marquee) için 2 özdeş set:
   // %50 kaydığında tam olarak başa sarar ve göze hiçbir atlama/takılma hissettirmez
-  const marqueeBrands = [...brands, ...brands];
+  // Mobilde aşırı DOM boyutunu ve bellek kullanımını engellemek için popüler 24 marka ile döngü oluşturulur
+  const displayBrands = brands.length > 24 ? brands.slice(0, 24) : brands;
+  const marqueeBrands = [...displayBrands, ...displayBrands];
 
   return (
     <div className="w-full overflow-hidden bg-slate-50/80 py-6 border-y border-slate-200/60 select-none">

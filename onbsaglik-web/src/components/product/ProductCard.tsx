@@ -125,6 +125,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               src={imageUrl} 
               alt={product.name} 
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 250px"
               className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
               unoptimized={true}
               onError={() => setImgError(true)}
@@ -163,6 +164,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <button 
               onClick={handleAddToCart}
               disabled={isOutOfStock}
+              aria-label={isOutOfStock ? `${product.name} tükendi` : `${product.name} sepete ekle`}
               className={`w-full py-2.5 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all ${
                 isOutOfStock
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
