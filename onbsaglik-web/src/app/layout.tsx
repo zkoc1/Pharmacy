@@ -154,7 +154,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={inter.variable}>
+    <html lang="tr" className={`${inter.variable} ${inter.className}`}>
       <head>
         <link
           rel="preload"

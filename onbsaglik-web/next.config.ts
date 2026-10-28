@@ -20,9 +20,29 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  compress: true,
   // Güvenlik Başlıkları & CORS Yapılandırması (Madde 8, 9, 10)
   async headers() {
     return [
+      {
+        source: "/banners/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/orijinal-urun-badge.webp",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Site genel başlıkları
       {
         source: "/:path*",
         headers: [

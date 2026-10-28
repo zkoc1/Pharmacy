@@ -82,7 +82,7 @@ export default function HeroBanner() {
       className="relative overflow-hidden rounded-2xl sm:rounded-3xl mx-2 sm:mx-4 my-2 sm:my-4 shadow-xl group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      style={{ height: 'clamp(360px, 42vw, 540px)' }}
+      style={{ height: 'clamp(320px, 40vw, 500px)' }}
     >
       {/* Slaytlar */}
       {SLIDES.map((slide, index) => {
@@ -128,14 +128,14 @@ export default function HeroBanner() {
               )}
 
               <h1
-                className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight sm:leading-tight !text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.95)]"
+                className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight sm:leading-tight !text-white drop-shadow-sm"
                 style={{ color: '#ffffff' }}
               >
                 {slide.title}
               </h1>
 
               <p
-                className="mt-3 sm:mt-4 text-xs sm:text-base lg:text-lg font-medium leading-relaxed max-w-lg drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
+                className="mt-3 sm:mt-4 text-xs sm:text-base lg:text-lg font-medium leading-relaxed max-w-lg drop-shadow-sm"
                 style={{ color: '#ffffff', opacity: 0.96 }}
               >
                 {slide.subtitle}
