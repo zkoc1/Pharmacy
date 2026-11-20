@@ -47,11 +47,11 @@ export async function GET(req: Request) {
         date: turkeyDate,
         note: "Sipariş oluşturuldu."
       });
-      if (o.status === "Hazırlanıyor" || o.status === "Kargoda" || o.status === "Teslim Edildi") {
+      if (o.status === "Yeni" || o.status === "Hazırlanıyor" || o.status === "Kargoda" || o.status === "Teslim Edildi") {
         timeline.push({
-          status: "Hazırlanıyor",
+          status: o.status === "Yeni" ? "Yeni" : "Hazırlanıyor",
           date: turkeyDate,
-          note: "Ödeme onaylandı, depoda hazırlanıyor."
+          note: o.status === "Yeni" ? "Ödeme onaylandı, yeni sipariş olarak kaydedildi." : "Ödeme onaylandı, depoda hazırlanıyor."
         });
       }
       if (o.status === "Kargoda" || o.status === "Teslim Edildi") {

@@ -29,6 +29,7 @@ import { formatTurkeyDateTime } from "@/lib/dateUtils";
 import CargoTrackingModal from "@/components/order/CargoTrackingModal";
 
 const STATUS_CONFIG: Record<OrderStatus, { color: string; bg: string; icon: React.ReactNode }> = {
+  "Yeni":                { color: "#10b981", bg: "#d1fae5", icon: <CheckCircle size={14} /> },
   "Ödeme Bekliyor":      { color: "#f59e0b", bg: "#fef3c7", icon: <Clock size={14} /> },
   "PayTR Ödeme Bekliyor":{ color: "#f59e0b", bg: "#fef3c7", icon: <CreditCard size={14} /> },
   "Mail Order Bekliyor": { color: "#ea580c", bg: "#ffedd5", icon: <CreditCard size={14} /> },

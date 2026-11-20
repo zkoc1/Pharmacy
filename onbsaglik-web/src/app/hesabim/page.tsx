@@ -664,6 +664,7 @@ export default function HesabimPage() {
               <div className="space-y-4">
                 {userOrders.map((ord) => {
                   const statusColors: Record<string, string> = {
+                    Yeni: 'bg-emerald-100 text-emerald-800',
                     Hazırlanıyor: 'bg-blue-100 text-blue-800',
                     'Mail Order Bekliyor': 'bg-orange-100 text-orange-800',
                     Kargoda: 'bg-purple-100 text-purple-800',

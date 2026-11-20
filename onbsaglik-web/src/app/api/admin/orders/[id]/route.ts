@@ -58,8 +58,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (body.status && body.status !== oldStatus) {
     let statusNote = `Sipariş durumu '${body.status}' olarak güncellendi.`;
-    if (body.status === "Hazırlanıyor") statusNote = "Depoda ürünler kontrol edilip hazırlanmaya başlandı.";
-    else if (body.status === "Kargoda") statusNote = `${body.carrier || order?.carrier || "Kargo"} yetkilisine teslim edildi.`;
+    if (body.status === "Yeni") statusNote = "Ödeme onaylandı, yeni sipariş olarak kaydedildi.";
+    else if (body.status === "Hazırlanıyor") statusNote = "Sipariş işleme alındı, depoda hazırlanıyor.";
+    else if (body.status === "Kargoda") statusNote = `${body.carrier || order?.carrier || "HepsiJet"} yetkilisine teslim edildi.`;
     else if (body.status === "Teslim Edildi") statusNote = "Paket alıcıya başarıyla teslim edildi.";
     else if (body.status === "İptal / İade") statusNote = "Sipariş yönetici tarafından iptal edildi.";
 

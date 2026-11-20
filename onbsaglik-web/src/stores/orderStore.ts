@@ -19,6 +19,7 @@ export interface OrderItem {
 }
 
 export type OrderStatus =
+  | "Yeni"
   | "Ödeme Bekliyor"
   | "PayTR Ödeme Bekliyor"
   | "Mail Order Bekliyor"

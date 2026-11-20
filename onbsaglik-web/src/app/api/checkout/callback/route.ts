@@ -123,7 +123,7 @@ export async function POST(request: Request) {
 
         const paidTL = totalAmount ? (Number(totalAmount) / 100).toFixed(2) : (currentOrder?.total || "0.00");
         timeline.push({
-          status: "Hazırlanıyor",
+          status: "Yeni",
           date: formatTurkeyDateTime(new Date()),
           note: `PayTR 3D Secure ile ${paidTL} TL ödeme başarıyla tahsil edildi. (İşlem ID: ${merchantOid})`,
         });
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
         const { data: updatedOrder, error: updateErr } = await supabase
           .from("orders")
           .update({
-            status: "Hazırlanıyor",
+            status: "Yeni",
             admin_note: JSON.stringify({ note, timeline }),
           })
           .eq("id", merchantOid)
