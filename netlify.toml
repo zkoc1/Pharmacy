@@ -5,3 +5,22 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# PayTR Callback Webhook Proxy (Yönlendirme kaynaklı 301 hatalarını önler)
+[[redirects]]
+  from = "https://www.onbsaglik.com.tr/api/checkout/callback"
+  to = "/api/checkout/callback"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "http://www.onbsaglik.com.tr/api/checkout/callback"
+  to = "/api/checkout/callback"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "http://onbsaglik.com.tr/api/checkout/callback"
+  to = "/api/checkout/callback"
+  status = 200
+  force = true

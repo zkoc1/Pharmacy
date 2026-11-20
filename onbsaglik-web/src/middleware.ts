@@ -44,6 +44,12 @@ function checkRateLimit(ip: string, limit: number, windowMs: number): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // PayTR Webhook / Callback isteklerini doğrudan geçir
+  if (pathname === "/api/checkout/callback") {
+    return NextResponse.next();
+  }
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1";
 
   // =========================================================================

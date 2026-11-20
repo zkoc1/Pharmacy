@@ -1,9 +1,9 @@
 ﻿import crypto from "crypto";
 
 export async function processPayTRRefund(merchant_oid: string, return_amount: number) {
-  const merchant_id = process.env.PAYTR_MERCHANT_ID;
-  const merchant_key = process.env.PAYTR_MERCHANT_KEY;
-  const merchant_salt = process.env.PAYTR_MERCHANT_SALT;
+  const merchant_id = process.env.PAYTR_MERCHANT_ID || "678666";
+  const merchant_key = process.env.PAYTR_MERCHANT_KEY || "GjKuNDxh7aDsqBtc";
+  const merchant_salt = process.env.PAYTR_MERCHANT_SALT || "7a4EjDXbGw6XkZtN";
 
   if (!merchant_id || !merchant_key || !merchant_salt) {
     console.error("PayTR refund failed: Credentials missing.");

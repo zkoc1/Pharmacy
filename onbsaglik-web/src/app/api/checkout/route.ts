@@ -30,8 +30,8 @@ export async function POST(request: Request) {
     }
 
     const merchantId   = process.env.PAYTR_MERCHANT_ID   ?? "678666";
-    const merchantKey  = process.env.PAYTR_MERCHANT_KEY  ?? "";
-    const merchantSalt = process.env.PAYTR_MERCHANT_SALT ?? "";
+    const merchantKey  = process.env.PAYTR_MERCHANT_KEY  ?? "GjKuNDxh7aDsqBtc";
+    const merchantSalt = process.env.PAYTR_MERCHANT_SALT ?? "7a4EjDXbGw6XkZtN";
 
     // PayTR keyleri henüz Vercel'e eklenmemişse Geliştirme/Demo simülasyonu
     if (!merchantKey || !merchantSalt) {

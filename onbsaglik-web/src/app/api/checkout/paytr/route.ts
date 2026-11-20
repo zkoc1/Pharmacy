@@ -49,9 +49,9 @@ export async function POST(req: Request) {
       : "musteri@onbsaglik.com.tr";
 
     // Madde 1: Anahtarları Çıkar ve Boşlukları Temizle
-    const merchant_id = (process.env.PAYTR_MERCHANT_ID || "").trim();
-    const merchant_key = (process.env.PAYTR_MERCHANT_KEY || "").trim();
-    const merchant_salt = (process.env.PAYTR_MERCHANT_SALT || "").trim();
+    const merchant_id = (process.env.PAYTR_MERCHANT_ID || "678666").trim();
+    const merchant_key = (process.env.PAYTR_MERCHANT_KEY || "GjKuNDxh7aDsqBtc").trim();
+    const merchant_salt = (process.env.PAYTR_MERCHANT_SALT || "7a4EjDXbGw6XkZtN").trim();
 
     // Sipariş Numarası
     const merchant_oid = (orderId || `ONB${Date.now()}${Math.floor(100 + Math.random() * 900)}`).replace(/[^a-zA-Z0-9]/g, "");
