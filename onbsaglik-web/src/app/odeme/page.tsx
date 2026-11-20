@@ -409,7 +409,7 @@ export default function OdemeSayfasi() {
     const orderStatus =
       paymentMethod === "paytr"
         ? "PayTR Ödeme Bekliyor"
-        : "Ödeme Bekliyor";
+        : "Yeni";
 
     const userEmail = currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr";
     const userName = addressForm.fullName || userSession.name || "Değerli Müşterimiz";
@@ -773,7 +773,7 @@ export default function OdemeSayfasi() {
                               const val = e.target.value.replace(/[^0-9]/g, '');
                               setAddressForm({ ...addressForm, phone: val });
                             }}
-                            placeholder="553 272 38 58"
+                            placeholder="555 123 45 67"
                             className="w-full p-3 bg-gray-50 border rounded-r-xl text-xs font-semibold"
                           />
                         </div>

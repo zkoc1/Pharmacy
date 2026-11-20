@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     total: body.total,
     carrier: body.carrier,
     payment_method: body.paymentMethod,
-    status: body.status || "Hazırlanıyor",
+    status: body.status || "Yeni",
     delivery_address: body.deliveryAddress,
     billing_address: body.billingAddress || body.deliveryAddress,
     tracking_number: body.trackingNumber || "",

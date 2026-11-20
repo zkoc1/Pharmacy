@@ -142,6 +142,31 @@ export async function POST(request: Request) {
           console.error("[PayTR Callback] Sipariş güncelleme hatası:", updateErr);
         }
 
+        // Ödeme başarıyla tahsil edildi -> Satın alınan ürünlerin stoklarını düşür
+        const { data: orderItems } = await supabase
+          .from("order_items")
+          .select("product_id, quantity")
+          .eq("order_id", merchantOid);
+
+        if (orderItems && orderItems.length > 0) {
+          for (const it of orderItems) {
+            if (!it.product_id) continue;
+            const { data: prod } = await supabase
+              .from("products")
+              .select("stock")
+              .eq("id", it.product_id)
+              .maybeSingle();
+
+            if (prod) {
+              const newStock = Math.max(0, (prod.stock || 0) - (it.quantity || 1));
+              await supabase
+                .from("products")
+                .update({ stock: newStock })
+                .eq("id", it.product_id);
+            }
+          }
+        }
+
         // Müşteriye ödeme onay e-postası gönder
         const customerEmail = updatedOrder?.customer_email || currentOrder?.customer_email;
         const customerName = updatedOrder?.customer_name || currentOrder?.customer_name || "Değerli Müşterimiz";
@@ -176,29 +201,7 @@ export async function POST(request: Request) {
         const { formatTurkeyDateTime } = await import("@/lib/dateUtils");
         const supabase = getServiceSupabase();
 
-        // Başarısız ödemede sepet ürünlerinin stoklarını geri yükle
-        const { data: items } = await supabase
-          .from("order_items")
-          .select("product_id, quantity")
-          .eq("order_id", merchantOid);
-
-        if (items && items.length > 0) {
-          for (const it of items) {
-            if (!it.product_id) continue;
-            const { data: prod } = await supabase
-              .from("products")
-              .select("stock")
-              .eq("id", it.product_id)
-              .maybeSingle();
-
-            if (prod) {
-              await supabase
-                .from("products")
-                .update({ stock: (prod.stock || 0) + it.quantity })
-                .eq("id", it.product_id);
-            }
-          }
-        }
+        // Not: Başarısız ödemede stok düşürülmediği için stok iadesi yapmaya gerek yoktur.
 
         const { data: currentOrder } = await supabase
           .from("orders")

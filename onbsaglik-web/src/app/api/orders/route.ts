@@ -221,13 +221,19 @@ export async function POST(req: Request) {
       }
     }
 
-    // Sipariş kalemlerini ekle ve stok miktarını düşür
-    for (const item of body.items) {
-      if (!item.id) continue;
-      const { data: prod } = await supabase.from("products").select("stock").eq("id", item.id).single();
-      if (prod) {
-        const newStock = Math.max(0, (prod.stock || 0) - item.quantity);
-        await supabase.from("products").update({ stock: newStock }).eq("id", item.id);
+    // KURAL: PayTR veya Kredi Kartı ile ödeme yapılıyorsa, ASLA BURADA STOK DÜŞME!
+    // Stok SADECE PayTR ödemeyi başarıyla tahsil ettiğinde (webhook callback) düşülür.
+    // Böylece satın alınamayan veya ödemesi yapılamayan işlemler stoğu ASLA azaltmaz!
+    const isCardOrPaytr = orderData.payment_method?.includes("PayTR") || orderData.payment_method?.includes("Kredi Kartı");
+
+    if (!isCardOrPaytr) {
+      for (const item of body.items) {
+        if (!item.id) continue;
+        const { data: prod } = await supabase.from("products").select("stock").eq("id", item.id).single();
+        if (prod) {
+          const newStock = Math.max(0, (prod.stock || 0) - item.quantity);
+          await supabase.from("products").update({ stock: newStock }).eq("id", item.id);
+        }
       }
     }
 
@@ -245,8 +251,6 @@ export async function POST(req: Request) {
 
     // KURAL: PayTR veya Kredi Kartı ile ödeme yapılıyorsa, ASLA BURADA ONAY MAİLİ ATMA!
     // Para PayTR'den tam olarak tahsil edildiğinde PayTR webhook callback'i tetiklenir ve onay maili oradan atılır.
-    const isCardOrPaytr = orderData.payment_method?.includes("PayTR") || orderData.payment_method?.includes("Kredi Kartı");
-
     if (!isCardOrPaytr && body.customerEmail) {
       // Sadece Havale/EFT için sipariş alındı (Havale bekleniyor) bilgilendirmesi gönderilir
       const { sendEmail } = await import("@/lib/email");
