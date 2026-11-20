@@ -242,13 +242,29 @@ export default function SiparislerimSayfasi() {
                     </div>
                   </div>
 
-                  {/* Kargo Durum Çubuğu (Stepper) */}
+                  {/* Kargo / Sipariş Durum Bilgilendirmesi veya Çubuğu */}
                   {ord.status === "İptal / İade" ? (
                     <div className="bg-red-50 border border-red-200 p-4 rounded-2xl flex items-center gap-3 text-red-700">
-                      <XCircle size={24} />
+                      <XCircle size={24} className="flex-shrink-0" />
                       <div>
                         <p className="font-extrabold text-sm">Sipariş İptal Edildi</p>
-                        <p className="text-xs font-medium">Bu sipariş iptal edilmiş veya ödemesi başarısız olmuştur.</p>
+                        <p className="text-xs font-medium">Bu sipariş iptal edilmiş veya ödemesi tamamlanamamıştır.</p>
+                      </div>
+                    </div>
+                  ) : ord.status === "PayTR Ödeme Bekliyor" ? (
+                    <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center gap-3 text-amber-800">
+                      <CreditCard size={24} className="text-amber-600 flex-shrink-0" />
+                      <div>
+                        <p className="font-extrabold text-sm">Ödeme Bekleniyor / Tamamlanamadı</p>
+                        <p className="text-xs font-medium text-amber-700">Kredi kartı ile ödeme işleminiz henüz tamamlanmadı veya bankanız tarafından onaylanmadı. Ödemeniz başarıyla alındığında siparişiniz işleme alınacaktır.</p>
+                      </div>
+                    </div>
+                  ) : ord.status === "Ödeme Bekliyor" ? (
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl flex items-center gap-3 text-blue-800">
+                      <Clock size={24} className="text-blue-600 flex-shrink-0" />
+                      <div>
+                        <p className="font-extrabold text-sm">Havale / EFT Ödemesi Bekleniyor</p>
+                        <p className="text-xs font-medium text-blue-700">Siparişiniz kaydedildi. Lütfen açıklama kısmına <strong>#{ord.id}</strong> yazarak havalenizi iletiniz. Ödemeniz onaylandığında siparişiniz hazırlanacaktır.</p>
                       </div>
                     </div>
                   ) : (
@@ -257,7 +273,7 @@ export default function SiparislerimSayfasi() {
                         const steps = ["Sipariş Alındı", "Hazırlanıyor", "Kargoya Verildi", "Dağıtıma Çıktı", "Teslim Edildi"];
                         
                         let currentStepIndex = 0;
-                        if (["Ödeme Bekliyor", "PayTR Ödeme Bekliyor", "Mail Order Bekliyor"].includes(ord.status)) currentStepIndex = 0;
+                        if (ord.status === "Yeni") currentStepIndex = 0;
                         else if (ord.status === "Hazırlanıyor") currentStepIndex = 1;
                         else if (ord.status === "Kargoda") currentStepIndex = 2; // Kargoya Verildi
                         else if (ord.status === "Teslim Edildi") currentStepIndex = 4;
@@ -293,8 +309,8 @@ export default function SiparislerimSayfasi() {
                     </div>
                   )}
 
-                  {/* Kargo Takip Linki Varsa */}
-                  {ord.trackingNumber && ord.status !== "İptal / İade" && (
+                  {/* Kargo Takip Linki SADECE Kargo aşamasında gösterilir */}
+                  {ord.trackingNumber && ["Kargoda", "Teslim Edildi"].includes(ord.status) && (
                     <div className="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-blue-50/80 border border-blue-100 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                       <div>
                         <p className="text-[11px] font-bold text-blue-800/70 uppercase tracking-wider mb-0.5 flex items-center gap-1.5">

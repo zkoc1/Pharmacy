@@ -409,7 +409,7 @@ export default function OdemeSayfasi() {
     const orderStatus =
       paymentMethod === "paytr"
         ? "PayTR Ödeme Bekliyor"
-        : "Yeni";
+        : "Ödeme Bekliyor";
 
     const userEmail = currentUserEmail || userSession.email || "musteri@onbsaglik.com.tr";
     const userName = addressForm.fullName || userSession.name || "Değerli Müşterimiz";
@@ -463,25 +463,43 @@ export default function OdemeSayfasi() {
     if (paymentMethod === "paytr") {
       try {
         setPaytrLoading(true);
-        const newOrderId = await addOrder(orderPayload);
+
+        // PayTR alt sınır kontrolü: 1.00 TL altındaki sepetler PayTR tarafından reddedilir
+        if (grandTotal < 1) {
+          setPaytrLoading(false);
+          alert("PayTR ile ödeme yapabilmek için sepet tutarı en az 1.00 TL olmalıdır.");
+          return;
+        }
+
+        const generatedOrderId = `ONB${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
+
         const response = await fetch("/api/checkout/paytr", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            orderId: newOrderId,
+            orderId: generatedOrderId,
             total: grandTotal,
-            items: items.map(i => ({ name: i.product.name, price: i.product.price, quantity: i.quantity })),
+            items: items.map(i => ({ id: i.product.id, name: i.product.name, price: i.product.price, quantity: i.quantity })),
             customerInfo: { email: userEmail, fullName: userName, phone: userPhone, address: userAddress }
           })
         });
         const data = await response.json();
         setPaytrLoading(false);
+
         if (data.success && data.iframeUrl) {
+          // PayTR token başarıyla alındıysa sipariş "PayTR Ödeme Bekliyor" olarak veritabanına yazılır
+          await addOrder({
+            ...orderPayload,
+            id: generatedOrderId,
+            status: "PayTR Ödeme Bekliyor",
+          });
+
           // Ziraat ve diğer bankaların 3D Secure iframe güvenlik engeline (X-Frame-Options) takılmaması için
           // kullanıcıyı doğrudan PayTR'nin güvenli 3D Secure sayfasına tam sayfa yönlendiriyoruz.
           window.location.href = data.iframeUrl;
           return;
         } else {
+          // PayTR hata verdiyse veritabanına SİPARİŞ YAZILMAZ (stok ve veritabanı temiz kalır)
           alert("PayTR Ödeme Başlatılamadı: " + (data.error || "Lütfen tekrar deneyin."));
           return;
         }
@@ -492,7 +510,11 @@ export default function OdemeSayfasi() {
       }
     }
 
-    const newOrderId = await addOrder(orderPayload);
+    // Havale / EFT Siparişi (Ödeme Bekliyor olarak kaydedilir)
+    const newOrderId = await addOrder({
+      ...orderPayload,
+      status: "Ödeme Bekliyor",
+    });
     clearCart();
     window.location.href = `/odeme/basarili?orderId=${newOrderId}`;
   };

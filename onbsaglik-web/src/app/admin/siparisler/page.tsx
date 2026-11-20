@@ -73,9 +73,8 @@ export default function AdminSiparislerTrendyol() {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Ödeme Bekleyen (tamamlanmamış / terk edilmiş) sipariş kontrolü
+  // Ödeme Bekleyen (tamamlanmamış / terk edilmiş) PayTR sepet kontrolü
   const isUnpaidOrder = (o: OrderRecord) =>
-    o.status === "Ödeme Bekliyor" ||
     o.status === "PayTR Ödeme Bekliyor" ||
     o.status === "Mail Order Bekliyor";
 
@@ -83,6 +82,11 @@ export default function AdminSiparislerTrendyol() {
   const getTabCount = (tabId: string) => {
     if (tabId === "all") return orders.filter((o) => !isUnpaidOrder(o)).length;
     if (tabId === "askida") return orders.filter((o) => isUnpaidOrder(o)).length;
+    if (tabId === "Yeni") {
+      return orders.filter(
+        (o) => o.status === "Yeni" || (o.status === "Ödeme Bekliyor" && o.paymentMethod?.includes("Havale"))
+      ).length;
+    }
     return orders.filter((o) => o.status === tabId).length;
   };
 
@@ -90,10 +94,14 @@ export default function AdminSiparislerTrendyol() {
     return orders.filter((o) => {
       // 1. Sekme filtreleme
       if (activeTab === "all") {
-        // "Tüm Siparişler" sekmesinde ödemesi yapılmayan terk edilmiş sepetler GÖSTERİLMEZ!
+        // "Tüm Siparişler" sekmesinde ödemesi yapılmayan terk edilmiş PayTR sepetleri GÖSTERİLMEZ!
         if (isUnpaidOrder(o)) return false;
       } else if (activeTab === "Yeni") {
-        if (o.status !== "Yeni") return false;
+        // Yeni sekmesinde: Sadece ödemesi tamamlanmış 'Yeni' siparişler ve Havale/EFT ile ödeme bekleyen siparişler görünür.
+        // PayTR/Kredi Kartı ödemesi tamamlanmamış ("PayTR Ödeme Bekliyor") siparişler BURAYA DÜŞMEZ!
+        if (o.status !== "Yeni" && !(o.status === "Ödeme Bekliyor" && o.paymentMethod?.includes("Havale"))) {
+          return false;
+        }
       } else if (activeTab === "Hazırlanıyor") {
         if (o.status !== "Hazırlanıyor") return false;
       } else if (activeTab === "Kargoda") {
@@ -464,6 +472,13 @@ export default function AdminSiparislerTrendyol() {
                         <div className="text-[10px] text-gray-500">
                           Ödeme: <strong className="text-gray-700">{ord.paymentMethod}</strong>
                         </div>
+                        {ord.status === "Ödeme Bekliyor" && (
+                          <div className="mt-1">
+                            <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                              ⏳ Havale / EFT Bekleniyor
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Alıcı */}
@@ -570,27 +585,29 @@ export default function AdminSiparislerTrendyol() {
 
                       {/* İşlemler / Durum Yönetimi */}
                       <td className="p-3 align-top space-y-2">
-                        {/* 1. YENİ SİPARİŞ: Sadece 'İşleme Al' ve 'İptal Et' */}
-                        {ord.status === "Yeni" && (
+                        {/* 1. YENİ & HAVALE BEKLEYEN SİPARİŞLER: Sadece 'İşleme Al' ve 'İptal Et' */}
+                        {(ord.status === "Yeni" || ord.status === "Ödeme Bekliyor") && (
                           <div className="space-y-1.5">
                             <button
                               onClick={() => {
                                 updateOrderStatus(
                                   ord.id,
                                   "Hazırlanıyor",
-                                  "Sipariş işleme alındı, depoda hazırlanıyor."
+                                  ord.status === "Ödeme Bekliyor"
+                                    ? "Havale/EFT ödemesi onaylandı ve sipariş işleme alındı."
+                                    : "Sipariş işleme alındı, depoda hazırlanıyor."
                                 );
                               }}
                               className="w-full bg-[#f27a1a] hover:bg-[#e0680a] text-white font-bold text-xs py-2 px-3 rounded shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                             >
-                              <span>⚡</span> İşleme Al
+                              <span>⚡</span> {ord.status === "Ödeme Bekliyor" ? "Ödeme Alındı & İşleme Al" : "İşleme Al"}
                             </button>
 
                             <button
                               onClick={() => {
                                 if (
                                   window.confirm(
-                                    `#${ord.id} numaralı yeni siparişi iptal etmek istediğinize emin misiniz?`
+                                    `#${ord.id} numaralı siparişi iptal etmek istediğinize emin misiniz?`
                                   )
                                 ) {
                                   updateOrderStatus(ord.id, "İptal / İade");

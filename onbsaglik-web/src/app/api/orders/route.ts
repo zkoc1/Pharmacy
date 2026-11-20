@@ -191,7 +191,7 @@ export async function POST(req: Request) {
       status: orderStatus,
       delivery_address: body.deliveryAddress,
       billing_address: body.billingAddress || body.deliveryAddress,
-      tracking_number: body.trackingNumber || `272${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      tracking_number: body.trackingNumber || "",
       admin_note: JSON.stringify({
         note: body.adminNote || "",
         timeline: initialTimeline
