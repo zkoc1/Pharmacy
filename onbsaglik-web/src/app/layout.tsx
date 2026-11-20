@@ -95,6 +95,7 @@ export const metadata: Metadata = {
 
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import MetaPixel from "@/components/analytics/MetaPixel";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 
 const organizationSchema = {
   "@context": "https://schema.org",
@@ -178,6 +179,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <GoogleAnalytics />
         <MetaPixel />
         <SessionWrapper>
           {/* Üst navigasyon çubuğu */}

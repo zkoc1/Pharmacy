@@ -3,9 +3,62 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Settings as SettingsIcon, Ticket, Plus, Trash2, ToggleLeft, ToggleRight, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  Settings as SettingsIcon,
+  Ticket,
+  Plus,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  Save,
+  Globe,
+  Copy,
+  Check,
+  ExternalLink,
+  Megaphone,
+} from "lucide-react";
 import { formatPrice } from "@/lib/products";
 import { restoreAdminSessionIfNeeded } from "@/lib/authUtils";
+
+const SEO_FEEDS = [
+  {
+    id: "google-merchant",
+    title: "Google Merchant Center (Google Alışveriş) & Instagram/Facebook Katalog XML",
+    badge: "Google Ads & Meta Ads",
+    badgeColor: "#0284c7",
+    badgeBg: "#e0f2fe",
+    url: "https://www.onbsaglik.com.tr/api/feeds/google-merchant",
+    desc: "Google Alışveriş sekmesinde (ücretsiz ve reklamlı) fotoğraflı/fiyatlı en üstte çıkmak ve Instagram/Facebook Katalog reklamları açmak için bu linki Google Merchant Center ve Meta Commerce Manager'a yapıştırın.",
+  },
+  {
+    id: "akakce",
+    title: "Akakçe Fiyat Karşılaştırma XML Beslemesi",
+    badge: "Akakçe",
+    badgeColor: "#ea580c",
+    badgeBg: "#ffedd5",
+    url: "https://www.onbsaglik.com.tr/api/feeds/akakce",
+    desc: "Stoktaki tüm aktif ürünlerinizi güncel fiyat, barkod ve kargo bilgileriyle otomatik olarak Akakçe mağazanıza aktarır.",
+  },
+  {
+    id: "cimri",
+    title: "Cimri.com Fiyat Karşılaştırma XML Beslemesi",
+    badge: "Cimri",
+    badgeColor: "#7c3aed",
+    badgeBg: "#ede9fe",
+    url: "https://www.onbsaglik.com.tr/api/feeds/cimri",
+    desc: "Cimri mağaza entegrasyonu için tüm aktif ürünleri EAN barkod ve kargo süresiyle birlikte otomatik besler.",
+  },
+  {
+    id: "sitemap",
+    title: "Google Search Console Dinamik Site Haritası (Sitemap.xml)",
+    badge: "Google SEO",
+    badgeColor: "#059669",
+    badgeBg: "#d1fae5",
+    url: "https://www.onbsaglik.com.tr/sitemap.xml",
+    desc: "500+ ürün, kategori ve marka sayfasını Google arama motoruna otomatik indeksleten dinamik site haritası.",
+  },
+];
 
 export default function AyarlarSayfasi() {
   const router = useRouter();
@@ -13,6 +66,7 @@ export default function AyarlarSayfasi() {
   // Settings State
   const [settings, setSettings] = useState({ freeShippingThreshold: 500, shippingCost: 49.90 });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Coupons State
   const [coupons, setCoupons] = useState<any[]>([]);
@@ -56,6 +110,12 @@ export default function AyarlarSayfasi() {
       .then((res) => res.json())
       .then((data) => setCoupons(data))
       .catch(console.error);
+  };
+
+  const handleCopy = (id: string, url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleSaveSettings = async () => {
@@ -135,7 +195,7 @@ export default function AyarlarSayfasi() {
             <ArrowLeft size={16} /> Admin Paneli
           </Link>
           <h1 style={{ fontSize: "22px", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px" }}>
-            <SettingsIcon size={24} /> Genel Ayarlar & Kuponlar
+            <SettingsIcon size={24} /> Genel Ayarlar, Kuponlar & SEO Reklam Merkezi
           </h1>
         </div>
 
@@ -300,6 +360,111 @@ export default function AyarlarSayfasi() {
 
           </div>
         </div>
+
+        {/* ALT BÖLÜM: SEO, GOOGLE ALIŞVERİŞ & REKLAM ENTEGRASYON MERKEZİ */}
+        <div className="card" style={{ marginTop: "32px", padding: "24px", border: "1px solid #e2e8f0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+            <Megaphone size={22} color="#059669" />
+            <h2 style={{ fontWeight: 800, fontSize: "18px", color: "#0f172a" }}>
+              SEO, Google Alışveriş & Dijital Reklam XML Besleme Merkezi
+            </h2>
+          </div>
+          <p style={{ fontSize: "13px", color: "#475569", marginBottom: "20px" }}>
+            Google&apos;da en üst sırada fotoğraflı/fiyatlı çıkmak, Instagram/Facebook katalog reklamı vermek ve fiyat karşılaştırma sitelerinde yer almak için aşağıdaki canlı XML bağlantılarınızı ilgili platformlara yapıştırmanız yeterlidir. Ürün, fiyat ve stoklarınız değiştikçe bu linkler otomatik güncellenir.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {SEO_FEEDS.map((feed) => (
+              <div
+                key={feed.id}
+                style={{
+                  padding: "16px",
+                  borderRadius: "12px",
+                  border: "1px solid #e2e8f0",
+                  background: "#ffffff",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Globe size={16} color={feed.badgeColor} />
+                    <span style={{ fontWeight: 800, fontSize: "14px", color: "#1e293b" }}>{feed.title}</span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        color: feed.badgeColor,
+                        background: feed.badgeBg,
+                        padding: "2px 8px",
+                        borderRadius: "999px",
+                      }}
+                    >
+                      {feed.badge}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(feed.id, feed.url)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        borderRadius: "8px",
+                        border: "1px solid #cbd5e1",
+                        background: copiedId === feed.id ? "#ecfdf5" : "#f8fafc",
+                        color: copiedId === feed.id ? "#059669" : "#334155",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {copiedId === feed.id ? <Check size={14} /> : <Copy size={14} />}
+                      {copiedId === feed.id ? "Kopyalandı!" : "Linki Kopyala"}
+                    </button>
+                    <a
+                      href={feed.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        padding: "6px 10px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        borderRadius: "8px",
+                        background: "#eff6ff",
+                        color: "#2563eb",
+                        textDecoration: "none",
+                      }}
+                    >
+                      Aç <ExternalLink size={13} />
+                    </a>
+                  </div>
+                </div>
+                <code
+                  style={{
+                    fontSize: "12px",
+                    background: "#f1f5f9",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    color: "#0f172a",
+                    fontWeight: 600,
+                    wordBreak: "break-all",
+                  }}
+                >
+                  {feed.url}
+                </code>
+                <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{feed.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

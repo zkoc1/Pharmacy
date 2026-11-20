@@ -13,20 +13,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice } from "@/lib/products";
 import { CheckCircle2, ShoppingBag, Truck, ArrowRight, Home, AlertCircle, Clock, RefreshCw } from "lucide-react";
+import { trackPurchase } from "@/lib/analytics";
 
 function OdemeBasariliContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const clearCart = useCartStore((s) => s.clearCart);
-  const { getOrderById, fetchOrders } = useOrderStore();
+  const { getOrderById, fetchUserOrders } = useOrderStore();
   const [order, setOrder] = useState<OrderRecord | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchOrders().then(() => {
+    fetchUserOrders().then(() => {
       setLoading(false);
     });
-  }, [fetchOrders]);
+  }, [fetchUserOrders]);
 
   useEffect(() => {
     if (orderId) {
@@ -37,6 +38,10 @@ function OdemeBasariliContent() {
         if (ord.status !== "İptal / İade") {
           clearCart();
         }
+        // Ödemesi onaylanan veya havale siparişi tamamlanan işlemleri Google & Meta reklam piksellerine bildir
+        if (ord.status === "Yeni" || ord.status === "Hazırlanıyor" || ord.status === "Ödeme Bekliyor") {
+          trackPurchase(ord);
+        }
       }
     }
   }, [orderId, getOrderById, clearCart]);
@@ -44,7 +49,7 @@ function OdemeBasariliContent() {
   const isFailed = order?.status === "İptal / İade";
   const isEftPending = order?.status === "Ödeme Bekliyor" || order?.paymentMethod?.includes("Havale");
   const isPaytrPending = order?.status === "PayTR Ödeme Bekliyor";
-  const isConfirmed = order?.status === "Hazırlanıyor" || order?.status === "Kargoda" || order?.status === "Teslim Edildi";
+  const isConfirmed = order?.status === "Yeni" || order?.status === "Hazırlanıyor" || order?.status === "Kargoda" || order?.status === "Teslim Edildi";
 
   return (
     <div className="container-custom max-w-2xl py-16 space-y-6">
