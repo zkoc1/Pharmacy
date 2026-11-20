@@ -568,11 +568,11 @@ export default function AdminSiparislerTrendyol() {
                         </select>
                       </td>
 
-                      {/* İşlemler / Durum Yönetimi (Trendyol Mantığı) */}
+                      {/* İşlemler / Durum Yönetimi */}
                       <td className="p-3 align-top space-y-2">
-                        {/* 1. DURUM: YENİ SİPARİŞ (Photo 2 gibi) */}
+                        {/* 1. YENİ SİPARİŞ: Sadece 'İşleme Al' ve 'İptal Et' */}
                         {ord.status === "Yeni" && (
-                          <>
+                          <div className="space-y-1.5">
                             <button
                               onClick={() => {
                                 updateOrderStatus(
@@ -586,65 +586,26 @@ export default function AdminSiparislerTrendyol() {
                               <span>⚡</span> İşleme Al
                             </button>
 
-                            <div className="relative group">
-                              <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] py-1.5 rounded transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                                İşlemler ▾
-                              </button>
-                              <div className="absolute right-0 top-full pt-1 w-52 z-50 hidden group-hover:block text-left text-xs shadow-xl rounded overflow-hidden">
-                                <div className="bg-white border text-gray-700 divide-y divide-gray-100">
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        window.confirm(
-                                          `#${ord.id} numaralı siparişi iptal etmek istediğinize emin misiniz?`
-                                        )
-                                      ) {
-                                        updateOrderStatus(ord.id, "İptal / İade");
-                                      }
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 font-bold cursor-pointer"
-                                  >
-                                    ✕ İptal Et
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "magaza_karti" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mağaza Kartı Yazdır
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "mesafeli_satis" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mesafeli Satış Sözleşmesi
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "on_bilgilendirme" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Ön Bilgilendirme Formu
-                                  </button>
-                                  <button
-                                    onClick={() => setBillingInfoOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-700 font-bold cursor-pointer"
-                                  >
-                                    Fatura Bilgilerini Görüntüle
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </>
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `#${ord.id} numaralı yeni siparişi iptal etmek istediğinize emin misiniz?`
+                                  )
+                                ) {
+                                  updateOrderStatus(ord.id, "İptal / İade");
+                                }
+                              }}
+                              className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs py-1.5 px-3 rounded transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              ✕ İptal Et
+                            </button>
+                          </div>
                         )}
 
-                        {/* 2. DURUM: İŞLEME ALINANLAR (Photo 1 gibi — "İşleme Al" kalktı!) */}
+                        {/* 2. İŞLEME ALINANLAR: HepsiJet ile Kargoya Ver, Kargo Etiketi Yazdır ve sadece 'İptal Et' */}
                         {ord.status === "Hazırlanıyor" && (
-                          <>
+                          <div className="space-y-1.5">
                             <button
                               onClick={() => handleHepsiJetShip(ord)}
                               className="w-full bg-[#0088cc] hover:bg-[#0077b3] text-white font-bold text-xs py-2 px-2.5 rounded shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
@@ -659,71 +620,26 @@ export default function AdminSiparislerTrendyol() {
                               Kargo Etiketini Yazdır
                             </button>
 
-                            <div className="relative group">
-                              <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] py-1.5 rounded transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                                İşlemler ▾
-                              </button>
-                              <div className="absolute right-0 top-full pt-1 w-56 z-50 hidden group-hover:block text-left text-xs shadow-xl rounded overflow-hidden">
-                                <div className="bg-white border text-gray-700 divide-y divide-gray-100">
-                                  <button
-                                    onClick={() => setCustomCarrierOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Başka Kargo Firması İle Gönder
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        window.confirm(
-                                          `#${ord.id} numaralı siparişi iptal etmek istediğinize emin misiniz?`
-                                        )
-                                      ) {
-                                        updateOrderStatus(ord.id, "İptal / İade");
-                                      }
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 font-bold cursor-pointer"
-                                  >
-                                    ✕ İptal Et
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "magaza_karti" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mağaza Kartı Yazdır
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "mesafeli_satis" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mesafeli Satış Sözleşmesi
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "on_bilgilendirme" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Ön Bilgilendirme Formu
-                                  </button>
-                                  <button
-                                    onClick={() => setBillingInfoOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-700 font-bold cursor-pointer"
-                                  >
-                                    Fatura Bilgilerini Görüntüle
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </>
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `#${ord.id} numaralı işleme alınan siparişi iptal etmek istediğinize emin misiniz?`
+                                  )
+                                ) {
+                                  updateOrderStatus(ord.id, "İptal / İade");
+                                }
+                              }}
+                              className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-[11px] py-1.5 px-3 rounded transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              ✕ İptal Et
+                            </button>
+                          </div>
                         )}
 
-                        {/* 3. DURUM: TAŞIMA DURUMUNDA (Kargoda) */}
+                        {/* 3. TAŞIMA DURUMUNDA (Kargoda) */}
                         {ord.status === "Kargoda" && (
-                          <>
+                          <div className="space-y-1.5">
                             <button
                               onClick={() => {
                                 if (
@@ -750,65 +666,28 @@ export default function AdminSiparislerTrendyol() {
                               Kargo Etiketi Yazdır
                             </button>
 
-                            <div className="relative group">
-                              <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] py-1.5 rounded transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                                İşlemler ▾
-                              </button>
-                              <div className="absolute right-0 top-full pt-1 w-52 z-50 hidden group-hover:block text-left text-xs shadow-xl rounded overflow-hidden">
-                                <div className="bg-white border text-gray-700 divide-y divide-gray-100">
-                                  <button
-                                    onClick={() => setCustomCarrierOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Kargo Takip No Güncelle
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (
-                                        window.confirm(
-                                          `#${ord.id} numaralı kargodaki siparişi iptal/iade etmek istiyor musunuz?`
-                                        )
-                                      ) {
-                                        updateOrderStatus(ord.id, "İptal / İade");
-                                      }
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 font-bold cursor-pointer"
-                                  >
-                                    İptal / İade Et
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "magaza_karti" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mağaza Kartı Yazdır
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "mesafeli_satis" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mesafeli Satış Sözleşmesi
-                                  </button>
-                                  <button
-                                    onClick={() => setBillingInfoOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-700 font-bold cursor-pointer"
-                                  >
-                                    Fatura Bilgilerini Görüntüle
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </>
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    `#${ord.id} numaralı kargodaki siparişi iptal/iade etmek istiyor musunuz?`
+                                  )
+                                ) {
+                                  updateOrderStatus(ord.id, "İptal / İade");
+                                }
+                              }}
+                              className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-[10px] py-1 rounded transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              ✕ İptal / İade Et
+                            </button>
+                          </div>
                         )}
 
-                        {/* 4. DURUM: TESLİM EDİLDİ / İPTAL VEYA ASKI (Ödeme Bekleyen) */}
+                        {/* 4. DİĞER (Teslim Edildi, İptal, Askıda) */}
                         {(ord.status === "Teslim Edildi" ||
                           ord.status === "İptal / İade" ||
                           isUnpaidOrder(ord)) && (
-                          <>
+                          <div className="space-y-1.5">
                             <div
                               className={`text-center font-bold text-[11px] py-1.5 px-2 rounded border ${
                                 ord.status === "Teslim Edildi"
@@ -821,52 +700,38 @@ export default function AdminSiparislerTrendyol() {
                               {isUnpaidOrder(ord) ? "Ödeme Tamamlanmadı" : ord.status}
                             </div>
 
-                            <div className="relative group">
-                              <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[11px] py-1.5 rounded transition-colors flex items-center justify-center gap-1 cursor-pointer">
-                                İşlemler ▾
+                            {isUnpaidOrder(ord) && (
+                              <button
+                                onClick={() =>
+                                  updateOrderStatus(
+                                    ord.id,
+                                    "Yeni",
+                                    "Yönetici tarafından manuel onaylandı."
+                                  )
+                                }
+                                className="w-full text-center py-1.5 px-2 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-xs font-bold rounded cursor-pointer"
+                              >
+                                ✓ Ödemeyi Onayla (Yeni Yap)
                               </button>
-                              <div className="absolute right-0 top-full pt-1 w-52 z-50 hidden group-hover:block text-left text-xs shadow-xl rounded overflow-hidden">
-                                <div className="bg-white border text-gray-700 divide-y divide-gray-100">
-                                  {isUnpaidOrder(ord) && (
-                                    <button
-                                      onClick={() =>
-                                        updateOrderStatus(
-                                          ord.id,
-                                          "Yeni",
-                                          "Yönetici tarafından manuel onaylandı."
-                                        )
-                                      }
-                                      className="w-full text-left px-3 py-2 text-emerald-600 hover:bg-emerald-50 font-bold cursor-pointer"
-                                    >
-                                      ✓ Ödemeyi Onayla (Yeni Yap)
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "magaza_karti" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mağaza Kartı Yazdır
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      setDocumentOrder({ order: ord, type: "mesafeli_satis" })
-                                    }
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                  >
-                                    Mesafeli Satış Sözleşmesi
-                                  </button>
-                                  <button
-                                    onClick={() => setBillingInfoOrder(ord)}
-                                    className="w-full text-left px-3 py-2 hover:bg-blue-50 text-blue-700 font-bold cursor-pointer"
-                                  >
-                                    Fatura Bilgilerini Görüntüle
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </>
+                            )}
+
+                            {ord.status !== "İptal / İade" && !isUnpaidOrder(ord) && (
+                              <button
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      `#${ord.id} numaralı siparişi iptal/iade etmek istiyor musunuz?`
+                                    )
+                                  ) {
+                                    updateOrderStatus(ord.id, "İptal / İade");
+                                  }
+                                }}
+                                className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-[10px] py-1 rounded cursor-pointer"
+                              >
+                                ✕ İptal / İade
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                     </tr>
