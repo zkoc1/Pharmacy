@@ -7,15 +7,13 @@ services:
     plan: free
     region: frankfurt
     rootDir: onbsaglik-web
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: 20.18.0
-      - key: NODE_ENV
-        value: production
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
       - key: NEXTAUTH_URL
