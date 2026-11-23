@@ -16,11 +16,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Statik sayfa üretimi için tüm slug'ları döndür
-export async function generateStaticParams() {
-  const products = await getAllProducts();
-  return products.map((p) => ({ slug: p.slug }));
-}
+// Render 512MB RAM optimizasyonu & anlık stok/fiyat güncelliği için ISR (5 dk önbellek)
+export const revalidate = 300;
+export const dynamicParams = true;
 
 // Google Arama Sonuçlarında İlk Sıraları Hedefleyen Dinamik Meta Veriler
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

@@ -16,16 +16,8 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
-// Tüm kategori slug'larını statik olarak üret
-export async function generateStaticParams() {
-  const categories = await getAllCategories();
-  const slugs: { slug: string }[] = [];
-  categories.forEach((cat) => {
-    slugs.push({ slug: cat.slug });
-    cat.children?.forEach((child) => slugs.push({ slug: child.slug }));
-  });
-  return slugs;
-}
+// Render 512MB RAM optimizasyonu
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

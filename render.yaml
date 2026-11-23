@@ -1,0 +1,46 @@
+# Render.com Blueprint — OnbSağlık (onbsaglik.com.tr)
+# UptimeRobot ile 7/24 aktif, 512MB RAM optimize Next.js Web Service yapılandırması.
+services:
+  - type: web
+    name: onbsaglik-web
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: onbsaglik-web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXTAUTH_URL
+        value: https://www.onbsaglik.com.tr
+      - key: NEXTAUTH_SECRET
+        value: onbsaglik-nextauth-secret-2024
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        value: https://ickjbiywqzvrxtcccmrw.supabase.co
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: sb_publishable_n44DAnaBeJf5T_eNbuY2UA_liy9D_KD
+      - key: PAYTR_MERCHANT_ID
+        value: "678666"
+      - key: PAYTR_MERCHANT_KEY
+        value: GjKuNDxh7aDsqBtc
+      - key: PAYTR_MERCHANT_SALT
+        value: 7a4EjDXbGw6XkZtN
+      - key: PAYTR_TEST_MODE
+        value: "0"
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "465"
+      - key: SMTP_USER
+        value: saglikonb@gmail.com
+      - key: SMTP_PASS
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

@@ -14,11 +14,9 @@ interface Props {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Tüm marka slug'larını statik olarak üret
-export async function generateStaticParams() {
-  const brands = await getAllBrands();
-  return brands.map((b) => ({ slug: b.slug }));
-}
+// Render 512MB RAM optimizasyonu & güncel ürün listesi için ISR (5 dk önbellek)
+export const revalidate = 300;
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

@@ -29,11 +29,8 @@ export const authOptions: AuthOptions = {
           return { id: 'admin_osman', email: credentials.email, name: 'Osman Nuri Taşhan', role: 'admin' };
         }
 
-        const { createClient } = require('@supabase/supabase-js');
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
+        const { getServiceSupabase } = await import('@/lib/supabase');
+        const supabase = getServiceSupabase();
 
         const { data, error } = await supabase.auth.signInWithPassword({
           email: credentials.email,
