@@ -17,7 +17,7 @@ services:
       - key: NEXT_TELEMETRY_DISABLED
         value: "1"
       - key: NEXTAUTH_URL
-        value: https://www.onbsaglik.com.tr
+        value: https://onbsaglik.com.tr
       - key: NEXTAUTH_SECRET
         value: onbsaglik-nextauth-secret-2024
       - key: NEXT_PUBLIC_SUPABASE_URL

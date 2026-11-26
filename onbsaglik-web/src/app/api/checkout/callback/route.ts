@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     const merchantKey = (process.env.PAYTR_MERCHANT_KEY || "GjKuNDxh7aDsqBtc").trim();
     const merchantSalt = (process.env.PAYTR_MERCHANT_SALT || "7a4EjDXbGw6XkZtN").trim();
 
-    // 4. HMAC-SHA256 İmza Doğrulaması (PayTR Resmi Standart)
+    // 4. HMAC-SHA256 İmza Doğrulaması (PayTR Resmi Standart — timingSafeEqual ile güvenli karşılaştırma)
     // token = base64(hmac_sha256(merchant_oid + merchant_salt + status + total_amount, merchant_key))
     const hashStr = `${merchantOid}${merchantSalt}${status}${totalAmount}`;
     const expectedHash = crypto
@@ -77,10 +77,14 @@ export async function POST(request: Request) {
       .update(hashStr)
       .digest("base64");
 
-    if (hash !== expectedHash) {
+    const receivedBuf = Buffer.from(hash, "utf8");
+    const expectedBuf = Buffer.from(expectedHash, "utf8");
+    const isHashValid =
+      receivedBuf.length === expectedBuf.length &&
+      crypto.timingSafeEqual(receivedBuf, expectedBuf);
+
+    if (!isHashValid) {
       console.error("[PayTR Callback] Hash doğrulaması başarısız! Sahte veya bozuk istek.", {
-        receivedHash: hash,
-        expectedHash,
         merchantOid,
       });
       return new Response("PAYTR notification failed: bad hash", {
@@ -107,6 +111,18 @@ export async function POST(request: Request) {
 
         if (orderErr) {
           console.error("[PayTR Callback] Supabase sipariş sorgulama hatası:", orderErr);
+        }
+
+        // PayTR 2. Adım Resmi Kuralı (Idempotency / Mükerrer Bildirim Koruması):
+        // Sipariş zaten daha önce onaylandıysa (Yeni / Hazırlanıyor / Kargoda / Teslim Edildi),
+        // stoğu tekrar düşürmeden, durumu geri almadan ve tekrar mail atmadan doğrudan "OK" dön!
+        const alreadyProcessedStatuses = ["Yeni", "Hazırlanıyor", "Kargoda", "Teslim Edildi"];
+        if (currentOrder?.status && alreadyProcessedStatuses.includes(currentOrder.status)) {
+          console.log(`[PayTR Callback] Sipariş zaten işlenmiş (${currentOrder.status}), mükerrer işlem atlandı: ${merchantOid}`);
+          return new Response("OK", {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
         }
 
         let timeline: any[] = [];
@@ -205,9 +221,17 @@ export async function POST(request: Request) {
 
         const { data: currentOrder } = await supabase
           .from("orders")
-          .select("admin_note")
+          .select("status, admin_note")
           .eq("id", merchantOid)
           .maybeSingle();
+
+        // Zaten iptal edilmiş veya ödenmiş bir siparişi tekrar üzerine yazma
+        if (currentOrder?.status && ["İptal / İade", "Yeni", "Hazırlanıyor", "Kargoda", "Teslim Edildi"].includes(currentOrder.status)) {
+          return new Response("OK", {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
 
         let timeline: any[] = [];
         if (currentOrder?.admin_note) {
